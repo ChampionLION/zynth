@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.test-build/
+
+.test-build/
+
+# Read-only blueprint extraction intermediates
+.review/

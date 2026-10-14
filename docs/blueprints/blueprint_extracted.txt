@@ -1,0 +1,2279 @@
+
+ZYNTH 
+Complete Application Blueprint v1.0
+Synthesize yourself. Reach your zenith.
+
+"You don't consume Zynth. You perform in it. The system watches, adapts, and evolves with you."
+
+TABLE OF CONTENTS
+System Overview & Philosophy
+App Architecture
+Screen Map & User Flows
+Engine 1: Onboarding Engine
+Engine 2: Quest Generation Engine
+Engine 3: Grading Engine
+Engine 4: Behavioral Stat Engine
+Engine 5: Progression Engine
+Engine 6: Hidden Skill Engine
+Engine 7: Anti-Exploitation Engine
+Engine 8: Context Compression Engine
+Engine 9: Memory Engine
+Engine 10: Economy Engine
+Engine 11: Achievement Engine
+Engine 12: Adaptive Intelligence Engine
+Engine 13: Continuous Profiling Engine
+Leaderboard System
+The Addiction Layer
+Database Schema
+LLM vs App Responsibility Split
+Tech Stack
+UI Specification
+First 10 Minutes Experience
+Error Handling & Recovery
+Future Systems
+
+1. SYSTEM OVERVIEW & PHILOSOPHY
+Zynth is not a learning platform. It is a behavioral synthesis engine — a system that observes how you show up every day, builds a living model of who you are, adapts everything to your patterns, and makes your own evolution visible in real time.
+Core Philosophy
+Static platforms deliver content.
+Zynth delivers evolution.
+The user does not consume. They perform.
+The system does not teach. It synthesizes and reflects.
+What Zynth IS and IS NOT
+Zynth IS
+Zynth IS NOT
+A behavioral synthesis engine
+A course or content platform
+An adaptive identity system
+A quiz or assessment tool
+A gamified growth ecosystem
+A habit tracker
+A living character progression system
+A certification platform
+A competition and ranking platform
+A social network
+The Master Loop
+┌──────────────────────────────────────────────────────────────┐
+│                        THE ZYNTH LOOP                         │
+│                                                              │
+│  ONBOARD        QUEST          PERFORM          GROW         │
+│                                                              │
+│  Profile ──────► Quest Gen ───► Response ──────► Grade       │
+│  Created         (LLM+Profile)   Submitted         ↓         │
+│    ▲                                               │         │
+│    │                                               ▼         │
+│  Profile ◄── Stats Updated ◄── Behavior ◄── EXP Applied      │
+│  Evolves     (App Logic)        Signals      (App Logic)      │
+│                                                              │
+│  DAILY PROFILING QUESTION ──► Memory Enriched ──► Better Quest│
+└──────────────────────────────────────────────────────────────┘
+The Golden Rule
+The LLM generates content and signals. The app owns all math. Numbers never touch the LLM.
+Responsibility
+Owner
+Quest content generation
+LLM
+Response grading (quality judgment)
+LLM
+Behavioral signal extraction
+LLM (strings only)
+Skill evolution naming
+LLM
+Hidden skill discovery messages
+LLM
+Daily profiling question generation
+LLM
+EXP calculation
+App
+Stat adjustments
+App
+Level-up check
+App
+Streak tracking
+App
+Token & XP card management
+App
+Achievement checking
+App
+Anti-exploit detection
+App
+Leaderboard calculation
+App
+All number changes
+App — NEVER LLM
+
+2. APP ARCHITECTURE
+Stack
+┌──────────────────────────────────────────────────────────┐
+│                    ZYNTH WEB APP                          │
+│              Next.js 14 (App Router)                     │
+│                                                          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐  │
+│  │Dashboard │ │Mark Map  │ │Chronicle │ │Leaderboard│  │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬─────┘  │
+│       └────────────┴────────────┴──────────────┘        │
+│                          │                               │
+│               ┌──────────▼──────────┐                   │
+│               │   App Logic Layer   │                    │
+│               │   (TypeScript)      │                    │
+│               └──────────┬──────────┘                   │
+└──────────────────────────┼───────────────────────────────┘
+                           │
+         ┌─────────────────┼──────────────────┐
+         │                 │                  │
+  ┌──────▼──────┐  ┌───────▼──────┐  ┌───────▼──────┐
+  │  Supabase   │  │Supabase Edge │  │   Vercel     │
+  │ (DB + Auth) │  │  Functions   │  │  (Hosting)   │
+  └─────────────┘  └──────────────┘  └──────────────┘
+                          │
+              ┌───────────┼────────────┐
+              │           │            │
+       ┌──────▼───┐ ┌─────▼────┐ ┌────▼──────┐
+       │  Gemini  │ │  Groq    │ │  HuggingF │
+       │  Flash   │ │ Fallback │ │  Fallback │
+       └──────────┘ └──────────┘ └───────────┘
+LLM Fallback Chain
+Request
+   │
+   ▼
+Gemini Flash ──► success ──► respond
+   │
+   fail / rate limit
+   │
+   ▼
+Groq (Llama 3.3 70B) ──► success ──► respond
+   │
+   fail
+   │
+   ▼
+Hugging Face API ──► success ──► respond (simple tasks only)
+   │
+   fail
+   │
+   ▼
+Local fallback quest cache ──► serve cached quest
+
+3. SCREEN MAP & USER FLOWS
+Navigation Structure
+MAIN NAV (5 tabs always visible except in immersive mode):
+[ Dashboard ] [ Mark Map ] [ Chronicle ] [ Leaderboard ] [ Profile ]
+IMMERSIVE SCREENS (nav disappears):
+Quest Screen → Grade Reveal → Event Screens (queue)
+OVERLAY SCREENS:
+Daily Pop-up (energy + profiling question)
+Settings (from Profile)
+Full Screen Map
+[SPLASH] ──► [SIGN UP / LOGIN]
+                    │
+             ┌──────┴──────┐
+             │             │
+         New user    Returning user
+             │             │
+             ▼             │
+    [ONBOARDING Q1–Q5]     │
+             │             │
+             ▼             │
+    [PROFILE REVEAL]       │
+             │             │
+             └──────┬──────┘
+                    │
+                    ▼
+              [DASHBOARD]
+         ┌─────────┼──────────┐────────────┐
+         │         │          │            │
+         ▼         ▼          ▼            ▼
+   [MARK MAP] [CHRONICLE] [LEADERBOARD] [PROFILE]
+         │
+    [QUEST SCREEN] ← full screen takeover
+         │
+    [GRADE REVEAL] ← full screen takeover
+         │
+    EVENT QUEUE (plays in order):
+    [LEVEL UP] → [SKILL EVOLUTION] → [HIDDEN SKILL]
+    → [STREAK MILESTONE] → [WEAKNESS OVERCOME]
+         │
+    Back to [DASHBOARD]
+SPECIAL:
+[PROFESSION EVOLUTION] — appears on login when triggered
+[PRESTIGE SCREEN] — from Profile, Level 100+
+[ACHIEVEMENT PAGE] — from Profile
+[SETTINGS] — from Profile
+Slide Transition System
+Dashboard → Mark Map:
+  Dashboard content slides OUT to the LEFT
+  Mark Map faintly visible in background BECOMES DOMINANT
+  Mark Map content slides IN from the RIGHT
+  Animation: 350ms ease-in-out, simultaneous
+Mark Map → Dashboard:
+  Reverse of above — Mark Map slides right, Dashboard returns from left
+All other tab transitions: standard cross-fade (200ms)
+Quest Screen: slides up from bottom, covers everything including nav
+Grade Reveal: fades in over Quest Screen
+Event Screens: full page replacements with themed animations
+
+4. ENGINE 1: ONBOARDING ENGINE
+Purpose
+Convert 5 oblique psychological scenario questions into a fully structured player profile. Questions feel like a personality quiz — never reference learning, studying, or skills. The user reveals more because they don't know what they're revealing.
+Flow
+User Answers Q1–Q5
+        │
+        ▼
+  Answer Collector
+  (App formats JSON)
+        │
+        ▼
+  LLM Classification
+  (Gemini Flash via Edge Function)
+        │
+        ▼
+  Parse + Validate
+  (Zod schema check)
+        │
+        ▼
+  App Appends Scaffolding
+  (level, exp, tokens, etc.)
+        │
+        ▼
+  Write to Supabase → profiles table
+        │
+        ▼
+  Route to Profile Reveal screen
+The 5 Questions
+Q1 — Maps: Domain + Execution pattern
+"You have $10,000 land in your account with a note: 'spend it in 48 hours or lose it.' What actually happens?"
+Options:
+A — I buy tools, equipment, or resources for something I've been wanting to build
+B — I research obsessively for 47 hours and spend it in the last hour on exactly the right thing
+C — I invest it into something that will grow — money should make more money
+D — I create an experience — travel, document everything, make it unforgettable
+E — I split it between people I care about and something that matters to me
+F — I freeze. 48 hours passes. I probably lose it.
+Signal map: A=Technical/builder+high execution, B=Analytical+overthinking weakness, C=Strategic+long-term, D=Creative+experiential, E=Social domain, F=Low execution+fear_of_failure
+
+Q2 — Maps: Learning style + Behavior signature
+"A fire alarm goes off in a building you're in. False alarm. What were you doing before it pulled you away?"
+Options:
+A — Making or building something — I was deep in it and annoyed at the interruption
+B — Reading, watching, or consuming something that caught my attention earlier
+C — Talking to someone — it was actually a good conversation
+D — Organizing something, planning, mapping out an idea in my head or on paper
+E — On my phone, not doing much — I needed a break anyway
+F — Working toward something I set for myself — I was in a rare focused state
+Signal map: A=Practical learner+Technical/Creative, B=Analytical learner+curiosity, C=Social+Guided learner, D=Guided+Strategic, E=Inconsistency weakness, F=Exploratory+high consistency
+
+Q3 — Maps: Hidden strengths + Weakness signal + Domain
+"If you could wake up tomorrow with one of these and use it every single day — which one do you actually choose?"
+Options:
+A — The ability to learn any skill perfectly in one focused hour
+B — Knowing exactly why anything works the way it does, instantly
+C — Whatever I imagine comes out perfectly in real life — exactly as I pictured it
+D — Anyone I speak to understands me completely, no miscommunication ever
+E — I can see the single best decision to make in any situation before I make it
+F — I never forget anything I've ever experienced or learned
+Signal map: A=Execution-driven+Practical, B=Analytical+insight, C=Creative+imagination, D=Social+communication, E=Strategic+decision, F=Analytical+memory_crutch weakness
+
+Q4 — Maps: Consistency + Execution + Weakness signal
+"Completely free week. No obligations, no people expecting anything. By day 3 — what's honestly happening?"
+Options:
+A — I'm deep in something I started on day 1 and I haven't come up for air
+B — I've gone down five different rabbit holes and I'm somehow more tired than before
+C — I made a loose plan on day 1 and I'm roughly sticking to it, feels good
+D — Day 1 I had big plans. Day 3 I'm horizontal watching something I've already seen
+E — I've somehow ended up organizing things around other people — plans, hangouts, something social
+F — I started four things. Finished none. Classic.
+Signal map: A=High consistency+execution+flow, B=Exploratory+scattered_interests weakness, C=Guided+moderate consistency, D=Poor_focus+low execution, E=Social+externally motivated, F=Inconsistency weakness+starter-not-finisher
+
+Q5 — Maps: Behavior signature + Self-awareness + Social signals
+"Someone who genuinely knows you is describing you to a stranger. Which one lands closest to what they'd actually say?"
+Options:
+A — "Give them a problem. They'll figure it out — they always do somehow"
+B — "They know a little about everything and a lot about whatever they're obsessed with this month"
+C — "Full of ideas. Whether they do anything with them depends on the day"
+D — "Quietly gets things done. You won't hear about it until it's finished"
+E — "Brilliant but their own biggest obstacle — they overthink everything"
+F — "The most creative person I know — everything they touch has their fingerprint on it"
+Signal map: A=Problem-solver+execution+Analytical/Technical, B=Exploratory+scattered curious, C=Creative+inconsistency weakness, D=High execution+Strategic/Technical, E=Overthinking weakness+Analytical, F=Creative+strong identity
+Input Format
+{
+  "Q1": ["A"],
+  "Q2": ["F", "A"],
+  "Q3": ["B"],
+  "Q4": ["A"],
+  "Q5": ["D"]
+}
+Index 0 = primary (full weight), Index 1 = secondary (half weight)
+Onboarding LLM Prompt
+You are a behavioral classification engine for Zynth,
+a gamified adaptive growth system.
+You will receive answers to 5 situational scenario questions.
+These questions are deliberately psychological and oblique —
+they never mention learning, studying, or skills.
+The user answered honestly because they didn't know what was being measured.
+Your job: infer domain, profession, learning style, behavioral patterns,
+and weakness signals from the behavioral choices each answer reveals.
+Trust the psychology. Read between the lines.
+OUTPUT MUST BE VALID JSON ONLY.
+NO explanations. NO extra text. NO markdown code fences.
+───────────────────────────────────────────────
+INPUT FORMAT:
+Each question is an array of selected options.
+  Index 0 = primary choice (full weight)
+  Index 1 = secondary choice (half weight, if present)
+───────────────────────────────────────────────
+USER ANSWERS:
+{answers_json}
+───────────────────────────────────────────────
+CLASSIFICATION RULES:
+1. DOMAIN — assign ONE:
+   ANALYTICAL  → logic, reasoning, data, precision, pattern-finding
+   TECHNICAL   → building, systems, engineering, creating things
+   CREATIVE    → design, expression, content, imagination, aesthetics
+   SOCIAL      → communication, teaching, influence, connection
+   STRATEGIC   → planning, business, decision-making, systems thinking
+   Use signals from ALL 5 questions.
+   A person who chooses "investor" in Q1 but reveals
+   deep creative impulse in Q2–Q5 is CREATIVE, not STRATEGIC.
+   Behavior always outweighs stated preference.
+2. PROFESSION — specific aspirational title.
+   Not a category — a real job title the user would feel proud of.
+   Examples: "Software Developer", "Content Strategist",
+   "Data Analyst", "UX Designer", "AI Systems Builder",
+   "Brand Strategist", "Product Manager", "Educator"
+3. LEARNING STYLE — assign ONE:
+   Guided Learner      → needs structure, roadmaps, step-by-step
+   Practical Learner   → learns by doing, jumps straight in
+   Analytical Learner  → needs to understand WHY before HOW
+   Exploratory Learner → self-directed, resists rigid paths
+4. STATS — 6 total (4 core + 2 domain-specific):
+   Core stats: focus, consistency, adaptability, execution
+   Domain stats: pick 2 from the correct pool below
+   Rules:
+   - All 6 values between 4 and 10 (inclusive)
+   - No two stats share the same value (every profile unique)
+   - Total across all 6 stats: between 42 and 52
+   - Domain stats returned as: { "name": "", "value": 0 }
+   DOMAIN STAT POOLS:
+   ANALYTICAL: Logic, Reasoning, Analysis, Precision, Insight,
+               Memory, Pattern, Evaluation, Structure, Judgment
+   TECHNICAL:  Coding, Systems, Debugging, Architecture, Automation,
+               Efficiency, Scalability, Integration, Optimization, Engineering
+   CREATIVE:   Creativity, Imagination, Expression, Design, Storytelling,
+               Originality, Aesthetics, Innovation, Visualization, Artistry
+   SOCIAL:     Communication, Persuasion, Leadership, Empathy, Collaboration,
+               Influence, Networking, Clarity, Confidence, Engagement
+   STRATEGIC:  Planning, Strategy, Decision, Vision, Risk, Coordination,
+               Prioritization, Management, Analysis, Execution
+5. SKILLS — generate 3 to 5 starting skills:
+   - lowercase_underscore format (display layer adds spaces)
+   - Must reflect what this specific user is BEGINNING to develop
+   - Derived from behavioral signals, NOT stated preferences
+   - Examples: structured_thinking, rapid_prototyping,
+     persuasive_writing, debugging_intuition, systems_mapping
+6. BEHAVIOR SIGNATURE — compact lowercase_underscore label:
+   Captures HOW this person operates, not what they want.
+   Format: [speed]_[mode]_[trait] or [mode]_[trait]
+   Examples: fast_builder_low_consistency,
+   analytical_perfectionist, creative_explorer_scattered,
+   quiet_executor, social_connector_reactive
+7. WEAKNESS SIGNAL — the single biggest behavioral obstacle:
+   Examples: poor_focus, inconsistency, overthinking,
+   fear_of_failure, scattered_interests, laziness,
+   decision_paralysis, external_dependency
+8. DOMAIN CONFIDENCE — float 0.0 to 1.0
+   How confident are you in the domain assignment?
+   Mixed signals → lower confidence.
+───────────────────────────────────────────────
+OUTPUT (strict — no extra fields):
+{
+  "profession": "",
+  "domain": "",
+  "domain_confidence": 0.0,
+  "learning_style": "",
+  "behavior_signature": "",
+  "weakness_signal": "",
+  "stats": {
+    "focus": 0,
+    "consistency": 0,
+    "adaptability": 0,
+    "execution": 0,
+    "stat_5": { "name": "", "value": 0 },
+    "stat_6": { "name": "", "value": 0 }
+  },
+  "skills": [
+    { "name": "", "level": 1, "exp": 0 }
+  ]
+}
+App Scaffolding (appended by app — never from LLM)
+const scaffolding = {
+  user_id: userId,
+  level: 1,
+  exp: 0,
+  exp_to_next: 41,
+  prestige: 0,
+  prestige_exp_bonus: 1.0,
+  title: 'Initiate',
+  streak: 0,
+  streak_best: 0,
+  last_active: new Date().toISOString(),
+  tokens: 3,
+  xp_cards: 0,
+  xp_card_log: [],
+  swift_mode_unlocked: false,
+  quest_history: [],
+  behavior_log: [],
+  hidden_skills: [],
+  unlocks: [],
+  memory: {
+    milestones: [],
+    stat_history: [],
+    skill_history: [],
+    pattern_summary: null,
+    struggle_log: [],
+    personal_bests: {
+      highest_streak: 0,
+      most_exp_in_day: 0,
+      highest_skill_level: { name: '', level: 0 },
+      fastest_level_up: { from_level: 0, to_level: 0, quests_taken: 0 }
+    }
+  },
+  exploit_flags: [],
+  current_adaptive_state: 'optimal',
+  adaptive_state_updated_at: new Date().toISOString(),
+  continuous_profile_answers: [],
+  onboarding_stats: deepCopy(llmProfile.stats), // permanent floor
+  schema_version: 1,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+}
+
+5. ENGINE 2: QUEST GENERATION ENGINE
+Purpose
+Generate one personalized quest per day. Adapts to profile, adaptive state, difficulty, and quest type. LLM generates content. App resolves all logic.
+Quest Types
+Type
+Trigger
+Duration
+EXP Multiplier
+Tone
+calibration
+First quest only
+2–5 min
+1×
+Welcoming, observational
+daily
+Every day
+5–15 min
+1×
+Core habit loop
+mission
+Day 7 streak
+20–45 min
+3×
+Epic, multi-step, fully in-app
+challenge
+Level 10+, 20% chance
+15–30 min
+5×
+High stakes, deep
+hidden
+15% on Excellent grade
+Surprise
+2×
+Mysterious
+weakness
+3 consecutive Fails
+5–10 min
+1×
+Supportive, redemption
+prestige
+Level 100+, 10% chance
+30–45 min
+Massive
+Legendary, elite
+Non-negotiable rule: Every quest and mission is completed entirely inside the app in the text input in one sitting. The user never leaves the app to complete a task.
+Quest Type Resolver
+export function resolveQuestType(profile) {
+  const { quest_history, streak, level } = profile
+  // First quest ever → calibration
+  if (!quest_history || quest_history.length === 0) return 'calibration'
+  // Three consecutive Fails → weakness quest
+  const lastThree = quest_history.slice(-3)
+  if (lastThree.length === 3 && lastThree.every(q => q.grade === 'Fail')) {
+    return 'weakness'
+  }
+  // Weekly mission — streak multiple of 7
+  if (streak > 0 && streak % 7 === 0) {
+    const lastMission = [...quest_history].reverse()
+      .find(q => q.quest_type === 'mission')
+    if (!lastMission || daysSince(lastMission.completed_at) >= 7) {
+      return 'mission'
+    }
+  }
+  // Challenge — level 10+, 20% chance
+  if (level >= 10 && Math.random() < 0.20) return 'challenge'
+  // Hidden — 15% chance after last Excellent
+  const lastQuest = quest_history[quest_history.length - 1]
+  if (lastQuest?.grade === 'Excellent' && Math.random() < 0.15) return 'hidden'
+  // Prestige — level 100+, 10% chance
+  if (level >= 100 && Math.random() < 0.10) return 'prestige'
+  return 'daily'
+}
+export function calculateDifficulty(level) {
+  return Math.max(1, Math.ceil(level / 5))
+}
+Quest Generation Prompt
+You are the quest generation engine for Zynth,
+a gamified adaptive growth system.
+Generate ONE highly personalized quest for this user.
+OUTPUT MUST BE VALID JSON ONLY.
+NO explanations. NO extra text. NO markdown code fences.
+───────────────────────────────────────────────
+PLAYER PROFILE (compressed):
+{compressed_profile}
+QUEST TYPE: {quest_type}
+DIFFICULTY: {difficulty}
+ADAPTIVE STATE: {adaptive_state}
+───────────────────────────────────────────────
+ADAPTIVE INJECTION (follow this if present):
+{prompt_injection}
+───────────────────────────────────────────────
+IN-APP ONLY — NON-NEGOTIABLE RULE:
+Every quest must be completable entirely inside this app,
+in the text input box, in one sitting.
+NEVER ask the user to:
+- Build or code something outside the app
+- Record audio or video
+- Publish or share anything externally
+- Open another app or browser
+- Do research outside the app first
+ALL tasks must be one of:
+write · plan · explain · analyze · design · reflect ·
+break down · describe · map · argue · evaluate · draft
+REFRAME RULE — always apply this:
+BAD:  "Build a to-do app and share the link."
+GOOD: "Design a to-do app — components, data flow,
+       and user interactions — entirely in writing."
+BAD:  "Record a pitch for your idea."
+GOOD: "Write your pitch word for word, exactly as you'd say it out loud."
+BAD:  "Post content and share the link."
+GOOD: "Write the full piece of content right here, ready to post as-is."
+───────────────────────────────────────────────
+QUEST TYPE RULES:
+calibration: First quest. Difficulty 1. 2–5 min. Welcoming, observational. Completion = success.
+daily: 5–15 min. Single prompt. Achievable but requires genuine thought.
+mission: 20–45 min. Multi-step (3 steps max). Epic feel. Steps build on each other.
+challenge: 15–30 min. Single deep prompt. Genuinely difficult.
+hidden: Mysterious tone. Unexpected angle. Feels like a secret level.
+weakness: Difficulty-1. Addresses weakness_signal directly. Supportive, short.
+prestige: Level 100+. Legendary feel. Multi-step or ultra-deep.
+LEARNING STYLE FORMATS:
+Guided Learner      → step-by-step, clear criteria, no ambiguity
+Practical Learner   → action-first, specific task, minimal theory
+Analytical Learner  → explain the why, open-ended thinking required
+Exploratory Learner → broad prompt, freedom to interpret
+RULES:
+- description must feel personally written for this user
+- flavor_text: 1-sentence atmospheric line — like a quest board in an RPG
+- skills_targeted: actual skill names from the user's profile
+- Never use underscores in any display text
+- For mission and prestige: populate the steps array
+- For all other types: steps array is empty []
+OUTPUT:
+{
+  "quest_title": "",
+  "description": "",
+  "type": "",
+  "difficulty": 0,
+  "estimated_time": "",
+  "skills_targeted": [],
+  "success_criteria": "",
+  "hint": "",
+  "flavor_text": "",
+  "grading_type": "llm",
+  "steps": [
+    {
+      "step_number": 1,
+      "title": "",
+      "prompt": "",
+      "estimated_time": "",
+      "success_criteria": ""
+    }
+  ]
+}
+Adaptive State → Quest Modification
+State
+Difficulty Mod
+Quest Preference
+optimal
+0
+Normal resolver
+bored
++2
+challenge, hidden
+burned_out
+-1
+daily, short
+stagnant
+0
+varied format
+struggling
+-2
+weakness
+returning
+-1
+daily, warm
+peaking
++1
+challenge, mission
+
+6. ENGINE 3: GRADING ENGINE
+Grade Scale
+Grade
+Base EXP
+What it means
+Excellent
+15
+Depth, genuine effort, surprising quality
+Good
+9
+Meets criteria, solid work, minor gaps
+Basic
+6
+Partial effort, lacks depth
+Bad
+3
+Barely engages, minimal effort
+Fail
+0
+Empty, off-topic, no genuine attempt
+Streak EXP Multipliers
+Streak
+Multiplier
+Day 1–6
+1.0×
+Day 7
+1.5×
+Day 14
+1.75×
+Day 30
+2.0×
+Day 60
+2.5×
+Day 100
+3.0×
+Grading Prompt
+You are a mentor-evaluator inside Zynth,
+a gamified adaptive growth system.
+Evaluate the user's quest response and return structured feedback.
+The LLM NEVER controls numbers. Return signals only.
+OUTPUT MUST BE VALID JSON ONLY.
+NO explanations. NO extra text. NO markdown code fences.
+───────────────────────────────────────────────
+QUEST:
+{quest_object}
+USER RESPONSE:
+{user_response}
+PLAYER PROFILE (compressed):
+{compressed_profile}
+───────────────────────────────────────────────
+GRADING SCALE:
+  Excellent → Deep understanding, genuine effort, surprising quality
+  Good      → Meets success criteria, solid, minor gaps
+  Basic     → Partially meets criteria, effort but lacks depth
+  Bad       → Barely engages, significant misunderstanding
+  Fail      → Empty, off-topic, or no genuine attempt
+FEEDBACK RULES:
+  - feedback: 2–3 sentences. Reference what they actually wrote. No platitudes.
+  - mentor_line: ONE punchy line matching their behavior_signature tone.
+    fast_builder  → direct and charged
+    analytical    → thoughtful and precise
+    creative      → expressive and vivid
+    quiet_executor → calm and affirming
+  - strengths: specific things they did well in THIS response
+  - improvements: specific push-further notes. Constructive only.
+BEHAVIORAL SIGNALS (strings — never stat numbers):
+  response_depth:       thorough | adequate | shallow | rushed
+  domain_relevance:     high | medium | low
+  difficulty_handled:   exceeded | met | struggled
+  completion_quality:   strong | adequate | weak
+SKILL PROGRESS: Only skills the user actually engaged in this response.
+  exp_signal: high | medium | low (not a number)
+HIDDEN QUEST TRIGGER: true only on Excellent, ~15% of the time.
+SKILL EVOLUTION SIGNAL: skill name if 10th meaningful targeting. Else null.
+OUTPUT:
+{
+  "grade": "Excellent|Good|Basic|Bad|Fail",
+  "feedback": "",
+  "mentor_line": "",
+  "strengths": [],
+  "improvements": [],
+  "behavioral_signals": {
+    "response_depth": "",
+    "domain_relevance": "",
+    "difficulty_handled": "",
+    "completion_quality": ""
+  },
+  "skill_progress": [
+    { "name": "", "exp_signal": "high|medium|low" }
+  ],
+  "hidden_quest_triggered": false,
+  "skill_evolution_signal": null
+}
+EXP Calculation (App-Side)
+const GRADE_BASE_EXP = {
+  Excellent: 15, Good: 9, Basic: 6, Bad: 3, Fail: 0
+}
+export function calculateStreakMultiplier(streak) {
+  if (streak >= 100) return 3.0
+  if (streak >= 60)  return 2.5
+  if (streak >= 30)  return 2.0
+  if (streak >= 14)  return 1.75
+  if (streak >= 7)   return 1.5
+  return 1.0
+}
+export function calculateFinalEXP(grade, streak, prestigeBonus = 1.0) {
+  const base = GRADE_BASE_EXP[grade] || 0
+  return Math.round(base * calculateStreakMultiplier(streak) * prestigeBonus)
+}
+export function calculateExpToNext(level) {
+  return Math.round(30 * level * (1 + Math.log(level + 1)))
+}
+export function checkLevelUp(currentLevel, currentExp, addedExp) {
+  let level = currentLevel
+  let exp = currentExp + addedExp
+  let didLevelUp = false
+  while (true) {
+    const required = calculateExpToNext(level)
+    if (exp >= required) {
+      exp -= required
+      level++
+      didLevelUp = true
+    } else break
+  }
+  return {
+    didLevelUp,
+    newLevel: level,
+    newExp: exp,
+    newExpToNext: calculateExpToNext(level),
+    newTitle: didLevelUp ? getTitleForLevel(level) : null
+  }
+}
+Post-Grade 14-Step Pipeline (App Logic)
+Step 1:  Parse grade from LLM result
+Step 2:  Run anti-exploit check — apply EXP penalty if soft_block (×0.3)
+Step 3:  calculateFinalEXP(grade, streak, prestige_bonus)
+Step 4:  checkLevelUp(level, exp, earnedExp)
+Step 5:  updateStreak: if grade !== 'Fail' AND quest completed same day → streak++
+         updateTokens: if streak hits milestone AND tokens < 5 → tokens++
+Step 6:  Append to behavior_log (cap at 50, drop oldest)
+Step 7:  runStatEngine(updatedBehaviorLog)
+Step 8:  Apply stat deltas (floor = onboarding_stats values)
+Step 9:  updateSkillExp(skills, skill_progress from LLM)
+Step 10: checkSkillEvolution(skill_evolution_signal from LLM)
+Step 11: checkAchievements(updatedProfile)
+Step 12: awardXPCards(events triggered)
+Step 13: writeMemoryEvents(events)
+Step 14: checkProfessionEvolution(profile)
+         checkWeaknessOvercome(profile)
+         → Write ALL updates to Supabase in ONE atomic operation
+         → Queue event screens for UI
+
+7. ENGINE 4: BEHAVIORAL STAT ENGINE
+Philosophy
+Stats are not rewards. They are reflections.
+The system watches patterns over time, not individual events.
+You cannot grind stats. You have to actually change your behavior.
+Observation Windows
+Short window: last 5 quests  → catches recent behavior shifts
+Long window:  last 20 quests → catches deep habits
+The 6 Stats — Full Behavior Map
+FOCUS
+Behavior
+Effect
+Window
+response_depth 'thorough' (3+ of 5)
++1
+Short
+response_depth 'rushed' (3+ of 5)
+-1
+Short
+Excellent/Good pattern (4+ of 5)
++1
+Short
+Bad/Fail pattern (3+ of 5)
+-1
+Short
+CONSISTENCY
+Behavior
+Effect
+Window
+Streak milestones (7,14,30,60,100)
++2 to +5
+Event
+Completes same day (4+ of 5)
++1
+Short
+Skips without token (2+ of 5)
+-1
+Short
+Skips without token (3+ of 5)
+-2
+Short
+Returns after break + completes
++1
+Recovery
+ADAPTABILITY
+Behavior
+Effect
+Window
+difficulty_handled 'exceeded' (2+ of 5)
++1
+Short
+difficulty_handled 'struggled' (3+ of 5)
+-1
+Short
+Consistent across different quest types
++1
+Long
+EXECUTION
+Behavior
+Effect
+Window
+4+ completions in last 5
++1
+Short
+3 consecutive Fails
+-1
+Short
+completion_quality 'strong' (3+ of 5)
++1
+Short
+Weakness Stat Modifier
+const WEAKNESS_MAP = {
+  poor_focus: 'focus',
+  inconsistency: 'consistency',
+  overthinking: 'adaptability',
+  fear_of_failure: 'execution',
+  laziness: 'execution',
+  scattered_interests: 'adaptability',
+  decision_paralysis: 'adaptability',
+  external_dependency: 'consistency'
+}
+// If weakness stat would improve, reduce delta by 25%
+// Breaking your pattern is harder than building a new one
+if (weaknessStat && statDeltas[weaknessStat] > 0) {
+  statDeltas[weaknessStat] = Math.floor(statDeltas[weaknessStat] * 0.75)
+}
+Stat Floor Rule
+// Stats never go below onboarding_stats values
+// onboarding_stats is a frozen snapshot taken at profile creation
+const newValue = Math.max(
+  profile.onboarding_stats[statName],
+  profile.stats[statName] + delta
+)
+Skill EXP System
+const EXP_SIGNALS = { high: 20, medium: 10, low: 5 }
+export function calculateSkillExpToNext(skillLevel) {
+  return Math.round(3 * skillLevel * (1 + Math.log(skillLevel + 1)))
+}
+// Skill tiers
+// Level 1–3:   Tier 1 — Raw
+// Level 4–9:   Tier 2 — Developing
+// Level 10–24: Tier 3 — Proficient
+// Level 25–49: Tier 4 — Advanced
+// Level 50–99: Tier 5 — Expert
+// Level 100–199: Tier 6 — Mastery
+// Level 200+:  Tier 7 — Transcendent
+Weakness Overcome Detection
+const OVERCOME_THRESHOLD = 10 // positive signals in last 14 log entries
+export function checkWeaknessOvercome(profile) {
+  const weaknessStat = WEAKNESS_MAP[profile.weakness_signal]
+  if (!weaknessStat) return null
+  const last14 = profile.behavior_log.slice(-14)
+  const positiveSignals = last14.filter(e => {
+    if (weaknessStat === 'focus') return e.response_depth === 'thorough'
+    if (weaknessStat === 'consistency') return e.completedSameDay
+    if (weaknessStat === 'adaptability') return e.difficulty_handled === 'exceeded'
+    if (weaknessStat === 'execution') return e.completion_quality === 'strong'
+    return false
+  }).length
+  if (positiveSignals >= OVERCOME_THRESHOLD) {
+    return {
+      overcome: true,
+      stat: weaknessStat,
+      bonus: 3 // permanent +3 to that stat
+    }
+  }
+  return null
+}
+
+8. ENGINE 5: PROGRESSION ENGINE
+Level Titles
+Level Range
+Title
+1–4
+Initiate
+5–9
+Apprentice
+10–19
+Journeyman
+20–34
+Forgehand
+35–49
+Craftsman
+50–74
+Artisan
+75–99
+Specialist
+100–149
+Expert
+150–199
+Master
+200–299
+Grandmaster
+300–499
+Legendary
+500–999
+Mythic
+1000+
+LLM-generated unique legendary title
+Level Unlocks
+Level
+Unlock
+5
+Swift Mode
+10
+Challenge Quests
+20
+Memory Context injected into quests
+100
+Prestige available
+100
+Prestige Quests
+Prestige System
+Prestige = voluntary reset at Level 100
+Character level resets to 1
+Stats soft-reset to (onboarding_stats + 2 per prestige)
+Skills retain their evolution names but reset to Level 1
+prestige_exp_bonus += 0.25 per prestige (permanent EXP multiplier)
+prestige counter increments
+New prestige badge visible on profile
+
+9. ENGINE 6: HIDDEN SKILL ENGINE
+Philosophy
+Everyone has abilities they haven't named yet.
+Zynth watches for behavioral patterns the user
+doesn't know they're demonstrating.
+The discovery moment is designed to feel like revelation.
+Hidden Skill Pool
+Skill
+Domain
+Trigger Condition
+Systems Thinking
+ANALYTICAL
+References interconnected systems in 5+ responses
+Discipline
+Any
+30-day streak achieved
+Pattern Recognition
+ANALYTICAL
+Finds non-obvious patterns in 3+ analysis quests
+Mentorship
+SOCIAL
+Explains things to others in 4+ responses
+Leadership
+SOCIAL
+Takes initiative / proposes direction in 5+ responses
+Resilience
+Any
+Excellent grade after 3+ consecutive Fails
+Creative Synthesis
+CREATIVE
+Combines unrelated concepts in 3+ responses
+Product Thinking
+STRATEGIC
+Balances user, business, tech in 3+ responses
+Operations
+STRATEGIC
+Plans logistics/workflows in 4+ responses
+Deep Focus
+Any
+5+ 'thorough' response depths in a row
+Discovery Flow
+Hidden Skill Signal Detected (by App)
+        │
+        ▼
+  Confirm threshold met
+        │
+        ▼
+  Call LLM for discovery message
+        │
+        ▼
+  Award 5 XP Cards
+        │
+        ▼
+  Add to profile.hidden_skills as discovered
+        │
+        ▼
+  Queue Hidden Skill Discovery event screen
+Discovery Message Prompt
+A user just discovered a hidden skill in Zynth.
+Write a 2–3 sentence discovery message that feels like
+uncovering something that was always there.
+Tone: revelatory, personal, slightly mysterious.
+User profession: {profession}
+User behavior signature: {behavior_signature}
+Discovered skill: {skill_name}
+Return ONLY the message text. Nothing else.
+Profile UI Representation
+HIDDEN SKILLS
+  DISCOVERED
+  ├── Systems Thinking  Lv 1  [teal]
+  └── Discipline        Lv 3  [teal]
+  UNKNOWN
+  ├── ???
+  ├── ???
+  └── ???
+The ??? slots are always visible from day one.
+The user knows something is there.
+That ambient tension makes the reveal land harder.
+
+10. ENGINE 7: ANTI-EXPLOITATION ENGINE
+Philosophy
+The system must be harder to fool than to use honestly.
+Detection is invisible to legitimate users.
+Never tell users exactly what triggered a flag.
+Detection Patterns
+Pattern
+Threshold
+Severity
+RAPID_SUBMISSION < 30s
+Immediate
+soft_block
+RAPID_SUBMISSION < 60s
+Immediate
+warn
+LOW_EFFORT (< 50 chars)
+Immediate
+warn
+DUPLICATE_RESPONSE (>85% similar to last 5)
+Immediate
+hard_block
+LOW_EFFORT_PATTERN (3+ weak in 7 quests)
+7 quests
+soft_block
+STREAK_ABUSE (Bad/Fail 5+ days + <90s submit)
+7 quests
+hard_block
+Consequence Ladder
+Level
+Action
+User Sees
+warn
+Log only, no penalty
+Nothing
+soft_block
+EXP × 0.3, strict grader injected
+Nothing
+hard_block
+Quest rejected
+Vague "try again" message
+ban_review
+3+ hard_blocks in 7 days
+Nothing (flagged internally)
+Grader Injection (appended silently on soft_block)
+IMPORTANT: This response has been flagged for low engagement signals.
+Apply strict grading criteria.
+Only award Excellent or Good if the response demonstrates genuine
+personal engagement, specific examples, and depth beyond the obvious.
+A response that barely meets surface criteria should receive Basic or Bad.
+
+11. ENGINE 8: CONTEXT COMPRESSION ENGINE
+Token Budgets
+Call Type
+Max Input Tokens
+quest_generation
+800
+grading
+600
+hidden_skill_detection
+400
+skill_evolution_naming
+200
+behavior_summary
+300
+daily_profile_question
+150
+Compression Map
+Raw Data
+Compressed To
+Full behavior_log (50 events)
+2-sentence summary (cached every 10 quests)
+Full quest_history
+Last 5 grades + dominant grade
+Full skills array
+"skill_name (LvN)" comma-separated
+Stats with metadata
+name:value pairs only
+Hidden skills
+Discovered names only
+Memory object
+Max 5 key facts (Level 20+ only)
+Continuous profile answers
+Last 10 most distinctive answers
+export function buildCompressedContext(profile, purpose) {
+  const base = {
+    profession: profile.profession,
+    domain: profile.domain,
+    behavior_signature: profile.behavior_signature,
+    weakness_signal: profile.weakness_signal,
+    level: profile.level,
+    stats: compressStats(profile.stats)
+  }
+  if (purpose === 'quest_generation') {
+    return {
+      ...base,
+      skills: compressSkills(profile.skills),
+      hidden_skills_discovered: profile.hidden_skills
+        .filter(s => s.discovered).map(s => s.name),
+      recent_performance: profile.quest_history.slice(-5).map(q => q.grade),
+      memory_context: profile.level >= 20 ? buildMemoryContext(profile) : null,
+      continuous_profile_insights: buildProfileInsights(profile)
+    }
+  }
+  if (purpose === 'grading') {
+    return {
+      ...base,
+      skills: compressSkills(profile.skills),
+      recent_grades: profile.quest_history.slice(-5).map(q => q.grade)
+    }
+  }
+}
+
+12. ENGINE 9: MEMORY ENGINE
+Memory Schema
+const MEMORY_SCHEMA = {
+  milestones: [
+    { type: 'first_excellent', quest_title: '', at_level: 0, date: '' },
+    { type: 'first_skill_evolution', from_skill: '', to_skill: '', at_level: 0, date: '' },
+    { type: 'longest_streak', streak_days: 0, date: '' },
+    { type: 'first_hidden_skill', skill: '', at_level: 0, date: '' },
+    { type: 'profession_evolution', from: '', to: '', at_level: 0, date: '' },
+    { type: 'prestige', prestige_number: 0, date: '' },
+    { type: 'weakness_overcome', weakness: '', stat: '', at_level: 0, date: '' }
+  ],
+  stat_history: [
+    { at_level: 10, stats: {}, date: '' }
+    // snapshot every 10 levels
+  ],
+  skill_history: [
+    { skill_name: '', evolutions: [], current_level: 0 }
+  ],
+  pattern_summary: null, // 2-sentence LLM summary, updated every 20 quests
+  struggle_log: [
+    { quest_type: '', domain: '', fail_count: 0, eventually_passed: false }
+  ],
+  personal_bests: {
+    highest_streak: 0,
+    most_exp_in_day: 0,
+    highest_skill_level: { name: '', level: 0 },
+    fastest_level_up: { from_level: 0, to_level: 0, quests_taken: 0 }
+  }
+}
+Memory Write Events
+Event
+What Gets Written
+first_excellent
+Quest title + level (once ever)
+skill_evolution
+Old name, new name, level
+level_milestone
+Full stat snapshot every 10 levels
+streak_broken
+Save to personal_bests first
+quest_failed
+Add to struggle_log
+hidden_skill_discovered
+Skill name, level at discovery
+profession_evolution
+From, to, triggering skills
+prestige
+Prestige number
+weakness_overcome
+Weakness signal, stat boosted, level
+
+13. ENGINE 10: ECONOMY ENGINE
+Two Currencies
+◈  SKIP TOKENS — earned through consistency
+⬡  XP CARDS   — earned through performance
+Skip Token Rules
+Rule
+Value
+Starting balance
+3
+Max held
+5
+Earn rate
+1 per 7-day streak milestone
+Expiry
+Never
+Cost: skip quest
+1 token
+Cost: Swift Mode early (before Lv5)
+2 tokens
+XP Card Rules
+Rule
+Value
+Starting balance
+0
+Max held
+20
+Expiry
+30 days from earn date
+Cost: retest
+2 cards
+Cost: reduce difficulty
+1 card
+Cost: hint upgrade
+1 card
+Cost: bonus quest
+3 cards
+XP Card Earn Events
+Event
+Cards
+Grade: Excellent
+1
+First Excellent ever
+3
+Mission complete
+2
+Challenge Quest complete
+3
+Hidden skill discovered
+5
+7-day streak
+1
+30-day streak
+3
+100-day streak
+10
+Skill evolution
+2
+Level milestone (every 5 levels)
+1
+Prestige
+15
+Weakness overcome
+5
+Achievement unlocked
+1
+
+14. ENGINE 11: ACHIEVEMENT ENGINE
+Philosophy
+Achievements are not participation trophies.
+They are discovered, not unlocked.
+The best ones the user will never see coming.
+Achievement Library
+ID
+Name
+Condition
+Rarity
+XP Cards
+Visible
+first_flame
+First Flame
+3-day streak
+Common
+0
+Yes
+week_forged
+Week Marked
+7-day streak
+Common
+1
+Yes
+century_streak
+Century
+100-day streak
+Legendary
+10
+Yes
+first_excellent
+Sharp
+First Excellent
+Common
+1
+Yes
+flawless_week
+Flawless Week
+Excellent/Good all 7 days
+Rare
+3
+Hidden
+comeback_king
+Comeback
+Excellent right after Fail
+Rare
+2
+Hidden
+apprentice
+Apprentice
+Reach Level 5
+Common
+0
+Yes
+triple_digits
+Triple Digits
+Reach Level 100
+Legendary
+15
+Yes
+prestige_one
+Reborn
+First Prestige
+Legendary
+15
+Yes
+first_evolution
+Metamorphosis
+First skill evolution
+Uncommon
+2
+Yes
+master_tier
+Mastery
+Tier 6 on any skill
+Legendary
+10
+Yes
+shadow_talent
+Shadow Talent
+First hidden skill
+Rare
+5
+Slot visible
+triple_shadow
+???
+3 hidden skills
+Legendary
+8
+Fully hidden
+silent_discipline
+???
+30 quests without Swift Mode
+Rare
+4
+Fully hidden
+the_patient
+???
+Fail 3×, then Excellent 4th
+Legendary
+6
+Fully hidden
+
+15. ENGINE 12: ADAPTIVE INTELLIGENCE ENGINE
+State Machine
+                ┌─────────────┐
+                │   OPTIMAL   │ ← default state
+                └──────┬──────┘
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+          ▼            ▼            ▼
+        BORED      STAGNANT    BURNED_OUT
+       (too easy)  (plateau)   (too hard)
+          │                        │
+          │            ▼           │
+          │        STRUGGLING      │
+          │        (failing a lot) │
+          │                        │
+          └──────────┬─────────────┘
+                     │
+          RETURNING  │  PEAKING
+          (came back)│  (on a roll)
+State Detection
+export function detectUserState(profile) {
+  const recentLog    = profile.behavior_log.slice(-10)
+  const recentGrades = profile.quest_history.slice(-7).map(q => q.grade)
+  const daysSinceActive = daysSince(profile.last_active)
+  const scores = {
+    bored: 0, burned_out: 0, stagnant: 0,
+    struggling: 0, returning: 0, peaking: 0, optimal: 0
+  }
+  // BORED
+  const excellentTrail = getTrailingCount(recentGrades, 'Excellent')
+  if (excellentTrail >= 5) scores.bored += 3
+  const rushed = recentLog.filter(e => e.response_depth === 'rushed').length
+  if (rushed >= 3) scores.bored += 2
+  // BURNED_OUT
+  const failCount = recentGrades.filter(g => g === 'Fail').length
+  if (failCount >= 3) scores.burned_out += 3
+  if (daysSinceActive >= 2 && daysSinceActive < 7) scores.burned_out += 2
+  // STAGNANT
+  const basicCount = recentGrades.filter(g => g === 'Basic').length
+  if (basicCount >= 4) scores.stagnant += 2
+  // STRUGGLING
+  if (failCount >= 4) scores.struggling += 4
+  const badCount = recentGrades.filter(g => g === 'Bad').length
+  if (badCount + failCount >= 5) scores.struggling += 3
+  // RETURNING
+  if (daysSinceActive >= 3) scores.returning += 5
+  // PEAKING
+  if (excellentTrail >= 3 && profile.streak >= 7) scores.peaking += 4
+  scores.optimal += 1
+  const dominant = Object.entries(scores).sort(([,a],[,b]) => b - a)[0]
+  return { state: dominant[0], confidence: dominant[1] }
+}
+State Prompt Injections
+BORED:
+  "This user is showing boredom signals — too many easy Excellents.
+   Generate a quest that genuinely challenges them.
+   Push the difficulty. Make them think harder than usual."
+BURNED_OUT:
+  "This user is showing burnout signals — recent failures, reduced engagement.
+   Generate a shorter, more achievable quest. Tone: supportive.
+   Goal is to rebuild momentum, not challenge further."
+STAGNANT:
+  "This user has plateaued. Generate a quest that approaches their
+   skills from a completely different angle. Break the format pattern."
+STRUGGLING:
+  "This user is struggling significantly. Be gentle.
+   Generate the simplest possible version of a quest in their domain.
+   This quest should feel winnable."
+RETURNING:
+  "This user is returning after an absence.
+   Generate a re-entry quest that feels like a warm welcome back.
+   Make them feel like the system remembers them. Keep it short."
+PEAKING:
+  "This user is on a peak run — excellent grades, strong streak.
+   Match their energy. Raise the stakes slightly.
+   Make this feel like a chapter boss fight."
+
+16. ENGINE 13: CONTINUOUS PROFILING ENGINE
+Philosophy
+Onboarding gives Zynth a starting point.
+Engine 13 never stops refining it.
+Every day, one oblique psychological question is asked.
+The user thinks it's a fun personality prompt.
+Zynth is building the most accurate behavioral model
+it has ever seen of this person.
+By day 365, the profile is unrecognizable from day 1.
+Every quest feels more personal than the last.
+Daily Question Flow
+User opens app
+        │
+        ▼
+  Energy Check-in (HIGH / MID / LOW)
+  [feeds Adaptive Intelligence Engine]
+        │
+        ▼
+  Daily Profiling Question
+  [one question, one tap answer]
+        │
+        ▼
+  Answer stored in continuous_profile_answers[]
+        │
+        ▼
+  Engine 8 compresses into profile insights
+        │
+        ▼
+  Quest generation uses enriched profile
+Question Rules
+- One question per day
+- Always oblique — NEVER mention learning, skills, studying, growth
+- Options must be mutually exclusive and revealing
+- No option should feel obviously "better" than others
+- User can skip (single tap) — skip itself is logged as a signal
+- Questions rotate through categories, tracking what's already known
+- After 30 questions: re-ask calibration questions to detect drift
+Question Categories and Rotation
+Category
+What it mines
+Frequency
+Time & environment
+When/where they operate best
+Weekly
+Mood & energy
+What conditions produce best work
+Weekly
+Social context
+Solo vs collaborative preference
+Bi-weekly
+Risk tolerance
+Conservative vs exploratory
+Bi-weekly
+Emotional regulation
+Response to failure, pressure
+Bi-weekly
+Ambition signals
+Short vs long term thinking
+Monthly
+Identity shifts
+How they see themselves changing
+Monthly
+Preference drift
+Re-check established assumptions
+Every 30 days
+Example Daily Questions
+Time & Environment: "Pick the version of your day where you'd get the most done:"
+A — Starting at 5am before the world wakes up
+B — Deep afternoon, after everything's been figured out for the day
+C — Late at night when no one can interrupt
+D — Honestly? I'm equally useless at all of them
+Risk & Curiosity: "You find an unmarked door in a building you know well. Do you open it?"
+A — Immediately. Obviously.
+B — Only if I can figure out what's behind it first
+C — I note that it's there and move on
+D — I'd probably mention it to someone else and let them decide
+Emotional Regulation: "Someone cancels plans on you last minute. Your honest first reaction:"
+A — Relief, honestly
+B — Annoyed — I had organized around this
+C — I immediately start filling the time with something useful
+D — I check in to make sure they're okay first
+Ambition Signals: "A stranger offers you: take $5,000 now, or wait 2 years for $50,000. You:"
+A — Take the $5,000. The future is uncertain.
+B — Wait for the $50,000. The math is obvious.
+C — Ask a hundred questions before deciding anything
+D — Depends entirely on what I need right now
+Identity: "Which version of 'successful' actually sounds appealing to you:"
+A — Known by a small group as genuinely exceptional
+B — Widely recognized for something that matters
+C — Financially free to do whatever I want
+D — I don't think about it that way — I just want to feel good about my days
+Daily Question Generation Prompt
+Generate one oblique psychological scenario question for Zynth's
+daily profiling system.
+RULES:
+- NEVER mention learning, studying, skills, growth, productivity,
+  goals, self-improvement, or anything related to the app's purpose
+- The question must feel like a fun personality curiosity
+- Options must be mutually exclusive and genuinely revealing
+- No option should feel obviously "better" than others
+- The question fits this category: {category}
+- Avoid repeating themes from these recent questions: {recent_themes}
+OUTPUT FORMAT (JSON only, no markdown):
+{
+  "question": "",
+  "options": [
+    { "key": "A", "label": "" },
+    { "key": "B", "label": "" },
+    { "key": "C", "label": "" },
+    { "key": "D", "label": "" }
+  ],
+  "category": "",
+  "signals_mined": ""
+}
+
+17. LEADERBOARD SYSTEM
+Philosophy
+Competition makes growth personal.
+The leaderboard doesn't just show who's winning —
+it gives everyone a reason to keep climbing.
+Every position matters. Not just the top 10.
+Leaderboard Tiers
+Leaderboard
+Scope
+Basis
+Local
+Same city/region
+Cumulative EXP
+State
+Same state/province
+Cumulative EXP
+National
+Same country
+Cumulative EXP
+Global
+Worldwide
+Cumulative EXP
+Each leaderboard has two views:
+By Skill Category — compete only against users in same domain (TECHNICAL, CREATIVE, etc.)
+All Skills — compete against everyone regardless of domain
+Leaderboard → Profession Evolution Link
+Climbing the cumulative skill leaderboard can trigger profession evolution.
+Top 25% in your skill category  → eligible for Senior tier profession
+Top 10% in your skill category  → eligible for Lead tier profession
+Top 5% globally in your category → eligible for Principal/Director tier
+Examples:
+  Software Developer + Top 10% TECHNICAL → Senior Software Developer
+  Content Creator + Top 25% CREATIVE     → Senior Content Creator
+  Designer + Top 5% globally             → Creative Director
+This is ONE path to profession evolution.
+Hidden skill discovery remains the other path.
+Neither gates the other.
+Leaderboard Calculation
+// Calculated server-side via Supabase Edge Function
+// Runs once per day at midnight UTC
+export async function calculateLeaderboards() {
+  // 1. Fetch all profiles with cumulative_exp > 0
+  // 2. Group by domain (for skill category boards)
+  // 3. Rank by cumulative_exp within each group
+  // 4. Rank by cumulative_exp across all groups (global)
+  // 5. Determine local/state/national scope from user location (optional — can prompt)
+  // 6. Cache results in leaderboard_cache table
+  // 7. Update profession evolution eligibility flags
+}
+Privacy Rules
+- Display: first name + last initial only ("Marcus T.")
+- No email, no full name, no location below national level
+- User can opt out of leaderboard entirely in Settings
+- Opt-out does not affect any other mechanic
+
+18. THE ADDICTION LAYER
+The Four Hooks
+1. VARIABLE REWARDS
+   Hidden quests (15% chance on Excellent)
+   Surprise EXP multipliers on streaks
+   Random hidden skill unlock events
+   ??? slots visible but unrevealed
+   Daily profiling question reveals something new about you
+2. IMMEDIATE FEEDBACK
+   Grade card flips instantly after submit
+   EXP bar animates in real time
+   Stats pulse on change
+   Mentor line hits before feedback paragraph
+   Character visually reacts to grade
+3. PROGRESS ALWAYS VISIBLE
+   Level + EXP bar always on screen
+   Streak flame always visible
+   Skills show individual level bars
+   Mark map shows how far you've come
+4. SUNK COST + IDENTITY
+   Behavior signature updates as you grow
+   Skills evolve with unique names you earned
+   Titles change and feel earned
+   Character reacts to your absence
+   The profile is YOU — not a game avatar
+Character Reaction System
+Character visual state changes based on engagement:
+ACTIVE (completed quest today): Character glows, full color, particles
+STREAK (7+ days): Amber aura, stands taller
+PEAK (3+ Excellents): Golden particles, animated
+ABSENT (3+ days): Character dims, slightly desaturated
+LONG ABSENT (7+ days): Character faded, sitting posture
+JUST LEVELED UP: Scale animation, burst of light on open
+WEAKNESS OVERCOME: Aura color changes to domain color permanently
+Immediate Reward Moments
+Moment
+Animation
+Quest submitted
+"Evaluating..." pulse 1.5s
+Grade reveal
+Card flip + color burst
+EXP earned
+Counter animates up
+Level up
+Number explodes large
+Skill evolution
+Old name strikes, new fades in
+Hidden skill
+Full screen typewriter reveal
+Streak milestone
+Flame grows, multiplier badge drops
+Achievement
+Badge materializes with particle burst
+Mark completed on roadmap
+Node fills, path segment illuminates
+
+19. DATABASE SCHEMA
+-- ─── PROFILES ────────────────────────────────────────────────────
+CREATE TABLE profiles (
+  id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                       UUID REFERENCES auth.users(id) UNIQUE,
+  -- Identity
+  profession                    TEXT NOT NULL,
+  domain                        TEXT NOT NULL,
+  domain_confidence             FLOAT,
+  learning_style                TEXT NOT NULL,
+  behavior_signature            TEXT NOT NULL,
+  weakness_signal               TEXT,
+  title                         TEXT DEFAULT 'Initiate',
+  schema_version                INTEGER DEFAULT 1,
+  -- Progression
+  level                         INTEGER DEFAULT 1,
+  exp                           INTEGER DEFAULT 0,
+  exp_to_next                   INTEGER DEFAULT 41,
+  cumulative_exp                INTEGER DEFAULT 0,
+  prestige                      INTEGER DEFAULT 0,
+  prestige_exp_bonus            FLOAT DEFAULT 1.0,
+  -- Engagement
+  streak                        INTEGER DEFAULT 0,
+  streak_best                   INTEGER DEFAULT 0,
+  last_active                   TIMESTAMPTZ DEFAULT NOW(),
+  tokens                        INTEGER DEFAULT 3,
+  xp_cards                      INTEGER DEFAULT 0,
+  xp_card_log                   JSONB DEFAULT '[]',
+  swift_mode_unlocked           BOOLEAN DEFAULT FALSE,
+  current_adaptive_state        TEXT DEFAULT 'optimal',
+  adaptive_state_updated_at     TIMESTAMPTZ DEFAULT NOW(),
+  -- JSON blobs
+  stats                         JSONB NOT NULL,
+  onboarding_stats              JSONB NOT NULL,
+  skills                        JSONB DEFAULT '[]',
+  hidden_skills                 JSONB DEFAULT '[]',
+  behavior_log                  JSONB DEFAULT '[]',
+  behavior_summary_cache        TEXT,
+  behavior_summary_quest_count  INTEGER DEFAULT 0,
+  unlocks                       JSONB DEFAULT '[]',
+  quest_history                 JSONB DEFAULT '[]',
+  exploit_flags                 JSONB DEFAULT '[]',
+  memory                        JSONB DEFAULT '{}',
+  continuous_profile_answers    JSONB DEFAULT '[]',
+  -- Leaderboard
+  leaderboard_opt_out           BOOLEAN DEFAULT FALSE,
+  display_name                  TEXT,
+  -- Character
+  character_name                TEXT,
+  character_gender              TEXT,
+  character_avatar              TEXT,
+  created_at                    TIMESTAMPTZ DEFAULT NOW(),
+  updated_at                    TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── QUESTS ──────────────────────────────────────────────────────
+CREATE TABLE quests (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             UUID REFERENCES auth.users(id),
+  quest_data          JSONB NOT NULL,
+  quest_type          TEXT NOT NULL,
+  difficulty          INTEGER NOT NULL,
+  status              TEXT DEFAULT 'active',
+  is_multi_step       BOOLEAN DEFAULT FALSE,
+  steps               JSONB DEFAULT '[]',
+  step_responses      JSONB DEFAULT '[]',
+  current_step        INTEGER DEFAULT 0,
+  response            TEXT,
+  grade               TEXT,
+  points              INTEGER,
+  exp_earned          INTEGER,
+  behavioral_signals  JSONB,
+  swift_mode_used     BOOLEAN DEFAULT FALSE,
+  retest_count        INTEGER DEFAULT 0,
+  created_at          TIMESTAMPTZ DEFAULT NOW(),
+  completed_at        TIMESTAMPTZ
+);
+-- ─── EVENTS ──────────────────────────────────────────────────────
+CREATE TABLE events (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users(id),
+  event_type  TEXT NOT NULL,
+  payload     JSONB,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── EXPLOIT LOG ─────────────────────────────────────────────────
+CREATE TABLE exploit_log (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users(id),
+  flag_type   TEXT NOT NULL,
+  severity    TEXT NOT NULL,
+  payload     JSONB,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── HIDDEN SKILL SIGNALS ────────────────────────────────────────
+CREATE TABLE hidden_skill_signals (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users(id),
+  signal_type TEXT NOT NULL,
+  signal_data JSONB,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── PROFESSION EVOLUTIONS ───────────────────────────────────────
+CREATE TABLE profession_evolutions (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           UUID REFERENCES auth.users(id),
+  from_profession   TEXT,
+  to_profession     TEXT,
+  triggering_skills JSONB,
+  trigger_type      TEXT, -- 'hidden_skills' or 'leaderboard'
+  evolved_at        TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── LEADERBOARD CACHE ───────────────────────────────────────────
+CREATE TABLE leaderboard_cache (
+  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  board_type   TEXT NOT NULL, -- 'global_all', 'global_technical', etc.
+  user_id      UUID REFERENCES auth.users(id),
+  display_name TEXT,
+  rank         INTEGER,
+  score        INTEGER,
+  domain       TEXT,
+  level        INTEGER,
+  streak       INTEGER,
+  updated_at   TIMESTAMPTZ DEFAULT NOW()
+);
+-- ─── DAILY PROFILE QUESTIONS ─────────────────────────────────────
+CREATE TABLE daily_profile_questions (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID REFERENCES auth.users(id),
+  question    TEXT NOT NULL,
+  options     JSONB NOT NULL,
+  category    TEXT NOT NULL,
+  answer_key  TEXT,
+  skipped     BOOLEAN DEFAULT FALSE,
+  asked_at    TIMESTAMPTZ DEFAULT NOW(),
+  answered_at TIMESTAMPTZ
+);
+-- ─── INDEXES ─────────────────────────────────────────────────────
+CREATE INDEX idx_quests_user_id       ON quests(user_id);
+CREATE INDEX idx_quests_status        ON quests(status);
+CREATE INDEX idx_events_user_id       ON events(user_id);
+CREATE INDEX idx_events_type          ON events(event_type);
+CREATE INDEX idx_hss_user_id          ON hidden_skill_signals(user_id);
+CREATE INDEX idx_leaderboard_type     ON leaderboard_cache(board_type);
+CREATE INDEX idx_leaderboard_rank     ON leaderboard_cache(rank);
+CREATE INDEX idx_dpq_user_id          ON daily_profile_questions(user_id);
+CREATE INDEX idx_profiles_cumexp      ON profiles(cumulative_exp DESC);
+-- ─── ROW LEVEL SECURITY ──────────────────────────────────────────
+ALTER TABLE profiles               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quests                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exploit_log            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE hidden_skill_signals   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profession_evolutions  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_profile_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leaderboard_cache      ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own_profile"    ON profiles               FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_quests"     ON quests                 FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_events"     ON events                 FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_exploits"   ON exploit_log            FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_hss"        ON hidden_skill_signals   FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_evolutions" ON profession_evolutions  FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "own_dpq"        ON daily_profile_questions FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "read_leaderboard" ON leaderboard_cache    FOR SELECT USING (true);
+
+20. LLM VS APP RESPONSIBILITY SPLIT
+Task
+Owner
+Quest content generation
+LLM
+Quest type resolution
+App
+Difficulty calculation
+App
+Response grading (quality)
+LLM
+Behavioral signal extraction
+LLM (strings only)
+EXP calculation
+App
+Streak multiplier
+App
+Level-up check
+App
+Stat adjustments
+App (from LLM signals)
+Skill EXP updates
+App
+Skill evolution naming
+LLM
+Hidden skill detection
+App (pattern matching)
+Hidden skill discovery message
+LLM
+Achievement checking
+App
+Anti-exploit detection
+App
+Context compression
+App
+Behavior summary
+LLM (cached every 10 quests)
+Memory writes
+App
+Economy transactions
+App
+Adaptive state detection
+App
+Prompt injection
+App
+Leaderboard calculation
+App (Edge Function)
+Daily profiling question
+LLM (generated) + App (stores + interprets)
+Profession evolution check
+App
+Legendary title (Lv1000+)
+LLM
+All number changes
+App — NEVER LLM
+
+21. TECH STACK
+Layer
+Tool
+Purpose
+Cost
+Framework
+Next.js 14 (App Router)
+Web app
+Free
+Hosting
+Vercel
+Deployment, edge functions
+Free tier
+Database + Auth
+Supabase
+Postgres + auth + real-time
+Free tier
+LLM Primary
+Gemini Flash
+Quest gen + grading
+Free tier
+LLM Fallback
+Groq (Llama 3.3 70B)
+All tasks on Gemini failure
+Free
+LLM Fallback 2
+Hugging Face
+Simple tasks only
+Free tier
+Styling
+Tailwind CSS
+UI styling
+Free
+Animation
+Framer Motion
+Page transitions + animations
+Free
+State
+Zustand
+Global state management
+Free
+Validation
+Zod
+LLM output schema validation
+Free
+Code editor
+Claude Code (CLI)
+AI-assisted development
+API usage
+
+22. UI SPECIFICATION
+Visual Identity
+Dark cinematic. Synthesis aesthetic. Every screen should feel alive — like a world that knows you're in it.
+Color Palette
+Element
+Color
+Background
+#0D0D14
+Surface
+#13131F
+Border
+#2A2A3A
+Amber (CTA, streak, active)
+#C87D2F
+Purple (level, EXP bar)
+#534AB7
+Teal (success, Good grade, hidden skills)
+#1D9E75
+Coral (Creative domain)
+#C85A3A
+Blue (Analytical domain)
+#3A7BC8
+Text Primary
+#E8E6F0
+Text Muted
+#8888A0
+Text Dim
+#4A4A60
+Gold (Excellent grade)
+#FFD700
+Red (Fail grade)
+#C83A3A
+Orange (Bad grade)
+#C86A2F
+Domain Color Mapping
+Domain
+Color
+TECHNICAL
+Purple #534AB7
+CREATIVE
+Coral #C85A3A
+ANALYTICAL
+Blue #3A7BC8
+SOCIAL
+Teal #1D9E75
+STRATEGIC
+Amber #C87D2F
+Typography Rules
+UI text:              system sans-serif
+Skill names:          monospace, amber
+Behavior signature:   monospace, amber
+Flavor text:          italic, amber-dimmed
+Grade reveal mentor:  large, bold, white
+No underscores visible anywhere in UI — all skill names display with spaces
+Learning style: NEVER shown in UI — backend only
+Grade reveal: arrow ↑↓ only — no "+1" number labels
+Animation Rules (Framer Motion)
+Page transitions:     350ms ease-in-out
+Dashboard → Mark Map: simultaneous slide (left out, right in)
+Quest screen:         slide up from bottom (covers entire viewport)
+Grade reveal:         cross-fade over quest screen
+Event screens:        full page replacements
+Card flip:            3D rotateY 180deg, 400ms
+EXP bar fill:         spring animation, 600ms
+Stat pulse:           scale 1.0 → 1.15 → 1.0, 300ms
+Typewriter text:      15ms per character
+Skill tags float in:  staggered 200ms, translateY from +20 to 0
+Level number:         count-up animation, 800ms
+Particle burst:       8–12 dots, radiate from center, 600ms
+Character glow:       CSS filter glow, 2s pulse loop
+Screen Specifications
+SPLASH
+Background: #0A0A0F full screen
+Center: "ZYNTH" in large amber bold + tagline "Synthesize yourself. Reach your zenith." in muted
+3–5 floating amber particles (CSS keyframes, infinite)
+1.8s auto-advance → auth check
+DASHBOARD
+NAV: 5-tab bottom nav always visible
+TOP BAR:
+  Left: Level badge (purple pill) + title (amber)
+  Right: streak flame + count (amber) or dim dash
+  Below: thin EXP progress bar (amber fill, purple track)
+DAILY POP-UP (overlay, dismisses after answering):
+  Energy check-in: HIGH ⚡ / MID 〰️ / LOW 🌙
+  Daily profiling question (one question, one tap)
+  Both dismissible separately
+CHARACTER AREA:
+  Center: character silhouette reacting to current state
+  Domain color aura based on domain
+  Visual states: active/streak/peak/absent/returning
+QUEST CARD (amber border):
+  Flavor text: italic, amber, 1 line
+  Quest title: large white bold
+  Difficulty pips: ◆ amber filled, ◇ dim (max 5)
+  Estimated time + quest type badge
+  Skill tags (spaces not underscores)
+  "Begin Quest →" CTA button (full width, amber)
+  If generating: shimmer placeholder
+MARK ROADMAP (faintly visible behind content, ~15% opacity)
+  Becomes dominant on slide to Mark Map tab
+MINI STATS (2×2 grid below quest):
+  Focus, Consistency, + 2 domain stats
+  Name small muted + value large white + ↑↓ arrow if recently changed
+MARK MAP
+Slides in from right as Dashboard slides left
+ROADMAP (now dominant, full visibility):
+  Candy Crush style vertical path
+  Each node = one Mark (daily quest day)
+  Completed: filled amber circle with checkmark
+  Current: pulsing amber outline
+  Future: dim #2A2A3A circles
+  Every 7th node: larger — Mission node (weekly)
+  Path connecting nodes: amber when completed, dim when not
+  Currently active node: subtle glow + expand animation
+MARK DETAILS (tap a node to expand):
+  Quest title, grade received, date, EXP earned
+  Tapping current node = starts today's quest
+MISSION NODES (every 7th Mark):
+  Visually distinct: hexagonal shape, amber + purple
+  Shows: mission title, step count, status
+SCROLL: vertical, past marks above, future below
+QUEST SCREEN (full screen, nav hidden)
+Slides up from bottom covering everything
+TOP BAR:
+  ← Back arrow (confirm if response typed)
+  Timer top right (MM:SS counting up)
+QUEST HEADER:
+  Type badge + difficulty pips (◆◇◇◇◇)
+  Flavor text: italic amber, left vertical accent line
+  Quest title: large bold white
+  Description: muted
+  Skills targeted: small amber chips
+  Success criteria: dark box with muted text
+INPUT AREA:
+  Large multiline textarea
+  Background: #13131F, border: #2A2A3A
+  Placeholder: "Write your response here..."
+  Grows with content, min-height 200px
+ACTION ROW:
+  [Hint ◎] — tap: slides up bottom drawer with hint
+  [Skip ◈1] — tap: confirm dialog, deduct 1 token
+  [Submit →] — disabled if empty, amber when active
+MULTI-STEP (mission/prestige):
+  "Step N of N" indicator with amber dot pips
+  Previous steps: collapsed read-only cards above with amber left border
+  "Next Step →" until final step
+  "Complete Mission →" on final step
+GRADE REVEAL (full screen, nav hidden)
+GRADE CARD:
+  Appears center, scales in (0.8 → 1.0, spring, 400ms)
+  Excellent: amber border + gold text (#FFD700)
+  Good:      teal border + teal text
+  Basic:     gray border + gray text
+  Bad:       orange border + orange text
+  Fail:      dark red border, calm tone (no harsh animation)
+SEQUENCE (timed):
+  0ms:   Card scales in
+  400ms: Mentor line fades in (large, bold, white)
+  700ms: Feedback paragraph fades in (muted, smaller)
+  1000ms: "+N EXP" floats up, animates count from 0
+           If streak multiplier > 1.0: show "1.5× streak" below
+  1300ms: Stat arrows appear: ↑ teal or ↓ red (no numbers)
+  1600ms: Strength chips (teal) stagger in
+  1800ms: Improvement chips (amber) stagger in
+  2200ms: "Continue →" button appears
+On Continue: navigate through queuedEvents then → Dashboard
+EVENT SCREENS
+LEVEL UP: Purple theme. Old level fades, new level explodes large.
+  New title in amber. Unlocks list. Particle burst.
+SKILL EVOLUTION: Teal theme. Old name strikethrough → fades out.
+  New name fades + scales in. "Tier N → Tier N+1".
+HIDDEN SKILL: Dark full screen. "NEW SKILL DISCOVERED" types slowly.
+  2s pause. Skill name appears large in amber. Discovery message types out.
+  "+5 XP Cards" slides up. Continue button appears last.
+STREAK MILESTONE: Flame emoji scales to 2×. Number counts up.
+  Multiplier badge drops in. Token award if applicable.
+WEAKNESS OVERCOME: Amber glow pulses on screen edge.
+  Old behavior signature shown. New one types over it character by character.
+  "+3 permanent to [stat]". "Pattern Broken" badge.
+PROFILE SCREEN
+TOP: Level badge + title. Profession large. Domain badge.
+CHARACTER CARD:
+  Character avatar (if set) or default silhouette
+  Character name + gender
+  "Customize" button
+RADAR CHART (SVG, 6-axis):
+  Axes: Focus, Consistency, Adaptability, Execution, Stat5, Stat6
+  Scale: 0–25 (allows growth above initial 10)
+  Fill: domain color at 25% opacity
+  Stroke: domain color full opacity
+  Grid rings at 5, 10, 15, 20, 25 (faint #2A2A3A)
+  Axis labels with current values
+SKILLS: Each skill as a card with name (spaces), tier badge, level bar, level number.
+HIDDEN SKILLS: Discovered (teal) + always 3 ??? slots
+STATS GRID: All 6 stats in 2-column grid.
+ENGAGEMENT: Streak + 🔥, best streak, quests completed, member since.
+ACHIEVEMENTS BUTTON → /achievements page
+SETTINGS LINK → /settings
+LEADERBOARD SCREEN
+HEADER: "Leaderboard" + Zynth logo
+SCOPE SELECTOR (tabs):
+  [ Local ] [ State ] [ National ] [ Global ]
+CATEGORY SELECTOR (pills):
+  [ All Skills ] [ Technical ] [ Creative ] [ Analytical ] [ Social ] [ Strategic ]
+TOP 3 (podium style):
+  2nd left, 1st center elevated, 3rd right
+  Each: avatar placeholder, display name, level, score
+LIST (rank 4 onward):
+  Rank number | Display name | Domain badge | Level | EXP score
+CURRENT USER ROW: Highlighted amber, sticky at bottom of list
+  Shows their rank even if not in top visible range
+Pull to refresh. Pagination (20 per page).
+CHRONICLE SCREEN
+TWO TABS:
+  [ My Chronicle ] — personal quest history
+  [ Community ]    — recent top responses (anonymized)
+MY CHRONICLE:
+  Reverse-chronological list of completed quests
+  Each entry: title, grade badge, date, EXP, skill tags
+  Tap to expand: feedback + mentor line
+  Infinite scroll (20 per page)
+COMMUNITY:
+  Top 5 responses of the week (no names — just responses)
+  Domain filter pills
+  Purpose: inspiration, not comparison
+ACHIEVEMENTS SCREEN
+HEADER: Total achievements unlocked / total visible
+RARITY SECTIONS:
+  Legendary | Rare | Uncommon | Common
+Each achievement: badge icon, name, description (if unlocked), locked treatment if not
+Hidden achievements: shown as ??? with rarity indicator only
+MILESTONES SECTION:
+  Timeline of major events (first excellent, prestige, hidden skills)
+  Based on memory.milestones
+HISTORY BUTTON: → Full quest history (Chronicle)
+
+23. FIRST 10 MINUTES EXPERIENCE
+Retention is won or lost here. Under 5 minutes from first load to hooked.
+Time
+What Happens
+0:00
+Splash. "ZYNTH" animates in. Tagline fades. Particles float. 1.8s auto-advance.
+0:02
+Auth screen. Sign up. Simple.
+0:20
+Q1 slides in. Feels like a personality quiz. No mention of learning.
+1:00
+Q1–Q5 complete (~8s per question). "Synthesizing your profile..." loading screen.
+1:02
+LLM call fires. 2–3s wait. Animated synthesis particles.
+1:05
+PROFILE REVEAL. Domain badge fades in. Profession appears. Stat bars fill with sound (120ms stagger). Behavior signature types out character by character in amber monospace. Skills float in as tags. Title badge drops last with scale spring.
+1:50
+FIRST QUEST (calibration). Flavor text is the first thing they read. Difficulty 1. Designed to succeed.
+3:30
+User submits. "Evaluating..." pulse 1.5s (builds anticipation).
+3:32
+GRADE REVEAL. Almost always Good or Excellent on calibration. Mentor line hits first in large text. EXP bar animates.
+3:45
+First level-up NOT triggered here intentionally. EXP bar shows ~25% full — craving completion.
+3:50
+One stat pulses. ↑ Execution. Small. Real.
+4:00
+Dashboard. Character glows. Streak flame: 1. Mark Map shows 1 completed node. EXP bar incomplete.
+4:10
+Daily profiling question pop-up. Feels like a fun bonus question. Not a form.
+4:20
+Notification prompt (soft): "Want a reminder tomorrow?" One tap.
+The result: Under 5 minutes in, the user has a profile that feels like them, one completed quest, a partial EXP bar, a 1-day streak, one mark on their roadmap, and a reason to come back tomorrow.
+
+24. ERROR HANDLING & RECOVERY
+LLM Failure by Engine
+Engine
+LLM Fails → App Does
+Onboarding
+Retry once after 2s. If still fails: show error, answers preserved in local state
+Quest Generation
+Use fallback quest library (hardcoded quest for user's domain)
+Grading
+Queue response locally, retry silently on next load
+Skill evolution naming
+Keep old name, flag for retry
+Hidden skill discovery message
+Use generic template: "Something that was always in you has finally surfaced."
+Behavior summary
+Keep cached summary
+Daily profile question
+Skip silently — no question shown today
+Legendary title
+Keep previous title, retry on next level-up
+Quest Fallback Library (5 quests per domain, hardcoded)
+Used when LLM is unavailable. Generic but functional. User always gets a quest.
+Domains covered: TECHNICAL, CREATIVE, ANALYTICAL, SOCIAL, STRATEGIC
+Each fallback has: quest_title, description, success_criteria, hint, flavor_text. type: 'daily', difficulty: 1, estimated_time: '10 min', steps: []
+
+25. FUTURE SYSTEMS
+System
+Priority
+Description
+Offline Mode
+High
+Full offline queue with background sync
+Recalibration System
+Medium
+Re-run Q1–Q5 to detect identity shift
+Guild / Team Engine
+Medium
+Team quests, shared progression, guild leaderboard
+Narrative / Lore Engine
+Low
+Story arcs per profession, worldbuilding, lore unlocks
+Seasonal Events
+Low
+Limited-time quests, community challenges, seasonal marks
+Career Path Engine
+Low
+Real-world outcome mapping, portfolio progression
+Analytics Dashboard
+Low
+Platform-wide engagement tracking (PostHog)
+Monetization
+Future
+Freemium tiers, cosmetics, institutional licensing
+Character Visual System
+Future
+Actual character art that evolves with progression
+
+Zynth Blueprint v1.0 — Complete
+Synthesize yourself. Reach your zenith.
+13 Engines · Next.js + Supabase + Gemini Flash + Vercel Web-first · Claude Code CLI · Dark Cinematic UI
+Engines: Onboarding · Quest Generation · Grading · Behavioral Stats · Progression · Hidden Skills · Anti-Exploitation · Context Compression · Memory · Economy · Achievements · Adaptive Intelligence · Continuous Profiling
+New Systems: Leaderboard · Character Reactions · Mark Roadmap · Daily Profiling · Profession Evolution via Leaderboard Rank ENDOFFILE

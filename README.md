@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zynth
 
-## Getting Started
+A responsive behavioral-growth web app built with Next.js, TypeScript, Zustand, and optional Supabase/LLM integrations.
 
-First, run the development server:
+## Local preview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Install dependencies with `npm install`, copy `.env.example` to `.env.local`, and run `npm run dev`. The default mock mode runs on this device without external keys. Open the local address printed by the development server.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Checks
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm test` — engine smoke and regression checks.
+- `npm run lint` — lint checks.
+- `npm run build` — production compilation, type checking, and page generation.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Engine status
 
-## Learn More
+See [ENGINE_STATUS.md](ENGINE_STATUS.md) for all 13 engine connections, fixes, verified local behavior, and remaining blueprint gaps. Live mode is not deployment-ready: local identity is not Supabase authentication, progression is client-owned, and the LLM endpoint still needs production access controls.
 
-To learn more about Next.js, take a look at the following resources:
+## Onboarding and world map
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Onboarding v2 starts with a written aspiration, followed by four ordinary scenarios. Question definitions and signal mappings are shared by local classification and live prompts. Existing profiles remain valid. Existing Supabase databases need the nullable column migration in `supabase/migrations/20261014_onboarding_aspiration.sql` before new profiles are saved.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Mark Map is now a landscape of fourteen checkpoints per chapter, with mission landmarks every seventh mark. It uses successful quest days, groups same-day retries, and excludes failed attempts. The same artwork and progression appear behind Overview.
 
-## Deploy on Vercel
+## Layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The dashboard uses a fluid browser workspace with a desktop sidebar and columns. Below 700px it switches to bottom navigation and a single content column. Immersive quest and reveal screens remain centered. The design supports widescreen desktops and portrait mobile browsers without forcing a fixed aspect ratio.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project records
+
+- [Progress](PROGRESS.md)
+- [Milestones](MILESTONES.md)
+- [Complete application blueprint](<docs/blueprints/ZYNTH Complete Application Blueprint v1.docx>)
+- [Blueprint PDF](docs/blueprints/Zynth_Blueprint_v1.md.pdf)
