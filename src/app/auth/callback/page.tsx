@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {ZynthMark} from "@/components/BrandLogo";
 import {useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
 import {useZynth} from "@/lib/store";
@@ -21,5 +22,5 @@ export default function AuthCallbackPage(){
      router.replace(resumePath(state.profile,state.activeQuest));
    }catch(e){if(!cancelled)setError(e instanceof Error?e.message:"Please sign in to continue.");}
  })();return()=>{cancelled=true;};},[router]);
- return <main className="account-state account-state-light"><span className="site-symbol">✳</span><h1>{error?"Let’s get you back in.":"Opening your next chapter."}</h1><p role={error?"alert":"status"}>{error??"Confirming your account and restoring your journey…"}</p>{error&&<Link className="site-button" href="/auth?mode=signin">Go to sign in →</Link>}</main>;
+ return <main className="account-state account-state-light"><ZynthMark className="account-brand-mark"/><h1>{error?"Let’s get you back in.":"Opening your next chapter."}</h1><p role={error?"alert":"status"}>{error??"Confirming your account and restoring your journey…"}</p>{error&&<Link className="site-button" href="/auth?mode=signin">Go to sign in →</Link>}</main>;
 }

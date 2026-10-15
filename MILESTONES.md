@@ -97,3 +97,13 @@ Complete browser checks across desktop and portrait mobile layouts, exercise the
 - [x] Added free SMTP instructions for a user without a custom domain.
 - [ ] Save the new production URL configuration and private Gmail SMTP settings in Supabase.
 - [ ] Verify actual confirmation and password-reset email delivery.
+
+## 15 October 2026 — Approved Zynth identity
+
+- [x] Apply the refined staircase Z and serif wordmark across the public and app branding surfaces.
+- [x] Add SVG/ICO/PNG favicons, Apple touch icon, and app-icon exports.
+- [x] Adopt “Synthesize your zenith.” and “Build who you want to become.”
+- [x] Create the matching 1200 × 630 Open Graph image without a domain.
+- [x] Configure Open Graph site name/title/image and Twitter large-image sharing.
+- [x] Verify landing and mobile signup branding in the browser, image loading, and horizontal fit.
+- [x] Validate metadata, favicon and image endpoints, lint, and production compilation.

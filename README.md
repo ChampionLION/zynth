@@ -26,6 +26,10 @@ Mark Map is now a landscape of fourteen checkpoints per chapter, with mission la
 
 The dashboard uses a fluid browser workspace with a desktop sidebar and columns. Below 700px it switches to bottom navigation and a single content column. Immersive quest and reveal screens remain centered. The design supports widescreen desktops and portrait mobile browsers without forcing a fixed aspect ratio.
 
+## Brand identity
+
+The approved staircase Z and serif wordmark are shared through `BrandLogo`. The slogan is **Synthesize your zenith.**, with **Build who you want to become.** as the explanation. Social previews use the matching 1200 × 630 image without a domain. SVG, favicon, Apple, and app-icon exports live alongside the refined originals; see [brand notes](docs/brand/og-image-v1.md).
+
 ## Project records
 
 - [Progress](PROGRESS.md)

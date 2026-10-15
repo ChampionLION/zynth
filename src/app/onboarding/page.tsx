@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import {BrandLogo,ZynthMark} from "@/components/BrandLogo";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -74,11 +75,11 @@ export default function OnboardingPage() {
     } finally { lock.current = false; }
   };
 
-  if (synthesizing) return <main className="onboarding-loading"><Particles count={12} /><div className="synthesis-symbol" aria-hidden="true">✳</div><p className="eyebrow">SETTING YOUR STARTING POINT</p><h1>A path toward {normalizedGoal.toLowerCase() === "still exploring" ? "what comes next" : normalizedGoal}.</h1><p>Matching your direction with the way you approach things.</p><span role="status">Preparing your profile…</span></main>;
+  if (synthesizing) return <main className="onboarding-loading"><Particles count={12} /><div className="synthesis-symbol" aria-hidden="true"><ZynthMark/></div><p className="eyebrow">SETTING YOUR STARTING POINT</p><h1>A path toward {normalizedGoal.toLowerCase() === "still exploring" ? "what comes next" : normalizedGoal}.</h1><p>Matching your direction with the way you approach things.</p><span role="status">Preparing your profile…</span></main>;
 
   return <main className="onboarding-layout">
     <aside className="onboarding-story">
-      <Link href="/auth" className="auth-brand">✳ ZYNTH</Link>
+      <Link href="/" className="auth-brand"><BrandLogo tone="light" priority/></Link>
       <div className="onboarding-story-copy"><p className="eyebrow">START WITH A DIRECTION</p><h1>Your next chapter<br/>starts with <em>you.</em></h1><p>One destination. Four everyday decisions.<br/>A starting point that can evolve with you.</p></div>
       <div className="onboarding-route" aria-hidden="true"><svg viewBox="0 0 380 210"><path d="M25 165 C60 165 55 65 120 70 S170 190 220 140 S270 50 350 55" fill="none" stroke="currentColor" strokeDasharray="4 7" />{[[25,165],[120,70],[185,153],[257,78],[350,55]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r={i===step?14:9} className={i<=step?"route-reached":"route-future"}/><text x={x} y={y+4} textAnchor="middle">{i+1}</text></g>)}</svg><span>{normalizedGoal || "Your destination is yours to name."}</span></div>
       <p className="onboarding-footnote">No right answers. No personal history required.</p>

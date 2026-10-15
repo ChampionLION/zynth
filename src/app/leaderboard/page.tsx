@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import {BrandLogo} from "@/components/BrandLogo";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { useZynth } from "@/lib/store";
 import { BottomNav } from "@/components/BottomNav";
@@ -80,7 +81,7 @@ export default function LeaderboardPage() {
     <main className="app-page collection-page">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Leaderboard</h1>
-        <span className="text-xs tracking-[0.2em] text-amber">ZYNTH</span>
+        <BrandLogo tone="light" className="leaderboard-brand"/>
       </div>
 
       {!isSupabaseConfigured() && <p className="mt-3 text-xs text-muted">Demo rankings · sample players for preview</p>}

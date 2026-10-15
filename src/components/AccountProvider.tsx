@@ -1,5 +1,6 @@
 "use client";
 import {useEffect} from "react";
+import {ZynthMark} from "@/components/BrandLogo";
 import {usePathname,useRouter} from "next/navigation";
 import {useZynth} from "@/lib/store";
 import {isSupabaseConfigured,supabase} from "@/lib/supabase";
@@ -27,7 +28,7 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
    if(!user)router.replace("/auth?mode=signin");
    else if(!profile && pathname!=="/onboarding")router.replace("/onboarding");
  },[protectedPage,hydrated,loading,hydrationError,user,profile,activeQuest,pathname,router]);
- if(protectedPage && hydrationError)return <main className="account-state"><span className="site-symbol">✳</span><h1>Your journey is still yours.</h1><p role="alert">{hydrationError}</p><button onClick={()=>void hydrate()}>Try again →</button></main>;
- if(protectedPage && (!hydrated||loading||!user||(!profile&&pathname!=="/onboarding")))return <main className="account-state"><span className="site-symbol">✳</span><p role="status">Opening your journey…</p></main>;
+ if(protectedPage && hydrationError)return <main className="account-state"><ZynthMark className="account-brand-mark"/><h1>Your journey is still yours.</h1><p role="alert">{hydrationError}</p><button onClick={()=>void hydrate()}>Try again →</button></main>;
+ if(protectedPage && (!hydrated||loading||!user||(!profile&&pathname!=="/onboarding")))return <main className="account-state"><ZynthMark className="account-brand-mark"/><p role="status">Opening your journey…</p></main>;
  return <>{children}</>;
 }

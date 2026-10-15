@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import {BrandLogo,ZynthMark} from "@/components/BrandLogo";
 import {useEffect,useRef,useState} from "react";
 import {useRouter,useSearchParams} from "next/navigation";
 import {isSupabaseConfigured,signIn,signUp,sendPasswordReset,friendlyAuthError} from "@/lib/auth";
@@ -35,8 +36,8 @@ export function AuthForm(){
      }else{await signIn(email,password);await resume();}
    }catch(e){setError(friendlyAuthError(e));}finally{lock.current=false;setBusy(false);}
  };
- return <main className="account-page"><header className="site-header"><Link href="/" className="site-wordmark"><span className="site-symbol">✳</span>ZYNTH</Link><Link href="/" className="site-text-link">← Back to Zynth</Link></header>
-  <div className="account-layout"><section className="account-intro"><p className="site-eyebrow">{mode==="signup"?"A DIRECTION WORTH FOLLOWING":"YOUR NEXT CHAPTER IS WAITING"}</p><h1>{mode==="signup"?<>A little closer<br/>to who you<br/><em>want to be.</em></>:<>Welcome back.<br/><em>Keep becoming.</em></>}</h1><p>{mode==="signup"?"Create your account. Find your starting point. Build a journey that feels like yours.":"Your profile, your marks, your momentum. Everything is right where you left it."}</p><div className="account-path" aria-hidden="true"><span>✳</span><i/><span>◎</span><i/><span>↗</span></div><small>One meaningful step at a time.</small></section>
+ return <main className="account-page"><header className="site-header"><Link href="/" className="site-wordmark"><BrandLogo priority/></Link><Link href="/" className="site-text-link">← Back to Zynth</Link></header>
+  <div className="account-layout"><section className="account-intro"><p className="site-eyebrow">{mode==="signup"?"A DIRECTION WORTH FOLLOWING":"YOUR NEXT CHAPTER IS WAITING"}</p><h1>{mode==="signup"?<>A little closer<br/>to who you<br/><em>want to be.</em></>:<>Welcome back.<br/><em>Keep becoming.</em></>}</h1><p>{mode==="signup"?"Create your account. Find your starting point. Build a journey that feels like yours.":"Your profile, your marks, your momentum. Everything is right where you left it."}</p><div className="account-path" aria-hidden="true"><ZynthMark/><i/><span>◎</span><i/><span>↗</span></div><small>One meaningful step at a time.</small></section>
   <section className="account-card"><div className="account-tabs" aria-label="Account access"><Link href="/auth?mode=signup" aria-current={mode==="signup"?"page":undefined}>Sign up</Link><Link href="/auth?mode=signin" aria-current={mode==="signin"?"page":undefined}>Sign in</Link></div><p className="site-eyebrow">{resetting?"LET’S GET YOU BACK IN":mode==="signup"?"YOUR STARTING POINT":"PICK UP WHERE YOU LEFT OFF"}</p><h2>{resetting?"Forgot your password?":mode==="signup"?"Create your account.":"Good to see you again."}</h2><p className="account-card-description">{resetting?"We’ll send a link to set a new one.":mode==="signup"?"A small step today. A different you tomorrow.":"Sign in to continue your journey."}</p>
   {!configured&&<p className="account-notice" role="status">Account access is being connected. Please try again shortly.</p>}
   <form onSubmit={submit}>
@@ -48,6 +49,6 @@ export function AuthForm(){
    {resetting&&<button type="button" className="account-back-link" onClick={()=>{setResetting(false);setNotice(null);setError(null);}}>← Back to sign in</button>}
   </form>
   <p className="account-footnote">{mode==="signup"?"Already started on this browser? Create an account with the same email to keep your saved local journey.":"Your progress stays with your account when you sign out."}</p>
-  </section></div><footer className="account-footer">SYNTHESIZE YOURSELF. REACH YOUR ZENITH.</footer>
+  </section></div><footer className="account-footer">SYNTHESIZE YOUR ZENITH.</footer>
  </main>;
 }
