@@ -8,6 +8,8 @@ Updated 15 October 2026.
 - Vercel: project `zynth`, public production alias `https://zynth-one.vercel.app`.
 - Supabase: project `Zynth`, region `eu-west-1`, project reference `khvzjbhmozvpwidaxbah`.
 
+Application release `a0affc33eada19e42a1c3caa335dc6a19a65f41e` was verified READY in Vercel with the production alias assigned. The public landing and all four account routes return HTTP 200, browser bundles contain the intended Supabase configuration, and missing/invalid sessions receive HTTP 401 from the model endpoint.
+
 ## Environment
 
 Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in Vercel before building. These are public browser configuration; never use a secret or service-role key. `.env.local` remains ignored by Git.

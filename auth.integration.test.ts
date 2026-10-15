@@ -88,15 +88,25 @@ async function main(){
  assert.equal(newestDraft(draft,{...draft,response:"Newer",updated_at:new Date(Date.parse(now)+1000).toISOString()})?.response,"Newer");
  await signOut();useZynth.getState().reset();await useZynth.getState().hydrate();
  assert.equal(useZynth.getState().profile,null,"Sign-out clears private in-memory data");
+ storage.set("zynth_account",JSON.stringify({id:"legacy-a",email:accounts[0].email}));
+ storage.set("zynth_profile",JSON.stringify({...profile,user_id:"legacy-a",level:99}));
  await signIn("b@local.test","test-password");await useZynth.getState().hydrate();
  assert.equal(useZynth.getState().profile,null,"A different account cannot inherit a journey");
  assert.equal(useZynth.getState().onboardingDraft,null);
  assert.equal(await loadProfile(accounts[0].id),null,"Other account queries are empty under RLS");
  await assert.rejects(()=>useZynth.getState().setProfile(profile),/sign in again/);
  await assert.rejects(()=>useZynth.getState().setActiveQuest(quest,accounts[0].id),/sign in again/);
+ storage.set("zynth_account",JSON.stringify({id:"legacy-b",email:accounts[1].email}));
+ storage.set("zynth_profile",JSON.stringify({...profile,user_id:"legacy-b",level:4}));
+ useZynth.getState().reset();await useZynth.getState().hydrate();
+ assert.equal(useZynth.getState().profile?.user_id,accounts[1].id,"A matching legacy journey binds to the verified auth identity");
+ assert.equal(useZynth.getState().profile?.level,4,"Matching local progress imports once");
  await signOut();useZynth.getState().reset();
- storage.clear();await signIn("a@local.test","test-password");await useZynth.getState().hydrate();
- assert.equal(useZynth.getState().profile?.level,7);
+ storage.clear();
+ storage.set("zynth_account",JSON.stringify({id:"legacy-a",email:accounts[0].email}));
+ storage.set("zynth_profile",JSON.stringify({...profile,user_id:"legacy-a",level:99}));
+ await signIn("a@local.test","test-password");await useZynth.getState().hydrate();
+ assert.equal(useZynth.getState().profile?.level,7,"An existing cloud journey takes precedence over a stale legacy profile");
  assert.equal(useZynth.getState().profile?.exp,35);
  assert.equal(useZynth.getState().activeQuest?.draft?.response,draft.response);
  assert.equal(useZynth.getState().activeQuest?.draft?.elapsed_seconds,81);
@@ -109,6 +119,6 @@ async function main(){
  await signOut();useZynth.getState().reset();release();await stale;gateProfile=null;
  assert.equal(useZynth.getState().profile,null,"An in-flight load must not restore data after sign-out");
  assert.equal(useZynth.getState().user,null);
- console.log("Account integration passed: confirmation, invalid credentials, cloud onboarding and quest restore, account isolation, failed saves, stale-load protection.");
+ console.log("Account integration passed: confirmation, invalid credentials, cloud onboarding and quest restore, account isolation, legacy import without overwrite, failed saves, stale-load protection.");
 }
 main().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await supabase().auth.stopAutoRefresh();globalThis.fetch=originalFetch;});
