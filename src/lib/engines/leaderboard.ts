@@ -53,7 +53,7 @@ export async function getLeaderboard(
       const userRow = rows.find((r) => r.is_user);
       return { rows, userRank: userRow?.rank ?? rows.length + 1, total: rows.length };
     }
-    // fall through to synthetic if cache empty
+    return {rows:[],userRank:0,total:0};
   }
 
   // synthetic population, deterministic per scope+category

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { llmChain } from "@/lib/llm/providers";
+import {createClient} from "@supabase/supabase-js";
+import {publicSupabaseConfig} from "@/lib/supabase";
 
 // Token budgets per call type (Engine 8)
 const MAX_TOKENS: Record<string, number> = {
@@ -14,8 +16,14 @@ const MAX_TOKENS: Record<string, number> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const {url,key}=publicSupabaseConfig();
+    if(!url||!key)return NextResponse.json({error:"Account access is not configured"},{status:503});
+    const token=req.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
+    if(!token)return NextResponse.json({error:"Sign in required"},{status:401});
+    const {data,error}=await createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}).auth.getUser(token);
+    if(error||!data.user)return NextResponse.json({error:"Sign in required"},{status:401});
     const { prompt, purpose, expectJson } = await req.json();
-    if (!prompt || typeof prompt !== "string") {
+    if (!prompt || typeof prompt !== "string" || prompt.length>48000 || !Object.hasOwn(MAX_TOKENS,purpose)) {
       return NextResponse.json({ error: "prompt required" }, { status: 400 });
     }
     const text = await llmChain(prompt, {

@@ -6,18 +6,21 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ONBOARDING_QUESTIONS, buildProfile, normalizeAspiration, validateOnboardingAnswers } from "@/lib/engines/onboarding";
 import { classifyOnboarding } from "@/lib/llm/client";
-import { getLocalUser } from "@/lib/db";
+import { cacheOnboardingDraft, saveOnboardingDraft, clearOnboardingDraft } from "@/lib/db";
+import { resumePath } from "@/lib/account-flow";
 import { useZynth } from "@/lib/store";
 import { Particles } from "@/components/effects";
 import type { OnboardingAnswers } from "@/lib/types";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const setProfile = useZynth(s => s.setProfile);
+  const {user, profile, activeQuest, onboardingDraft, setProfile} = useZynth();
+  const initialProfile = useRef(profile);
   const reducedMotion = useReducedMotion();
-  const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState("");
-  const [answers, setAnswers] = useState<Partial<OnboardingAnswers>>({});
+  const [step, setStep] = useState(onboardingDraft?.step ?? 0);
+  const [goal, setGoal] = useState(onboardingDraft?.goal ?? "");
+  const [answers, setAnswers] = useState<Partial<OnboardingAnswers>>(onboardingDraft?.answers ?? {});
+  const [syncStatus, setSyncStatus] = useState("Your answers save as you go.");
   const [synthesizing, setSynthesizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
@@ -28,8 +31,17 @@ export default function OnboardingPage() {
   const canContinue = step === 0 ? normalizedGoal.length >= 2 && /\p{L}/u.test(normalizedGoal) : selected.length > 0;
 
   useEffect(() => {
-    if (!getLocalUser()) router.replace("/auth");
-  }, [router]);
+    if (initialProfile.current) router.replace(resumePath(initialProfile.current, activeQuest));
+  }, [router,activeQuest]);
+  useEffect(() => {
+    if (!user || profile || synthesizing) return;
+    const draft = {version:2 as const,goal,answers,step,updated_at:new Date().toISOString()};
+    cacheOnboardingDraft(user.id,draft);
+    setSyncStatus("Saving your place…");
+    let disposed=false;
+    const timer=setTimeout(()=>{void saveOnboardingDraft(user.id,draft).then(()=>{if(!disposed)setSyncStatus("Your place is saved.");}).catch(()=>{if(!disposed)setSyncStatus("Saved on this browser. Reconnect to sync your answers.");});},600);
+    return()=>{disposed=true;clearTimeout(timer);};
+  },[user,profile,goal,answers,step,synthesizing]);
 
   const toggle = (key: string) => {
     setError(null);
@@ -48,13 +60,13 @@ export default function OnboardingPage() {
     setAnswers(updated);
     if (step < 4) { setStep(step + 1); return; }
     lock.current = true;
-    const user = getLocalUser();
     if (!user) { lock.current = false; router.replace("/auth"); return; }
     setSynthesizing(true);
     try {
       const complete = validateOnboardingAnswers(updated as OnboardingAnswers);
       const result = await classifyOnboarding(complete);
       await setProfile(buildProfile(user.id, user.name, result, complete.Q1[0]));
+      try { await clearOnboardingDraft(user.id); } catch { /* A saved profile takes precedence over an old draft. */ }
       router.replace("/reveal");
     } catch (e) {
       setSynthesizing(false);
@@ -93,7 +105,7 @@ export default function OnboardingPage() {
         </AnimatePresence>
         {error && <p role="alert" className="onboarding-error">{error}</p>}
         <div className="onboarding-actions"><button type="button" className="onboarding-back" disabled={step===0} onClick={()=>{setError(null);setStep(step-1);}}>← Back</button><button type="submit" className="onboarding-next" disabled={!canContinue}>{step===4?"Find my starting point":"Continue"} <span>→</span></button></div>
-        <p className="onboarding-purpose">These choices help shape your first quests. Your profile keeps adapting as you go.</p>
+        <p className="onboarding-purpose" role="status">{syncStatus}</p>
       </form>
     </section>
   </main>;

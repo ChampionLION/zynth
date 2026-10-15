@@ -4,6 +4,7 @@
 // final fallback so the user always gets a quest (Engine 24 rule).
 
 import { validateOnboardingAnswers } from "../engines/onboarding";
+import {supabase} from "../supabase";
 import {
   OnboardingResultSchema,
   QuestResultSchema,
@@ -44,10 +45,12 @@ export function isLiveMode(): boolean {
 }
 
 async function callApi(prompt: string, purpose: string, expectJson = true): Promise<string> {
+  const {data:{session}}=await supabase().auth.getSession();
+  if(!session)throw new Error("Please sign in to continue.");
   const res = await fetch("/api/llm", {
     method: "POST",
     signal: AbortSignal.timeout(40000),
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization:`Bearer ${session.access_token}` },
     body: JSON.stringify({ prompt, purpose, expectJson }),
   });
   if (!res.ok) throw new Error(`LLM API ${res.status}`);

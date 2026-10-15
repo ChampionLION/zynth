@@ -15,11 +15,12 @@ import { gradeResponse } from "@/lib/llm/client";
 import { runPostGradePipeline } from "@/lib/engines/pipeline";
 import { spendToken } from "@/lib/engines/economy";
 import { todayStr } from "@/lib/engines/quest";
+import {cacheQuestDraft,saveQuestDraft} from "@/lib/db";
 
 export default function QuestPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { activeQuest, setActiveQuest, setProfile, applyPipelineResult } = useZynth();
+  const { user, activeQuest, setActiveQuest, setProfile, applyPipelineResult } = useZynth();
 
   const [response, setResponse] = useState("");
   const [stepResponses, setStepResponses] = useState<string[]>([]);
@@ -33,6 +34,30 @@ export default function QuestPage() {
   const submissionLock = useRef(false);
   const [rejected, setRejected] = useState(false);
   const startRef = useRef(Date.now());
+  const [restoredId,setRestoredId]=useState<string|null>(null);
+  const restoredRef=useRef<string|null>(null);
+  const [syncStatus,setSyncStatus]=useState("Your draft saves as you go.");
+
+  useEffect(()=>{
+    if(!activeQuest){if(hydrated&&profile)router.replace("/dashboard");return;}
+    if(restoredRef.current===activeQuest.id)return;
+    const draft=activeQuest.draft;
+    setResponse(draft?.response??"");setStepResponses(draft?.step_responses??[]);
+    setCurrentStep(draft?.current_step??0);setSeconds(draft?.elapsed_seconds??0);
+    startRef.current=Date.now()-(draft?.elapsed_seconds??0)*1000;
+    setRestoredId(activeQuest.id);
+    restoredRef.current=activeQuest.id;
+  },[activeQuest,hydrated,profile,router]);
+
+  useEffect(()=>{
+    if(!user||!activeQuest||restoredId!==activeQuest.id||evaluating)return;
+    const draft={response,step_responses:stepResponses,current_step:currentStep,elapsed_seconds:Math.floor((Date.now()-startRef.current)/1000),updated_at:new Date().toISOString()};
+    cacheQuestDraft(user.id,activeQuest.id,draft);
+    let disposed=false;
+    setSyncStatus("Saving draft…");
+    const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Draft saved to your account.");}).catch(()=>{if(!disposed)setSyncStatus("Saved on this browser. Reconnect to sync your draft.");});},600);
+    return()=>{disposed=true;clearTimeout(timer);};
+  },[user,activeQuest,restoredId,response,stepResponses,currentStep,evaluating]);
 
   useEffect(() => {
     const t = setInterval(
@@ -43,10 +68,7 @@ export default function QuestPage() {
   }, []);
 
   if (!hydrated || !profile) return null;
-  if (!activeQuest) {
-    router.replace("/dashboard");
-    return null;
-  }
+  if (!activeQuest || restoredId!==activeQuest.id) return null;
 
   const isMultiStep = activeQuest.steps.length > 0;
   const step = isMultiStep ? activeQuest.steps[currentStep] : null;
@@ -129,7 +151,7 @@ export default function QuestPage() {
     p.last_quest_date = todayStr(); // skip preserves the day
     p.last_active = new Date().toISOString();
     await setProfile(p);
-    await setActiveQuest(null);
+    await setActiveQuest(null,p.user_id);
     router.replace("/dashboard");
   };
 
@@ -154,7 +176,7 @@ export default function QuestPage() {
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
       transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="mx-auto flex min-h-dvh max-w-lg flex-col px-4 pb-6 pt-4"
+      className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 pb-6 pt-6"
     >
       {/* TOP BAR */}
       <div className="flex items-center justify-between">
@@ -246,11 +268,13 @@ export default function QuestPage() {
 
       {/* INPUT */}
       <textarea
+        maxLength={24000}
         value={response}
         onChange={(e) => setResponse(e.target.value)}
         placeholder="Write your response here..."
         className="mt-4 min-h-[200px] flex-1 resize-none rounded-xl border border-edge bg-surface p-4 text-sm leading-relaxed text-primary placeholder:text-dim"
       />
+      <p className="mt-2 text-xs text-muted" role="status">{syncStatus}</p>
 
       {submitError && <p role="alert" className="mt-3 text-sm text-amber">{submitError}</p>}
       {/* ACTION ROW */}
@@ -325,7 +349,7 @@ export default function QuestPage() {
         {backConfirm && (
           <ConfirmModal
             title="Leave the quest?"
-            body="Your response won't be saved."
+            body={syncStatus.includes("account")?"Your draft is saved. Come back when you’re ready.":"Your latest draft stays on this browser. Wait for it to sync to continue on another device."}
             confirmLabel="Leave"
             onConfirm={() => router.back()}
             onCancel={() => setBackConfirm(false)}

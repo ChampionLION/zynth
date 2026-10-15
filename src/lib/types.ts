@@ -218,6 +218,7 @@ export interface QuestStep {
 }
 
 export interface Quest {
+  draft?: import("./account-flow").QuestDraft | null;
   id: string;
   quest_title: string;
   description: string;

@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AccountProvider } from "@/components/AccountProvider";
 
 export const metadata: Metadata = {
   title: "Zynth — Synthesize yourself. Reach your zenith.",
   description:
-    "Zynth is a behavioral synthesis engine. You don't consume Zynth. You perform in it.",
+    "Choose who you want to become. Build your skills through meaningful daily quests, and follow your progress across a world of checkpoints.",
 };
 
 export const viewport: Viewport = {
@@ -21,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><AccountProvider>{children}</AccountProvider></body>
     </html>
   );
 }

@@ -16,6 +16,7 @@ import {
   type Category,
 } from "@/lib/engines/leaderboard";
 import { writeMilestone } from "@/lib/engines/memory";
+import {isSupabaseConfigured} from "@/lib/supabase";
 import type { LeaderboardRow } from "@/lib/types";
 
 const SCOPES: { key: Scope; label: string }[] = [
@@ -82,7 +83,8 @@ export default function LeaderboardPage() {
         <span className="text-xs tracking-[0.2em] text-amber">ZYNTH</span>
       </div>
 
-      {process.env.NEXT_PUBLIC_ZYNTH_MODE !== "live" && <p className="mt-3 text-xs text-muted">Demo rankings · sample players for preview</p>}
+      {!isSupabaseConfigured() && <p className="mt-3 text-xs text-muted">Demo rankings · sample players for preview</p>}
+      {isSupabaseConfigured() && !loading && rows.length===0 && <p className="mt-6 text-sm text-muted">Rankings are being prepared. Your progress is saved in your profile.</p>}
       {/* SCOPE TABS */}
       <div className="mt-4 flex rounded-lg border border-edge bg-surface p-1">
         {SCOPES.map((s) => (

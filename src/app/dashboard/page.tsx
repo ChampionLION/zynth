@@ -83,7 +83,7 @@ export default function DashboardPage() {
     const latest = useZynth.getState().profile;
     if (!latest || latest.user_id !== p.user_id) return;
     await setProfile({...latest, current_adaptive_state: detected.state});
-    await setActiveQuest(quest);
+    await setActiveQuest(quest,p.user_id);
     } catch { setGenerationError(true); } finally { generationLock.current = false; setGenerating(false); }
   };
 

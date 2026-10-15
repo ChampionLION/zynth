@@ -1,20 +1,20 @@
 # Zynth
 
-A responsive behavioral-growth web app built with Next.js, TypeScript, Zustand, and optional Supabase/LLM integrations.
+A responsive behavioral-growth web app built with Next.js, TypeScript, Zustand, and Supabase accounts. AI feedback is optional.
 
 ## Local preview
 
-Install dependencies with `npm install`, copy `.env.example` to `.env.local`, and run `npm run dev`. The default mock mode runs on this device without external keys. Open the local address printed by the development server.
+Install dependencies with `npm install`, copy `.env.example` to `.env.local`, configure the Supabase URL and public publishable key, and run `npm run dev -- --port 3001`. The landing page works without account configuration; sign-in requires Supabase. Default practice mode uses deterministic quests and feedback while keeping accounts and progress in Supabase. See [deployment setup](docs/DEPLOYMENT.md).
 
 ## Checks
 
-- `npm test` — engine smoke and regression checks.
+- `npm test` — engine regression checks plus account persistence/isolation integration checks using the actual SDK with a simulated backend.
 - `npm run lint` — lint checks.
 - `npm run build` — production compilation, type checking, and page generation.
 
 ## Engine status
 
-See [ENGINE_STATUS.md](ENGINE_STATUS.md) for all 13 engine connections, fixes, verified local behavior, and remaining blueprint gaps. Live mode is not deployment-ready: local identity is not Supabase authentication, progression is client-owned, and the LLM endpoint still needs production access controls.
+See [ENGINE_STATUS.md](ENGINE_STATUS.md) for all 13 engine connections and remaining blueprint gaps. Email/password accounts and private cloud saves are implemented. Model requests verify a signed-in user. Progression remains client-owned; trusted competitive ranking, model rate limits, and live service verification remain separate work.
 
 ## Onboarding and world map
 

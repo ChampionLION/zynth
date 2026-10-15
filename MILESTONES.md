@@ -1,6 +1,6 @@
 # Project milestones
 
-Updated: 14 October 2026 (Africa/Lagos).
+Updated: 15 October 2026 (Africa/Lagos).
 
 ## Completed milestones
 
@@ -43,7 +43,7 @@ Acceptance criteria completed:
 - [x] All 68 local engine/regression checks pass.
 - [x] All 500 primary scenario combinations produce schema-valid profiles.
 - [x] Lint and TypeScript checks pass.
-- [x] Production build passes for all 20 pages/routes.
+- [x] Production build passes for all 22 pages/routes.
 
 ## Verification still requiring a live browser
 
@@ -58,16 +58,33 @@ The browser tool could not initialize during this update. Automated logic/build 
 
 ### Real accounts and trusted progression — Not complete
 
-Connect actual Supabase authentication; move grading rewards and profile updates into validated server transactions; apply and verify the aspiration migration in the intended database.
+Supabase authentication and profile/draft storage are connected. Move grading rewards and profile updates into validated server transactions; verify a real inbox-driven production signup/signin flow.
 
 ### Reliable live services — Not complete
 
-Protect model requests, verify live provider output, implement leaderboard aggregation/current-user lookup, and connect real community data.
+Model requests require verified authentication. Add rate limiting, verify live provider output, implement leaderboard aggregation/current-user lookup, and connect real community data.
 
 ### Complete quest economy and recovery — Not complete
 
-Wire Swift Mode and XP-card spending actions; persist responses, grade reveals, and queued events through failures and refreshes.
+Wire Swift Mode and XP-card spending actions; responses now persist; finish durable grade reveals and queued events through failures and refreshes.
 
 ### Release verification — Not complete
 
 Complete browser checks across desktop and portrait mobile layouts, exercise the entire live onboarding-to-quest-to-progression loop, and resolve the remaining deployment blockers before publishing.
+
+## 15 October 2026 — Landing page and account continuity
+
+- [x] Minimal public landing page with fluid desktop and mobile layouts.
+- [x] Email/password signup, signin, confirmation callback, and password reset UI.
+- [x] Connected Zynth Supabase project and applied application/draft migrations.
+- [x] Account-owned profile, incomplete onboarding, and unfinished quest persistence.
+- [x] Return routing for new, partially onboarded, and existing accounts.
+- [x] Account isolation and stale asynchronous-load protection.
+- [x] Authenticated model requests; live anonymous database-access checks.
+- [x] No remaining Supabase security advisor findings.
+- [x] Engine and account integration checks, lint, types, and 22-route build pass.
+- [x] Vercel project found and account environment configuration saved.
+- [ ] Verify the new production deployment and its exact commit.
+- [ ] Save production Supabase Site URL and redirect allowlist.
+- [ ] Configure production email delivery and verify a real confirmation/reset inbox flow.
+- [ ] Complete desktop and mobile browser interaction/visual checks.

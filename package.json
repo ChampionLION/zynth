@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc smoke.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/smoke.test.js"
+    "test": "tsc smoke.test.ts auth.integration.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/smoke.test.js && node .test-build/auth.integration.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",

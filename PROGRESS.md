@@ -1,52 +1,36 @@
 # Progress update
 
-Updated: 14 October 2026 (Africa/Lagos).
+Updated: 15 October 2026 (Africa/Lagos).
 
-The current update replaces onboarding and brings the blueprint's Mark Map into both its own screen and the background of Overview. This records implementation progress; it does not claim the app is ready for public deployment.
+The app now has a minimal public landing page, real email/password accounts, and account-owned progress in Supabase. The primary product reference remains the complete application blueprint, with the user's aspiration-first onboarding and world-map additions.
 
-## Main reference
+## Completed
 
-The primary reference is [ZYNTH Complete Application Blueprint v1](<docs/blueprints/ZYNTH Complete Application Blueprint v1.docx>), checked against the 60-page [PDF blueprint](docs/blueprints/Zynth_Blueprint_v1.md.pdf) and [extracted text](docs/blueprints/blueprint_extracted.txt). Both original files describe the complete v1 application. No separate Complete Application Blueprint `.md` file exists in this checkout.
+- Built a fluid ivory-and-amber landing page with clear sign-up/sign-in entry points, a labeled illustrative journey preview, an explanation of quests, and returning-user access.
+- Added signup, signin, email-confirmation callback, password-recovery screens, password visibility, useful errors, and private-route loading/retry states.
+- Connected the Zynth Supabase project in Zynth-SkillForge's Org and applied the initial application schema plus account draft storage.
+- Separated account synchronization from practice/AI feedback mode. Practice mode still saves profiles and progress to the real account.
+- Restored profiles and current quest drafts after signin. Partial onboarding saves its goal, selections, and step; quest drafts save text, completed mission steps, and elapsed time.
+- Added account-scoped browser draft backups, stale-load protection on signout/account changes, and guards against cross-account saves.
+- Added a one-time import for a matching legacy local journey without overwriting an existing cloud profile.
+- Updated account settings for cloud signout and progress reset. Added authenticated access to model requests and removed synthetic rankings from connected empty boards.
+- Verified row-level security on all nine application tables; anonymous private reads return empty data and anonymous draft writes are denied. Restricted an API-callable internal Supabase trigger; the security advisor now returns no findings.
+- Configured Supabase public variables and practice mode in the existing Vercel project. Production release is being verified; see deployment setup for the production alias and remaining email settings.
 
-The user requested new onboarding questions and a game-like world-map treatment. Those instructions supersede the original questions and the straight vertical presentation. The blueprint's checkpoint states, mission landmarks, shared Overview backdrop, adaptive profiling, and application-owned progression are retained. Original blueprint files are unchanged.
+## Preserved earlier work
 
-## Completed in this update
-
-- Replaced the old five questions with one written aspiration and four everyday scenarios.
-- Added a custom-text field, suggested directions, and a “Still exploring” option to the first question.
-- Added Back navigation, primary/optional secondary choices, validation, and preserved answers on synthesis failure.
-- Made the questions and signal mappings a shared source for both local classification and live prompts.
-- Preserved the chosen direction in the profile and passed it into quest context and local calibration content.
-- Kept work-style inference based on scenario choices; changing the destination alone does not change core starting attributes or learning style.
-- Added a nullable aspiration column to the fresh database schema and a migration for existing databases. The migration has not been applied to an external database.
-- Replaced the vertical Mark Map presentation with landscape regions, winding paths, forests, mountains, crossings, a compass, and checkpoint landmarks.
-- Retained completed/current/future states, mission landmarks every seventh checkpoint, historical quest details, and current-checkpoint routing to a quest or Overview when preparation is needed.
-- Added fourteen-checkpoint chapters, earlier-chapter viewing, a return-to-current control, and horizontal exploration on narrow screens.
-- Made successful quest days the source of map progress. Failed attempts and duplicate same-day completions do not create extra marks.
-- Added the same terrain and checkpoint geometry as a subdued, non-interactive layer behind Overview.
-- Added responsive rules, keyboard-operable checkpoints, announced details, and reduced-motion handling.
-
-## The new five steps
-
-1. **What do you want to become?** A user-written direction, optional suggested starting points, or “Still exploring.”
-2. **A queue that won't move.** A café has a queue despite empty tables; choose the first practical change to try.
-3. **An unfamiliar tool.** Make a simple poster using a sample, a guide, or a blank canvas; choose where to start.
-4. **Something has to give.** A pop-up event loses two helpers; choose what to cut while keeping it workable.
-5. **The last twenty minutes.** An event guide is ready; choose where the final review time goes.
-
-The scenarios infer tentative preferences through ordinary trade-offs. They do not ask for private experiences, weaknesses, family details, money, or personality confessions. They are not a validated psychological assessment.
+Aspiration-first onboarding uses one written direction and four everyday scenarios. All 500 primary scenario combinations produce valid profiles. Mark Map and Overview share a landscape of winding checkpoints, mission landmarks, and fourteen-mark chapters; only successful quest days add marks. See the milestone record and original blueprints in `docs/blueprints`.
 
 ## Verification
 
-- Engine/regression suite: all 68 checks passed, including aspiration handling, scenario mappings, and world-map progression.
-- All 500 primary combinations of the four scenario questions were exercised and produced schema-valid local profiles.
-- TypeScript checking passed with the updated browser compilation target.
-- Shared SVG map artwork was rendered from the actual component and visually inspected. A malformed decorative mission polygon was corrected.
-- Browser inspection was attempted twice, but the browser tool failed to initialize because its runtime assets could not be written. The new onboarding layout and full interactive map have not been visually verified in a live browser in this update.
-- Production build: passed; all 20 pages/routes compiled or generated successfully. Lint and TypeScript checks passed.
+- All 68 engine/regression checks and the 500-combination sweep pass.
+- New account integration suite passes using the actual Supabase SDK against a simulated Auth/PostgREST backend: confirmation, invalid credentials, restored cloud drafts/profile, separate accounts, failed saves, and stale-load rejection.
+- Lint, TypeScript, and the production build pass for 22 routes.
+- Local landing/account responses return HTTP 200. The real Supabase email provider and signup are enabled, with confirmation required. Unauthenticated model requests return 401.
+- Full desktop/mobile browser verification is still pending because the browser runtime cannot initialize. Real inbox confirmation/reset and authenticated writes to the hosted database have not been walked through end to end.
 
-## Remaining project work
+## Remaining
 
-The previously recorded gaps remain in [engine status](ENGINE_STATUS.md): real Supabase authentication, server-owned progression transactions, authenticated/rate-limited model requests, live leaderboard refresh, Swift Mode controls, XP-card spending flows, durable offline grading/event recovery, and live community content.
+Save the production Site URL and redirect allowlist in Supabase once the Vercel release is ready; configure a production SMTP sender for public email delivery. See `docs/DEPLOYMENT.md` for exact values.
 
-This update adds the aspiration database migration but does not configure credentials, deploy the app, run migrations against a live service, or establish production readiness.
+Progression math remains browser-owned. Model rate limiting, leaderboard aggregation, Swift Mode and XP-card actions, durable grade/event recovery, and real community content remain listed in `ENGINE_STATUS.md`. This update does not claim those broader blueprint features are complete.

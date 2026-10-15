@@ -7,13 +7,16 @@ import { useRouter } from "next/navigation";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { useZynth } from "@/lib/store";
 import { BottomNav } from "@/components/BottomNav";
-import { signOutLocal, eraseLocalData } from "@/lib/db";
+import { eraseProgress } from "@/lib/db";
+import { signOut as signOutAccount } from "@/lib/auth";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { setProfile, reset } = useZynth();
+  const { user, setProfile, reset } = useZynth();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState<string|null>(null);
 
   if (!hydrated || !profile) return null;
 
@@ -29,10 +32,16 @@ export default function SettingsPage() {
     await setProfile(p);
   };
 
-  const signOut = () => {
-    signOutLocal();
-    reset();
-    router.replace("/auth");
+  const signOut = async () => {
+    setBusy(true);setError(null);
+    try { await signOutAccount(); reset(); router.replace("/auth?mode=signin"); }
+    catch {setError("We couldn’t sign you out. Please try again.");} finally {setBusy(false);}
+  };
+  const erase=async()=>{
+    if(!user||busy)return;
+    setBusy(true);setError(null);
+    try { await eraseProgress(user);reset();await useZynth.getState().hydrate();router.replace("/onboarding"); }
+    catch {setError("We couldn’t reset your progress. Please try again.");} finally {setBusy(false);setConfirmReset(false);}
   };
 
   return (
@@ -78,12 +87,14 @@ export default function SettingsPage() {
         </div>
 
         <div className="rounded-xl border border-edge bg-surface p-4 text-xs text-muted">
-          <p>Mode: <span className="text-amber">{process.env.NEXT_PUBLIC_ZYNTH_MODE === "live" ? "Live (Supabase + LLM)" : "Local (on-device)"}</span></p>
-          <p className="mt-1">Data {process.env.NEXT_PUBLIC_ZYNTH_MODE === "live" ? "syncs to Supabase" : "lives in this browser"}.</p>
+          <p>Signed in as <span className="text-amber">{user?.email}</span></p>
+          <p className="mt-1">Your profile and progress sync to your account.</p>
+          <p className="mt-1">Quest feedback: {process.env.NEXT_PUBLIC_ZYNTH_MODE === "live" ? "AI feedback" : "Practice mode"}.</p>
         </div>
 
         <button
           onClick={signOut}
+          disabled={busy}
           className="w-full rounded-xl border border-edge bg-surface px-4 py-3.5 text-left text-sm"
         >
           Sign out
@@ -93,9 +104,10 @@ export default function SettingsPage() {
           onClick={() => setConfirmReset(true)}
           className="w-full rounded-xl border border-fail/40 bg-surface px-4 py-3.5 text-left text-sm text-fail"
         >
-          Erase everything and start over
+          Reset my progress
         </button>
       </section>
+      {error&&<p role="alert" className="mt-3 text-sm text-fail">{error}</p>}
 
       {confirmReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-8">
@@ -112,7 +124,8 @@ export default function SettingsPage() {
                 Keep it
               </button>
               <button
-                onClick={() => { eraseLocalData(); reset(); router.replace("/auth"); }}
+                onClick={erase}
+                disabled={busy}
                 className="flex-1 rounded-lg bg-fail py-2.5 text-sm font-semibold"
               >
                 Erase

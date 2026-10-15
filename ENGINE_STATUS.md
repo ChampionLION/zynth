@@ -20,16 +20,16 @@ Reviewed against `docs/blueprints/blueprint_extracted.txt` on 13 October 2026. T
 
 ## Remaining implementation gaps
 
-- Authentication is still a local identity flow. Switching the environment to live does not establish a Supabase Auth session; row-level-security-protected writes need a real auth flow.
+- Resolved 15 October: email/password Supabase sessions now protect private profile, quest, and onboarding storage. Production email redirects and a real inbox-driven walkthrough remain to verify.
 - Profile math and persistence run in the browser. Production ranking requires server-owned transactions and validation; duplicate checks here protect the local flow, not concurrent or hostile clients.
-- The LLM endpoint accepts prompts without authentication/rate limiting. It needs a production access boundary before public deployment.
+- Model requests now require a verified Supabase session. Per-account rate limiting and trusted server-owned reward transactions remain incomplete.
 - Live leaderboard refresh/aggregation job is absent. The local board uses sample players, now visibly labeled, and respects opt-out. Live cache pagination/current-user lookup remains incomplete.
 - Swift Mode is unlocked in data but has no quest UI. XP-card spending helpers exist, but retest, bonus quest, upgraded hint, and reduced-difficulty actions are not wired to screens.
-- Event queue and grade reveal are memory-only and do not survive refresh. Failed live grading preserves the mounted response for retry; the blueprint's durable offline retry queue is not implemented.
+- Event queue and grade reveal remain memory-only. Quest responses, mission steps, elapsed time, and partial onboarding now save to the account; a durable offline grading retry queue is not implemented.
 - Community Chronicle contains illustrative examples, now labeled, rather than live community responses.
 - Hugging Face fallback and generated level-1000 titles are absent. Provider timeouts have been added to Gemini/Groq.
 - Domain attributes do not yet have a behavioral update policy. Skill-evolution tier labels and permanent floors after prestige need product clarification to fully reconcile the blueprint.
-- This local-mode audit did not exercise external credentials, Supabase policies, or real model output.
+- The 15 October account update verified enabled signup/email confirmation, anonymous database access restrictions, all-table RLS, and clear security advisories on the connected Supabase project. Authenticated browser writes, inbox callbacks, and real model output still need end-to-end verification.
 
 ## Validation
 
@@ -48,3 +48,8 @@ Onboarding now collects a written aspiration and four ordinary scenarios; mock c
 Mark Map and the Overview backdrop share terrain/checkpoint geometry. Map progress now counts successful quest days, not failed attempts or same-day retries. The blueprint checkpoint states and mission landmarks remain, with world regions and fourteen-mark chapters added.
 
 All 68 local checks, the 500-combination onboarding sweep, lint, TypeScript, and the production build pass. Shared map artwork was rendered and visually inspected; the new interactive interfaces were not browser-verified because the browser runtime could not initialize. See `PROGRESS.md` and `MILESTONES.md` for the current progress record.
+
+
+## 15 October 2026 account update
+
+Public landing and email/password access now lead into the existing engines. Authenticated identity replaces local identity; account hydration restores profiles, current quest drafts, and partial onboarding. Practice/AI mode no longer controls database synchronization. The new integration suite verifies account continuity and isolation using the actual SDK with a simulated backend. See PROGRESS.md and docs/DEPLOYMENT.md for live checks and release status.
