@@ -15,7 +15,7 @@ The app now has a minimal public landing page, real email/password accounts, and
 - Added a one-time import for a matching legacy local journey without overwriting an existing cloud profile.
 - Updated account settings for cloud signout and progress reset. Added authenticated access to model requests and removed synthetic rankings from connected empty boards.
 - Verified row-level security on all nine application tables; anonymous private reads return empty data and anonymous draft writes are denied. Restricted an API-callable internal Supabase trigger; the security advisor now returns no findings.
-- Configured Supabase public variables and practice mode in the existing Vercel project. Released application commit `a0affc33eada19e42a1c3caa335dc6a19a65f41e` to https://zynth-one.vercel.app; Vercel reports READY with the production alias assigned.
+- Released application commit `a0affc33eada19e42a1c3caa335dc6a19a65f41e` on the original Vercel project. That project was subsequently deleted; the replacement project and current address are recorded below.
 
 ## Preserved earlier work
 
@@ -32,6 +32,10 @@ Aspiration-first onboarding uses one written direction and four everyday scenari
 
 ## Remaining
 
-The user confirmed the production Site URL and both redirect URLs were saved in Supabase on 15 October. The connector cannot independently read those settings. Verify inbox delivery and configure a production SMTP sender if the project still uses Supabase's default test sender. See `docs/DEPLOYMENT.md` for exact values.
+The user confirmed the original production Site URL and redirect URLs, but the replacement site uses a different address. Save the new URLs from `docs/DEPLOYMENT.md`, then configure and test SMTP using `docs/EMAIL_SETUP.md`. The connector cannot independently edit or read the dashboard's auth settings.
 
 Progression math remains browser-owned. Model rate limiting, leaderboard aggregation, Swift Mode and XP-card actions, durable grade/event recovery, and real community content remain listed in `ENGINE_STATUS.md`. This update does not claim those broader blueprint features are complete.
+
+## Replacement Vercel project — 15 October
+
+Reconnected the replacement project prj_QPxos3AVIGXk73axBpLXVGHqEhUh to the existing Supabase configuration and local Vercel link. Its verified production domain is https://zynth-skillforge.vercel.app. GitHub production source remains ChampionLION/zynth on master. Added docs/EMAIL_SETUP.md for free Gmail SMTP with an App Password because the user does not own a domain. Supabase's production URL and both redirect URLs must be updated from the deleted project's address; SMTP credentials and delivery remain user setup steps.

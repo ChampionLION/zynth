@@ -88,3 +88,12 @@ Complete browser checks across desktop and portrait mobile layouts, exercise the
 - [x] Save production Supabase Site URL and redirect allowlist — confirmed by the user on 15 October.
 - [ ] Configure production email delivery and verify a real confirmation/reset inbox flow.
 - [ ] Complete desktop and mobile browser interaction/visual checks.
+
+## 15 October 2026 — Replacement hosting connection
+
+- [x] Located the replacement Vercel project and verified the user's production domain.
+- [x] Restored Supabase public environment variables and the local Vercel project link.
+- [x] Preserved the existing Supabase account/progress database.
+- [x] Added free SMTP instructions for a user without a custom domain.
+- [ ] Save the new production URL configuration and private Gmail SMTP settings in Supabase.
+- [ ] Verify actual confirmation and password-reset email delivery.

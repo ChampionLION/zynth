@@ -5,10 +5,10 @@ Updated 15 October 2026.
 ## Targets
 
 - GitHub: `ChampionLION/zynth`, production branch `master`, repository root contains `package.json`.
-- Vercel: project `zynth`, public production alias `https://zynth-one.vercel.app`.
+- Vercel: project `zynth`, public production alias `https://zynth-skillforge.vercel.app`.
 - Supabase: project `Zynth`, region `eu-west-1`, project reference `khvzjbhmozvpwidaxbah`.
 
-Application release `a0affc33eada19e42a1c3caa335dc6a19a65f41e` was verified READY in Vercel with the production alias assigned. The public landing and all four account routes return HTTP 200, browser bundles contain the intended Supabase configuration, and missing/invalid sessions receive HTTP 401 from the model endpoint.
+The previous Vercel project was deleted and replaced on 15 October. The replacement project is `prj_QPxos3AVIGXk73axBpLXVGHqEhUh` in the same team, connected to `ChampionLION/zynth` on `master`. Its verified production domain is `zynth-skillforge.vercel.app`. The ignored local `.vercel/project.json` now points to this replacement.
 
 ## Environment
 
@@ -26,12 +26,12 @@ All nine application tables have row-level security. Profiles, quests, and onboa
 
 In Supabase → Authentication → URL Configuration, set:
 
-- Site URL: `https://zynth-one.vercel.app`
-- Redirect URL: `https://zynth-one.vercel.app/auth/callback`
-- Redirect URL: `https://zynth-one.vercel.app/auth/reset-password`
+- Site URL: `https://zynth-skillforge.vercel.app`
+- Redirect URL: `https://zynth-skillforge.vercel.app/auth/callback`
+- Redirect URL: `https://zynth-skillforge.vercel.app/auth/reset-password`
 - Optional local development URLs: `http://localhost:3001/auth/callback` and `http://localhost:3001/auth/reset-password`.
 
-The user confirmed these production URL settings were saved on 15 October. The connector cannot independently read them. Keep email confirmation enabled. Use a production SMTP sender for public registrations if the project still uses Supabase's default sender, which restricts delivery and is intended for testing. Never paste SMTP credentials into source code.
+The user previously confirmed the old project URLs; those must now be replaced with the new address above. The connector cannot edit or independently read the URL configuration. Keep email confirmation enabled. See [free SMTP setup](EMAIL_SETUP.md) for a Gmail starter setup without a custom domain and a domain-based alternative. Enter SMTP credentials directly into Supabase.
 
 ## Account behavior
 
