@@ -50,3 +50,12 @@ Reconnected the replacement project prj_QPxos3AVIGXk73axBpLXVGHqEhUh to the exis
 - Lint and the production build pass. Local HTTP checks confirm the metadata, all favicon formats, the Apple icon, logo assets, and exact share-image dimensions.
 
 Brand assets and generation notes are documented in `docs/brand/og-image-v1.md` and `docs/brand/logo-refinement-v1.md`.
+
+## Homepage slogan revision — 15 October
+
+- Replaced the main landing headline with **Synthesize your Zenith** and the explanation **Build who you want to become.** A short line explains daily quests and visible skill progress.
+- Centralized the revised capitalization across footer, account and workspace branding, and sharing metadata.
+- Added a matching domain-free 1200 × 630 share image at `public/brand/zynth-og-v2.png` so sharing services receive a new image URL.
+- Lint and production compilation pass. Browser checks confirm the headline fits the normal desktop preview and 390 × 844 phone viewport without horizontal overflow. Metadata and image endpoint checks pass locally.
+
+See `docs/brand/og-image-v2.md` for the current wording and image edit record.

@@ -1,5 +1,5 @@
 export const BRAND_NAME = "Zynth";
-export const BRAND_SLOGAN = "Synthesize your zenith.";
+export const BRAND_SLOGAN = "Synthesize your Zenith";
 export const BRAND_EXPLANATION = "Build who you want to become.";
 export const BRAND_TITLE = `${BRAND_NAME} — ${BRAND_SLOGAN}`;
 export const BRAND_DESCRIPTION = `${BRAND_EXPLANATION} Develop your skills through meaningful daily quests and follow your progress across a world of checkpoints.`;

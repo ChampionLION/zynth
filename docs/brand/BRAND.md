@@ -3,9 +3,9 @@
 Updated 15 October 2026.
 
 - Name: **Zynth**.
-- Slogan: **Synthesize your zenith.**
+- Slogan: **Synthesize your Zenith**
 - Explanation: **Build who you want to become.**
-- Open Graph title: **Zynth — Synthesize your zenith.**
+- Open Graph title: **Zynth — Synthesize your Zenith**
 
 ## Identity
 
@@ -22,7 +22,7 @@ Public pages, account screens, onboarding, workspace navigation, and account/loa
 - `public/brand/favicon-32-v1.png`: browser PNG fallback.
 - `src/app/apple-icon.png`: 180 × 180 touch icon.
 - `public/brand/zynth-icon-192-v1.png` and `zynth-icon-512-v1.png`: larger icon exports.
-- `public/brand/zynth-og-v1.png`: 1200 × 630 social-sharing card, with no domain or website address in the artwork.
+- `public/brand/zynth-og-v2.png`: 1200 × 630 social-sharing card, with no domain or website address in the artwork.
 
 Root metadata supplies the site name, title, description, large Open Graph image and Twitter card, plus favicon links. Social image paths resolve against the website origin; removing the domain from the artwork does not remove the URL required for fetching the image.
 

@@ -6,6 +6,7 @@ import {useRouter,useSearchParams} from "next/navigation";
 import {isSupabaseConfigured,signIn,signUp,sendPasswordReset,friendlyAuthError} from "@/lib/auth";
 import {useZynth} from "@/lib/store";
 import {resumePath} from "@/lib/account-flow";
+import {BRAND_SLOGAN} from "@/lib/brand";
 export function AuthForm(){
  const router=useRouter(),params=useSearchParams();
  const mode=params.get("mode")==="signup"?"signup":"signin";
@@ -49,6 +50,6 @@ export function AuthForm(){
    {resetting&&<button type="button" className="account-back-link" onClick={()=>{setResetting(false);setNotice(null);setError(null);}}>← Back to sign in</button>}
   </form>
   <p className="account-footnote">{mode==="signup"?"Already started on this browser? Create an account with the same email to keep your saved local journey.":"Your progress stays with your account when you sign out."}</p>
-  </section></div><footer className="account-footer">SYNTHESIZE YOUR ZENITH.</footer>
+  </section></div><footer className="account-footer">{BRAND_SLOGAN}</footer>
  </main>;
 }

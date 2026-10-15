@@ -107,3 +107,11 @@ Complete browser checks across desktop and portrait mobile layouts, exercise the
 - [x] Configure Open Graph site name/title/image and Twitter large-image sharing.
 - [x] Verify landing and mobile signup branding in the browser, image loading, and horizontal fit.
 - [x] Validate metadata, favicon and image endpoints, lint, and production compilation.
+
+## 15 October 2026 — Homepage slogan revision
+
+- [x] Make “Synthesize your Zenith” the main homepage heading.
+- [x] Add the short explanation and daily-quest supporting copy.
+- [x] Synchronize shared slogan and social metadata.
+- [x] Update the domain-free share image and version its public URL.
+- [x] Verify desktop/phone headline fit, lint, build, and local sharing metadata.

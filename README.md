@@ -28,7 +28,7 @@ The dashboard uses a fluid browser workspace with a desktop sidebar and columns.
 
 ## Brand identity
 
-The approved staircase Z and serif wordmark are shared through `BrandLogo`. The slogan is **Synthesize your zenith.**, with **Build who you want to become.** as the explanation. Social previews use the matching 1200 × 630 image without a domain. SVG, favicon, Apple, and app-icon exports live alongside the refined originals; see [brand notes](docs/brand/og-image-v1.md).
+The approved staircase Z and serif wordmark are shared through `BrandLogo`. The slogan is **Synthesize your Zenith**, with **Build who you want to become.** as the explanation. Social previews use the matching 1200 × 630 image without a domain. SVG, favicon, Apple, and app-icon exports live alongside the refined originals; see [brand notes](docs/brand/og-image-v2.md).
 
 ## Project records
 
