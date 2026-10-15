@@ -31,7 +31,7 @@ In Supabase → Authentication → URL Configuration, set:
 - Redirect URL: `https://zynth-one.vercel.app/auth/reset-password`
 - Optional local development URLs: `http://localhost:3001/auth/callback` and `http://localhost:3001/auth/reset-password`.
 
-These dashboard settings cannot be changed through the connected Supabase tools. They must be saved before production confirmation/reset emails can reliably return to the app. Keep email confirmation enabled. Use a production SMTP sender for public registrations; Supabase's default sender restricts delivery and is intended for testing. Never paste SMTP credentials into source code.
+The user confirmed these production URL settings were saved on 15 October. The connector cannot independently read them. Keep email confirmation enabled. Use a production SMTP sender for public registrations if the project still uses Supabase's default sender, which restricts delivery and is intended for testing. Never paste SMTP credentials into source code.
 
 ## Account behavior
 

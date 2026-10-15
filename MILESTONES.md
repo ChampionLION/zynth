@@ -85,6 +85,6 @@ Complete browser checks across desktop and portrait mobile layouts, exercise the
 - [x] Engine and account integration checks, lint, types, and 22-route build pass.
 - [x] Vercel project found and account environment configuration saved.
 - [x] Verify the new production deployment, its exact application commit, public account routes, published Supabase configuration, and model access boundary at https://zynth-one.vercel.app.
-- [ ] Save production Supabase Site URL and redirect allowlist.
+- [x] Save production Supabase Site URL and redirect allowlist — confirmed by the user on 15 October.
 - [ ] Configure production email delivery and verify a real confirmation/reset inbox flow.
 - [ ] Complete desktop and mobile browser interaction/visual checks.

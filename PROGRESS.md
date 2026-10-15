@@ -32,6 +32,6 @@ Aspiration-first onboarding uses one written direction and four everyday scenari
 
 ## Remaining
 
-Save the production Site URL and redirect allowlist in Supabase; the user has been given the exact URLs. Configure a production SMTP sender for public email delivery. See `docs/DEPLOYMENT.md` for exact values.
+The user confirmed the production Site URL and both redirect URLs were saved in Supabase on 15 October. The connector cannot independently read those settings. Verify inbox delivery and configure a production SMTP sender if the project still uses Supabase's default test sender. See `docs/DEPLOYMENT.md` for exact values.
 
 Progression math remains browser-owned. Model rate limiting, leaderboard aggregation, Swift Mode and XP-card actions, durable grade/event recovery, and real community content remain listed in `ENGINE_STATUS.md`. This update does not claim those broader blueprint features are complete.
