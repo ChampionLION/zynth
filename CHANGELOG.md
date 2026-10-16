@@ -2,6 +2,14 @@
 
 ## Unreleased — Evolution and Chronicles
 
+### 16 October — Original leaderboard and optional joining
+
+- Restore the original podium/list UI and Local, State, National and Global tabs.
+- Ask first-time visitors to join Global, share an approximate area for all rankings, or browse only; everyone can view every list.
+- Remember participation in existing account metadata, with editable/withdrawable location and no GPS collection.
+- Read all scopes directly from Supabase; apply the separately approved function migration without tables or existing-progress changes.
+- Verify consent, browsing, all scopes, filters, paging and withdrawal in actual SQL and focused browser checks; keep rank-based rewards disabled.
+
 ### 16 October — Functional leaderboard
 
 - Replace the empty cache read with authenticated live global/domain rankings, pagination, real counts and full-board own rank.

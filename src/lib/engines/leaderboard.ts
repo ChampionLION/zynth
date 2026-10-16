@@ -1,27 +1,26 @@
-// Live rankings are read through a narrow authenticated database projection.
-// Opening the board never modifies professions, progression, or rewards.
+// Ranking and participation details are read directly from Supabase.
 import type { Domain, Profile } from "../types";
 import { isLive, supabase } from "../db";
 import {LeaderboardResultSchema,type LeaderboardResult} from "../leaderboard-result";
 export type Scope = "local" | "state" | "national" | "global";
 export type Category = "all" | Domain;
+export type LeaderboardRegion={country:string;state:string;city:string};
 export const LEADERBOARD_PAGE_SIZE=25;
-export async function getLeaderboard(profile:Profile,scope:Scope,category:Category,offset=0,signal?:AbortSignal):Promise<LeaderboardResult>{
-  if(scope!=="global")throw new Error("Regional rankings will be available when location preferences are added.");
-  if(!isLive())return {rows:[],userRank:0,userRow:null,total:0,participation:profile.leaderboard_opt_out?"opted_out":"no_progress",updatedAt:new Date().toISOString()};
-  let request=supabase().rpc("get_live_leaderboard",{p_category:category,p_offset:offset,p_limit:LEADERBOARD_PAGE_SIZE});
-  if(signal)request=request.abortSignal(signal);
-  const {data,error}=await request;
-  if(error)throw new Error(error.code==="PGRST202"?"Rankings are being connected. Please try again shortly.":"We couldn’t load the rankings. Please try again.");
-  const parsed=LeaderboardResultSchema.safeParse(data);
-  if(!parsed.success)throw new Error("We couldn’t read the rankings. Please try again.");
-  return parsed.data;
+export async function getLeaderboard(profile:Profile,scope:Scope,category:Category,offset=0,signal?:AbortSignal,region?:LeaderboardRegion):Promise<LeaderboardResult>{
+ if(!isLive())return {rows:[],userRank:0,userRow:null,total:0,participation:profile.leaderboard_opt_out?"opted_out":"not_joined",updatedAt:new Date().toISOString(),region:{country:"",state:"",city:""},regions:[]};
+ let request=supabase().rpc("get_leaderboard",{p_scope:scope,p_category:category,p_offset:offset,p_limit:LEADERBOARD_PAGE_SIZE,p_country:region?.country||null,p_state:region?.state||null,p_city:region?.city||null});
+ if(signal)request=request.abortSignal(signal);
+ const {data,error}=await request;
+ if(error)throw new Error("We couldn’t load these rankings. Please try again.");
+ const parsed=LeaderboardResultSchema.safeParse(data);
+ if(!parsed.success)throw new Error("We couldn’t read these rankings. Please try again.");
+ return parsed.data;
 }
 
 export function displayName(profile: Profile): string {
   const parts = profile.display_name.trim().split(/\s+/);
-  if (parts.length >= 2) return `${parts[0]} ${parts[1][0].toUpperCase()}.`;
-  return parts[0] ?? "You";
+  if (parts.length >= 2) return `${parts[0]} ${parts[parts.length-1][0].toUpperCase()}.`;
+  return parts[0] || "Wayfarer";
 }
 
 // ── Profession evolution via leaderboard rank ────────────────────

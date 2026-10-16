@@ -6,11 +6,12 @@ async function main(){
  const db=new PGlite();
  try{
   await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE SCHEMA auth;
-  CREATE TABLE auth.users(id uuid PRIMARY KEY);
+  CREATE TABLE auth.users(id uuid PRIMARY KEY,raw_user_meta_data jsonb DEFAULT '{}');
   CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
   GRANT USAGE ON SCHEMA public,auth TO anon,authenticated; GRANT EXECUTE ON FUNCTION auth.uid() TO anon,authenticated;`);
   await db.exec(readFileSync("supabase/schema.sql","utf8"));
   await db.exec(readFileSync("supabase/migrations/20261016030828_live_leaderboard.sql","utf8"));
+  await db.exec(readFileSync("supabase/migrations/20261016034313_leaderboard_membership_scopes.sql","utf8"));
   await db.exec("GRANT SELECT,UPDATE ON public.profiles TO authenticated;");
   const owner="00000000-0000-4000-8000-000000000099";
   const ids=Array.from({length:60},(_,i)=>`00000000-0000-4000-8000-${String(i+1).padStart(12,"0")}`);
@@ -20,6 +21,7 @@ async function main(){
   }
   await db.query("INSERT INTO auth.users(id) VALUES($1)",[owner]);
   await db.query("INSERT INTO public.profiles(user_id,display_name,profession,domain,cumulative_exp,level,created_at,learning_style,behavior_signature,stats,onboarding_stats) VALUES($1,'Mira Hidden Cole','Designer','CREATIVE',10,1,'2026-01-01','Practical Learner','test','{}','{}')",[owner]);
+  await db.exec(`UPDATE auth.users SET raw_user_meta_data='{"zynth_leaderboard":{"version":1,"choice":"global","location":null}}';`);
   const query=async(category="all",offset=0,limit=25)=>(await db.query<{result:unknown}>("SELECT public.get_live_leaderboard($1,$2,$3) AS result",[category,offset,limit])).rows[0].result;
   await db.exec("SET ROLE anon;");await assert.rejects(()=>query(),/permission denied/);
   await db.exec("RESET ROLE; SET ROLE authenticated;");await assert.rejects(()=>query(),/Sign in required/);
@@ -42,6 +44,22 @@ async function main(){
   await db.query("UPDATE public.profiles SET cumulative_exp=0 WHERE user_id=$1",[owner]);assert.equal(LeaderboardResultSchema.parse(await query()).participation,"no_progress");
   assert.equal(LeaderboardResultSchema.parse(await query("SOCIAL")).rows.length,0);
   await assert.rejects(()=>query("invalid"),/Invalid leaderboard/);await assert.rejects(()=>query("all",-1),/Invalid leaderboard/);await assert.rejects(()=>query("all",0,51),/Invalid leaderboard/);
+  const membership=async(id:string,choice:string,location:unknown=null)=>{
+   await db.exec("RESET ROLE;");await db.query("UPDATE auth.users SET raw_user_meta_data=$1 WHERE id=$2",[JSON.stringify({zynth_leaderboard:{version:1,choice,location}}),id]);await db.exec("SET ROLE authenticated;");
+  };
+  const scoped=async(scope:string,country:string|null=null,state:string|null=null,city:string|null=null)=>LeaderboardResultSchema.parse((await db.query<{value:unknown}>("SELECT public.get_leaderboard($1,'all',0,25,$2,$3,$4) AS value",[scope,country,state,city])).rows[0].value);
+  await membership(ids[0],"regional",{country:"Nigeria",state:"Lagos",city:"Ikeja"});await membership(ids[1],"regional",{country:" nigeria ",state:"LAGOS",city:"ikeja"});await membership(ids[2],"regional",{country:"Nigeria",state:"Oyo",city:"Ibadan"});await membership(ids[3],"regional",{country:"United Kingdom",state:"London",city:"Chelsea"});
+  assert.equal((await scoped("local","Nigeria","Lagos","Ikeja")).total,2);assert.equal((await scoped("state","Nigeria","Lagos")).total,2);assert.equal((await scoped("national","Nigeria")).total,3);
+  assert.equal((await scoped("local","United Kingdom","London","Chelsea")).total,1,"Global-only members can browse any regional board");
+  assert.equal((await scoped("national","Nigeria")).participation,"global_only");
+  await db.query("UPDATE public.profiles SET cumulative_exp=100 WHERE user_id=$1",[owner]);
+  await membership(owner,"regional",{country:"Nigeria",state:"Lagos",city:"Ikeja"});
+  assert.equal((await scoped("local")).total,3);assert.equal((await scoped("local")).userRank,3);assert.equal((await scoped("national")).total,4);
+  assert.ok(!(await scoped("local")).rows.some(row=>"city" in row||"country" in row),"Per-user locations are never exposed in rank rows");
+  await membership(owner,"browse");assert.equal((await scoped("global")).userRank,0);assert.equal((await scoped("global")).participation,"not_joined");assert.equal((await scoped("local","Nigeria","Lagos","Ikeja")).total,2,"Browsers can read lists without joining");
+  await db.exec("RESET ROLE;");await db.query("UPDATE auth.users SET raw_user_meta_data='{}' WHERE id=$1",[owner]);await db.exec("SET ROLE authenticated;");
+  assert.equal((await scoped("global")).participation,"not_joined");assert.equal(LeaderboardResultSchema.parse(await query()).userRank,0,"Legacy RPC also enforces membership");
+  await assert.rejects(()=>scoped("invalid"),/Invalid leaderboard/);
   console.log("Leaderboard Postgres checks passed: real rankings/counts, category filters, paging, own rank outside page, ties, immediate progress/opt-out, anonymized output, private-profile RLS, authentication and bounded inputs.");
  }finally{await db.close();}
 }

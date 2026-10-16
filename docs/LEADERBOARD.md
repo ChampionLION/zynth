@@ -1,33 +1,46 @@
-# Live leaderboard
+# Leaderboard participation and rankings
 
-16 October 2026. Replaces the empty, unmaintained cache read with a narrow authenticated database query over saved progress. No cron, service credential or synthetic participants are required.
+16 October 2026. The original podium, list, category pills and Local / State / National / Global tabs are restored. Rankings read committed Supabase account progress directly; no cache population or scheduled job is needed.
 
-## Behavior
+## Participation
 
-- Global All skills and five domain boards rank opted-in profiles with positive lifetime EXP. Domain boards filter participants by their actual domain; they use the same cumulative EXP score.
-- Rankings update from committed profile saves without rebuilding a cache. The screen refreshes on entry, relevant saved-profile changes, focus, the Refresh button and every minute while visible.
-- Pages contain 25 entries. Total participation and the signed-in user's rank/score are calculated across the entire selected board, independently of the page. Equal scores use account creation and stable account identity internally for deterministic ordering.
-- First name and last initial are returned; full names, emails, account IDs, location, responses and behavioral profile fields are excluded. Opt-out is checked by the query on every read. Other users may retain the last screen snapshot until its next refresh.
-- New profiles with no EXP see an explanation; other-category and private browsing states are distinct. Empty/loading/error/retry states are implemented. Regional boards are deferred because optional location data does not exist; regional ranks are not fabricated.
-- Viewing rankings performs no profession evolution or reward writes. The existing eligibility helper remains for future integration with trusted progression.
+On the first visit, a dialog offers three explicit choices:
 
-## Database
+- **Join Global only:** appear globally without sharing location.
+- **Join all ranking lists:** supply an approximate country, state/province and city/general area for regional participation.
+- **Just browsing:** view every list without appearing in any ranking.
 
-CLI-generated migration: `supabase/migrations/20261016030828_live_leaderboard.sql`. The owner explicitly approved applying this migration. It was applied to the existing Zynth Supabase project on 16 October. It adds a partial ranking index and `public.get_live_leaderboard(text,integer,integer)`. No profile, score, reward or historical quest was modified or backfilled. The old cache table remains for compatibility.
+Every signed-in user can browse all four scopes and all skill categories, regardless of participation or location choice. Regional filters can select any area; changing a viewed area does not change the user's shared area. There is no message saying regional ranking cannot be determined.
 
-The function deliberately uses SECURITY DEFINER to read the limited cross-account ranking projection without opening profile SELECT policies. It requires `auth.uid()`, grants execution only to authenticated users, has an empty search path, qualifies table names, validates bounded inputs and accepts no caller identity, profile or score parameter. It is read-only and returns a strict output shape. Anonymous execution is revoked.
+The saved choice is remembered across sessions. Manage participation can change it, withdraw the area or stop participation. Decide later dismisses the prompt without saving a decision, so it can return on the next visit. Existing accounts must explicitly join before appearing. Positive saved lifetime EXP and the existing Settings visibility preference are also required.
 
-The database advisor flags signed-in execution of this SECURITY DEFINER function. That execution is intentional and constrained as above; switching to SECURITY INVOKER would restrict ranking reads to the user's own profile under current RLS. See [Supabase's advisor explanation](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable). The advisor also reports the pre-existing disabled leaked-password protection setting; it was not changed by this feature. See [password protection guidance](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+Location is manually self-declared and approximate. No GPS, street address, IP geocoding or third-party location service is used. Country/state/city names are suggestions and filters, not verified identity. Regional lists also imply the approximate area of their consenting members; the dialog explicitly asks to share that area. Exact coordinates are never collected. Spelling aliases are not automatically geocoded; case and whitespace are normalized.
 
-Rankings reflect saved profiles. The existing browser-owned progression trust gap remains under ZEC-M1; this feature does not make scores tamper-proof and must not authorize competitive rewards, cosmetics or profession changes. No new reward path was added.
+## Data and privacy
 
-## Evidence
+Membership uses existing Supabase account metadata, `zynth_leaderboard`, with version 1, choice browse/global/regional and an optional coarse location. It is only a self-declared participation preference. Editable metadata grants no authorization, rewards, profession, score or privileged access. Browsing is available to all authenticated users.
 
-- `npm run test:leaderboard`: actual PostgreSQL execution in PGlite covers 61 fixture profiles, category/count/pagination behavior, a user's rank outside the page, ties, instant progress updates/opt-out, shortened names, absence of private fields, preserved profile RLS, authentication and invalid inputs.
-- `scripts/verify-leaderboard.cjs`: the real UI/SDK against disposable local data covers filters, paging, empty/error/retry behavior, own position, anonymous display names, portrait fit and opt-out via actual Settings. No uncaught application errors. Desktop and 390×844 screenshots inspected.
-- Read-only hosted query after migration: one eligible participant, valid rows/count/current-user fields, no private fields, anonymous execution denied and authenticated execution granted. No test accounts were created in production.
-- Lint passes. Production build and publishing are recorded in the release progress entry.
+The existing field-only profile update changes leaderboard visibility while preserving numerical progress. Withdrawal saves browse metadata before the visibility update; joining requires both explicit membership and public visibility. Switching to Global saves a null location. Audio, quest replies and behavioral data are unrelated and never returned by rankings.
 
-The browser fixture follows the same local setup described in [voice verification](VOICE_REPLIES.md); run `node scripts/verify-leaderboard.cjs` with an available Playwright module/browser. It blocks requests to nonlocal hosts and never modifies hosted user data.
+`public.get_leaderboard` reads accounts and profiles directly. Global includes consenting global/regional members. National compares country; State compares country/state; Local compares country/state/city. Regional filters default to the user's shared area, otherwise an available area, whose name is displayed. View filters never imply the browser's location. A bounded directory of public regional areas supplies suggestions; a typed filter can browse any area.
 
-A small account-form hardening accompanies this work: submission waits for client account initialization and uses POST as its non-JavaScript method, preventing a pre-initialization submission from putting credentials in the URL.
+Pages contain 25 entries with full-board totals and the user's rank/score independent of the page. Score ties use creation time and account identity internally. Responses contain only rank, shortened first-name/last-initial, domain, level, EXP, streak and own-row flag. They contain no account IDs, email, full surname or per-row location fields. Empty, loading, retry and category/private browsing states are implemented. Rankings refresh on entry, saved-profile changes, participation/filter changes, window focus and each visible minute.
+
+## Database and authorization
+
+The previous approved migration `20261016030828_live_leaderboard.sql` added the ranking index and original Global function. The owner separately approved `20261016034313_leaderboard_membership_scopes.sql`, which was applied on 16 October. The new migration adds the scoped read-only function and makes the old Global RPC delegate to the same consent rules. It creates no tables/columns and changes no existing users, profiles, scores or rewards. The old cache table remains intact.
+
+The function requires auth.uid(), accepts no caller identity or score parameter, validates scopes/categories/bounded pagination, uses an empty search path and returns a narrow projection. PUBLIC and anonymous execution are revoked; authenticated execution is granted. Profile SELECT policies remain private. SECURITY DEFINER is intentional for the cross-account projection. The legacy wrapper is SECURITY INVOKER.
+
+The advisor's [authenticated SECURITY DEFINER notice](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) describes this intentional constrained execution. Its other notice is the pre-existing disabled [leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection); this feature does not change that setting.
+
+Scores still reflect saved profiles. The browser-owned progression trust gap remains under ZEC-M1. Rankings must not authorize competitive rewards or profession changes; viewing a list performs neither write.
+
+## Verification
+
+- `npm run test:leaderboard` passes actual PostgreSQL/PGlite queries over 61 fictional accounts: all scopes, case/whitespace normalization, Global-only and browse-only membership, explicit regional consent, filtering, ties, paging, rank beyond the page, instant saved-score/opt-out changes, output privacy, legacy RPC consent and profile RLS/authentication.
+- `scripts/verify-leaderboard.cjs` passes the real UI/SDK against a disposable loopback backend: first prompt, remembered choices, original podium order and four tabs, optional area entry, unrestricted regional browsing, scoped totals, pagination, category ranking, withdrawal, browse-only privacy and phone fit. No hosted test users or progress changes are used.
+- Lint, TypeScript and the 24-entry production build pass. Desktop/mobile layout screenshots were inspected.
+- Hosted read-only checks return valid snapshots for every scope and no private row fields; anonymous execution is denied. Counts are currently zero because existing accounts have not yet explicitly joined. No records were backfilled into participation.
+
+The browser fixture setup is described in [voice verification](VOICE_REPLIES.md). It blocks requests to nonlocal hosts. This verifies application behavior and actual SQL separately; it does not claim a real user's hosted sign-in/join journey was exercised.

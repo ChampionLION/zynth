@@ -91,3 +91,11 @@ Other unresolved audited gaps include browser-owned progression and event/reveal
 8. Resolve dependency findings and remaining engine gaps; perform full release verification and reconcile all acceptance criteria. Seek separate authorization before any hosted migration, production deployment, remote push or external cost.
 
 No percentage-complete estimate is asserted. The full initiative remains open until its definition of done and milestone acceptance criteria are met.
+
+## 16 October 2026 — Original leaderboard and optional participation
+
+Restored the original podium/list layout and all four scope tabs. First-time visitors choose Global only, all rankings with a manually entered approximate country/state/city, or browse only. Everyone can view every scope. Saved choices persist through Supabase account metadata; Manage participation changes or withdraws them. No GPS is collected, and there is no regional-ranking-unavailable message. The direct Supabase engine handles geographic filters and real counts; the old cache table remains intact.
+
+The owner separately approved the prepared participation/scopes migration; it is applied. It creates no tables/columns and changes no existing progress. Existing accounts must explicitly join before appearing. Hosted read-only checks confirm valid snapshots in all four scopes, anonymous execution denied and no private row fields. Zero initial participants is expected until consent is saved. The old Global RPC delegates to the new consent rules.
+
+Actual SQL tests, focused UI/SDK checks, lint, type checking and production build pass. The original two/one/three podium, scope browsing without location, regional membership, pagination, choice persistence and withdrawal are covered. Existing progression authority and broader expansion limits remain unchanged. Publication uses the already authorized GitHub/Vercel workflow; final deployment verification is recorded separately.

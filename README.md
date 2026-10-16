@@ -32,7 +32,7 @@ The dashboard uses a fluid browser workspace with a desktop sidebar and columns.
 
 ## Leaderboard
 
-Authenticated global/domain rankings now read saved lifetime EXP directly with pagination, account visibility, anonymized names and the user's full-board position. The authorized migration is applied; no cache-refresh job is required. Regional boards await optional location preferences. See [leaderboard implementation](docs/LEADERBOARD.md).
+The original Local, State, National and Global tabs read saved lifetime EXP directly from Supabase. First-time visitors choose Global only, optional approximate regional participation, or browse only; everyone can view every list. Choices are remembered and can be changed or withdrawn. Rankings include pagination, visibility, shortened names and full-board own position. The separately approved migration is applied; no cache job is required. See [leaderboard implementation](docs/LEADERBOARD.md).
 
 ## Voice replies and appearance
 
