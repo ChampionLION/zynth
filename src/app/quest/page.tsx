@@ -20,11 +20,12 @@ import {missionProgress} from "@/lib/engines/quest-cycle";
 import {writeMilestone} from "@/lib/engines/memory";
 import {VoiceReply} from "@/components/VoiceReply";
 import {Dialog} from "@/components/Dialog";
+import {JourneyRequestError} from "@/lib/journey-client";
 
 export default function QuestPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { user, activeQuest, retireActiveQuest, setProfile, applyPipelineResult } = useZynth();
+  const { user, activeQuest, retireActiveQuest, setProfile, applyPipelineResult,mode,journeyAction,completeQuest } = useZynth();
 
   const [response, setResponse] = useState("");
   const [stepResponses, setStepResponses] = useState<string[]>([]);
@@ -101,6 +102,11 @@ export default function QuestPage() {
           .join("\n\n")
       : response;
 
+    if(mode==="trusted"){
+      await completeQuest(activeQuest.id,fullResponse);
+      router.replace("/grade");return;
+    }
+
     // Engine 7 — anti-exploit
     const exploit = runExploitCheck({
       profile,
@@ -144,12 +150,13 @@ export default function QuestPage() {
       changedStats: result.changedStats,
     });
     router.replace("/grade");
-    } catch { setSubmitError("Your response is still here. We couldn’t save the result. Please try again."); } finally { submissionLock.current = false; setEvaluating(false); }
+    } catch(error) { setSubmitError(error instanceof JourneyRequestError&&[413,422,429].includes(error.status)?error.message:"Your response is still here. We couldn’t save the result. Please try again."); } finally { submissionLock.current = false; setEvaluating(false); }
   };
 
   const skip = async () => {
     if(submissionLock.current||voiceBusy)return;submissionLock.current=true;setSubmitError(null);
     try{
+    if(mode==="trusted"){await journeyAction({kind:"skip",questId:activeQuest.id});router.replace("/dashboard");return;}
     const p = structuredClone(profile);
     const recorded=p.memory.milestones.some(m=>m.type==="quest_skipped"&&m.quest_id===activeQuest.id);
     if (!recorded && !spendToken(p)) {

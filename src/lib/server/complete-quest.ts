@@ -4,10 +4,12 @@ import {runExploitCheck,recordExploitFlag} from "../engines/exploit";
 import {runPostGradePipeline} from "../engines/pipeline";
 import {mockBehaviorSummary,mockDiscoveryMessage,mockEvolveSkillName} from "../llm/mock";
 import {GradeResultSchema} from "../llm/schemas";
+import {missionProgress} from "../engines/quest-cycle";
 
 export const CompletionInput=z.object({questId:z.string().uuid(),responseText:z.string().trim().min(1).max(24000)}).strict();
 export interface CommittedResult {
  gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[];events:ZynthEvent[];
+ missionState?:ReturnType<typeof missionProgress>;
 }
 export interface CompletionResponse {profile:Profile;result:CommittedResult;replayed:boolean}
 export interface CompletionRepository {
@@ -16,6 +18,7 @@ export interface CompletionRepository {
  outcome:(owner:string,id:string)=>Promise<CommittedResult|null>;
  claim:(owner:string,id:string,lease:string)=>Promise<boolean>;
  release:(owner:string,id:string,lease:string)=>Promise<void>;
+ reject?:(owner:string,id:string,revision:number,profile:Profile)=>Promise<void>;
  commit:(owner:string,id:string,revision:number,profile:Profile,result:CommittedResult&{responseText:string})=>Promise<CompletionResponse>;
 }
 export class JourneyError extends Error {constructor(message:string,public status:number){super(message);}}
@@ -34,8 +37,9 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
  const prior=await repo.outcome(owner,questId);
  if(prior)return {profile,result:prior,replayed:true};
  if(profile.quest_history.some(q=>q.quest_id===questId))throw new JourneyError("This challenge is already recorded. Reopen your journey.",409);
- const quest=await repo.quest(owner,questId);
+ let quest=await repo.quest(owner,questId);
  if(!quest||quest.id!==questId||quest.status!=="active")throw new JourneyError("This challenge is not available.",404);
+ if(!["calibration","daily","mission","challenge","hidden","weakness","prestige"].includes(quest.type)||!Number.isInteger(quest.difficulty)||quest.difficulty<1||quest.difficulty>5||quest.steps.length>3)throw new JourneyError("This saved challenge needs to be reviewed before submission.",409);
  if(quest.steps.length>0){
    const prefixes=quest.steps.map((step,i)=>`[Step ${i+1}: ${step.title}]`);
    const positions=prefixes.map(prefix=>responseText.indexOf(prefix));
@@ -53,7 +57,14 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
      if(!Number.isFinite(age)||age<0)throw new JourneyError("The challenge timing could not be verified.",409);
      const responseTimeSeconds=Math.floor(age);
      const exploit=runExploitCheck({profile,response:responseText,responseTimeSeconds});
-     if(exploit.rejected)throw new JourneyError("That response needs a fresh angle. Your draft is still here.",422);
+     if(exploit.rejected){
+       if(repo.reject){
+        const flagged=structuredClone(profile);recordExploitFlag(flagged,exploit);
+        try{await repo.reject(owner,questId,profile.progression_revision??0,flagged);}
+        catch(error){if(error instanceof RevisionConflict&&attempt<2){const latest=await repo.profile(owner);if(latest){profile=latest;continue;}}throw error;}
+       }
+       throw new JourneyError("That response needs a fresh angle. Your draft is still here.",422);
+     }
      gradeResult??=GradeResultSchema.parse(await grade({profile,quest,response:responseText,responseTimeSeconds,strict:exploit.strictGrader})) as GradeResult;
      const working=structuredClone(profile);recordExploitFlag(working,exploit);
      const result=await runPostGradePipeline({profile:working,quest,gradeResult,responseText,responseTimeSeconds,exploit,swiftModeUsed:false,enrichment:{
@@ -61,10 +72,13 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
        discoveryMessage:async(name,p)=>mockDiscoveryMessage(name,p.profession),
        behaviorSummary:async p=>p.behavior_summary_cache??mockBehaviorSummary(p),
      }});
-     try{return await repo.commit(owner,questId,profile.progression_revision??0,result.profile,{gradeResult,expEarned:result.expEarned,streakMultiplier:result.streakMultiplier,changedStats:result.changedStats,events:result.events,responseText});}
+     try{return await repo.commit(owner,questId,profile.progression_revision??0,result.profile,{gradeResult,expEarned:result.expEarned,streakMultiplier:result.streakMultiplier,changedStats:result.changedStats,events:result.events,missionState:missionProgress(result.profile),responseText});}
      catch(error){
        if(!(error instanceof RevisionConflict)||attempt===2)throw error;
        const latest=await repo.profile(owner);if(!latest||latest.user_id!==owner)throw new JourneyError("Your profile changed. Reopen your journey.",409);profile=latest;
+       const latestQuest=await repo.quest(owner,questId);if(!latestQuest||latestQuest.status!=="active")throw new JourneyError("This challenge has already been resolved.",409);
+       if(latestQuest.difficulty!==quest.difficulty||latestQuest.description!==quest.description||latestQuest.success_criteria!==quest.success_criteria||JSON.stringify(latestQuest.steps)!==JSON.stringify(quest.steps))gradeResult=null;
+       quest=latestQuest;
      }
    }
    throw new JourneyError("Your profile changed. Please retry your response.",409);

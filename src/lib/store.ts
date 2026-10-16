@@ -6,10 +6,16 @@ import {getCurrentUser} from "./auth";
 import {loadAccountJourney,loadOnboardingDraft,saveProfile,saveActiveQuest,clearQuestDraft,ensurePlannedQuest,saveEditableProfile,retireQuest} from "./db";
 import type {EditableProfile} from "./appearance";
 import type {PipelineResult} from "./engines/pipeline";
+import {sendJourneyAction,sendCompletion,journeyRequest} from "./journey-client";
+import {outcomePresentation,type JourneyAction,type JourneyActionResult,type PendingOutcome} from "./journey-contract";
 interface GradeRevealData {gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[]}
 interface ZynthStore {
  user:AccountUser|null;profile:Profile|null;activeQuest:Quest|null;onboardingDraft:OnboardingDraft|null;
  eventQueue:ZynthEvent[];gradeReveal:GradeRevealData|null;hydrated:boolean;loading:boolean;hydrationError:string|null;
+ mode:"legacy"|"trusted";pendingOutcome:PendingOutcome|null;
+ journeyAction:(input:JourneyAction)=>Promise<JourneyActionResult>;
+ completeQuest:(questId:string,responseText:string)=>Promise<void>;
+ ackGrade:()=>Promise<void>;ackEvent:()=>Promise<void>;
  hydrate:()=>Promise<void>;setProfile:(p:Profile)=>Promise<void>;setActiveQuest:(q:Quest|null,ownerId:string)=>Promise<void>;
  createPlannedQuest:(q:Quest,ownerId:string)=>Promise<void>;
  updateEditableProfile:(fields:EditableProfile)=>Promise<void>;
@@ -18,7 +24,7 @@ interface ZynthStore {
 }
 let authEpoch=0;
 let pending:{epoch:number;promise:Promise<void>}|null=null;
-const empty={user:null,profile:null,activeQuest:null,onboardingDraft:null,eventQueue:[],gradeReveal:null,hydrated:false,loading:false,hydrationError:null};
+const empty={user:null,profile:null,activeQuest:null,onboardingDraft:null,eventQueue:[],gradeReveal:null,hydrated:false,loading:false,hydrationError:null,mode:"legacy" as const,pendingOutcome:null};
 export const useZynth=create<ZynthStore>((set,get)=>({
  ...empty,
  hydrate:()=>{
@@ -34,13 +40,48 @@ export const useZynth=create<ZynthStore>((set,get)=>({
        const journey=await loadAccountJourney(user);
        const onboardingDraft=journey.profile ? null : await loadOnboardingDraft(user.id);
        if(epoch!==authEpoch)return;
-       set({...journey,onboardingDraft,user,hydrated:true,loading:false,hydrationError:null});
+       const presentation=journey.pendingOutcome?outcomePresentation(journey.pendingOutcome):{gradeReveal:null,events:[]};
+       set({...journey,onboardingDraft,user,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events,hydrated:true,loading:false,hydrationError:null});
      }catch{
        if(epoch===authEpoch)set({hydrated:true,loading:false,hydrationError:"We couldn’t load your saved journey. Check your connection and try again."});
      }finally{if(pending?.epoch===epoch)pending=null;}
    })();
    pending={epoch,promise};
    return promise;
+ },
+ journeyAction:async input=>{
+   const owner=get().user?.id,epoch=authEpoch;if(!owner||get().mode!=="trusted")throw new Error("Please reopen your journey.");
+   const result=await sendJourneyAction(owner,input);
+   if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed. Please sign in again.");
+   if(result.profile&&result.profile.user_id!==owner)throw new Error("Please sign in again.");
+   set(state=>({profile:result.profile,onboardingDraft:result.profile?null:state.onboardingDraft,activeQuest:input.kind==="skip"?null:result.quest?{...result.quest,draft:result.quest.id===state.activeQuest?.id?state.activeQuest.draft:result.quest.draft}:state.activeQuest}));
+   return result;
+ },
+ completeQuest:async(questId,responseText)=>{
+   const owner=get().user?.id,epoch=authEpoch;if(!owner||get().mode!=="trusted")throw new Error("Please reopen your journey.");
+   const response=await sendCompletion(owner,questId,responseText);
+   if(epoch!==authEpoch||get().user?.id!==owner||response.profile.user_id!==owner)throw new Error("Your account changed. Please sign in again.");
+   const pendingOutcome={questId,result:response.result,gradeSeen:false,eventCursor:0};const presentation=outcomePresentation(pendingOutcome);
+   set({profile:response.profile,activeQuest:null,pendingOutcome,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events});
+   clearQuestDraft(owner,questId);
+ },
+ ackGrade:async()=>{
+   const owner=get().user?.id,pending=get().pendingOutcome,epoch=authEpoch;
+   if(get().mode==="trusted"&&owner&&pending){
+    await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor});
+    if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed.");
+    set({pendingOutcome:pending.result.events.length?{...pending,gradeSeen:true}:null});
+   }
+   set({gradeReveal:null});
+ },
+ ackEvent:async()=>{
+   const owner=get().user?.id,pending=get().pendingOutcome,epoch=authEpoch;
+   if(get().mode==="trusted"&&owner&&pending){
+    await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor+1});
+    if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed.");
+    set({pendingOutcome:pending.eventCursor+1<pending.result.events.length?{...pending,eventCursor:pending.eventCursor+1}:null});
+   }
+   set(state=>({eventQueue:state.eventQueue.slice(1)}));
  },
  setProfile:async p=>{
    const user=get().user;

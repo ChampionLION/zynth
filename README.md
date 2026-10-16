@@ -24,7 +24,7 @@ Mark Map is a landscape of fourteen checkpoints per rendering segment. Mission l
 
 ## Expansion branch
 
-The local Evolution and Chronicles foundation adds mission policy, validated profile editing, free light/dark/system themes and reduced motion. Trusted completion and its migration are staged and tested locally; the browser still uses legacy progression writes. Keep the staged route disabled until the coordinated security cutover is complete. Avatar, inventory, modular regions and runtime chapters remain planned. No expansion changes have been deployed or applied to the hosted database. See the [development report](docs/expansion/DEVELOPMENT_REPORT.md) and [trusted progression guide](docs/expansion/TRUSTED_PROGRESSION.md).
+The Evolution and Chronicles work includes mission policy, profile editing, themes and reviewed voice transcripts. Step 1 now implements server-owned onboarding, stored quest plans, grading, daily inputs, skip, prestige and current economy/profession actions, with durable result recovery. Its coordinated production activation is separately gated; use the [rollout runbook](docs/expansion/STEP1_ROLLOUT.md) before enabling it. Global rankings include verified saved profiles by default, including zero EXP; Settings can hide a profile and regional participation is optional. Avatar, inventory, modular living regions and runtime chapters remain planned. See [weighted progress](PROGRESS.md) and the [development report](docs/expansion/DEVELOPMENT_REPORT.md).
 
 ## Layout
 

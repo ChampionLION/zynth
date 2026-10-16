@@ -7,7 +7,7 @@ import {isSupabaseConfigured,supabase} from "@/lib/supabase";
 const protectedRoutes=["/dashboard","/quest","/markmap","/chronicle","/leaderboard","/profile","/settings","/onboarding","/reveal","/grade","/events","/achievements","/prestige"];
 export function AccountProvider({children}:{children:React.ReactNode}) {
  const router=useRouter(),pathname=usePathname();
- const {user,profile,activeQuest,hydrated,loading,hydrationError,hydrate}=useZynth();
+ const {user,profile,activeQuest,gradeReveal,pendingOutcome,hydrated,loading,hydrationError,hydrate}=useZynth();
  const protectedPage=protectedRoutes.some(p=>pathname===p||pathname.startsWith(p+"/"));
  useEffect(()=>{
    void hydrate();
@@ -27,7 +27,9 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
    if(!protectedPage||!hydrated||loading||hydrationError)return;
    if(!user)router.replace("/auth?mode=signin");
    else if(!profile && pathname!=="/onboarding")router.replace("/onboarding");
- },[protectedPage,hydrated,loading,hydrationError,user,profile,activeQuest,pathname,router]);
+   else if(profile&&gradeReveal&&pathname!=="/grade")router.replace("/grade");
+   else if(profile&&!gradeReveal&&pendingOutcome?.gradeSeen&&pendingOutcome.eventCursor<pendingOutcome.result.events.length&&pathname!=="/events")router.replace("/events");
+ },[protectedPage,hydrated,loading,hydrationError,user,profile,activeQuest,gradeReveal,pendingOutcome,pathname,router]);
  if(protectedPage && hydrationError)return <main className="account-state"><ZynthMark className="account-brand-mark"/><h1>Your journey is still yours.</h1><p role="alert">{hydrationError}</p><button onClick={()=>void hydrate()}>Try again →</button></main>;
  if(protectedPage && (!hydrated||loading||!user||(!profile&&pathname!=="/onboarding")))return <main className="account-state"><ZynthMark className="account-brand-mark"/><p role="status">Opening your journey…</p></main>;
  return <>{children}</>;

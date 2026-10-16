@@ -21,18 +21,27 @@ import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
 export default function DashboardPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { activeQuest, createPlannedQuest, setProfile, eventQueue } = useZynth();
+  const { activeQuest, createPlannedQuest, setProfile, eventQueue,gradeReveal,mode,journeyAction } = useZynth();
   const generationLock = useRef(false);
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(false);
   const [dailyChecked, setDailyChecked] = useState(false);
   const [dailyQ, setDailyQ] = useState<DailyQuestion | null>(null);
+  const [dailyBusy,setDailyBusy]=useState(false),[dailyError,setDailyError]=useState("");
   const [popupStage, setPopupStage] = useState<"energy" | "question" | "done">("done");
 
   // events pending? play them first
   useEffect(() => {
-    if (eventQueue.length > 0) router.replace("/events");
-  }, [eventQueue.length, router]);
+    if(gradeReveal)router.replace("/grade");
+    else if (eventQueue.length > 0) router.replace("/events");
+  }, [gradeReveal,eventQueue.length, router]);
+  const questionRequest=useRef<Promise<DailyQuestion|null>|null>(null);
+  const dailyQuestion=async(p:typeof profile)=>{
+    if(mode!=="trusted")return p?getDailyQuestion(p):null;
+    if(questionRequest.current)return questionRequest.current;
+    const request=journeyAction({kind:"daily_question"}).then(result=>result.question??null);questionRequest.current=request;
+    try{return await request;}finally{if(questionRequest.current===request)questionRequest.current=null;}
+  };
 
   // Daily pop-up: energy check + profiling question, once per day
   useEffect(() => {
@@ -46,13 +55,13 @@ export default function DashboardPage() {
         (a) => a.answered_at.slice(0, 10) === today
       );
       if (!answeredToday) {
-        void getDailyQuestion(profile).then((q) => {
+        void dailyQuestion(profile).then((q) => {
           if (q) {
             setDailyQ(q);
             setPopupStage("question");
           } else setPopupStage("done");
           setDailyChecked(true);
-        });
+        }).catch(()=>{setPopupStage("done");setDailyChecked(true);});
       } else { setPopupStage("done"); setDailyChecked(true); }
     }
   }, [profile?.energy_date, profile?.user_id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -63,6 +72,7 @@ export default function DashboardPage() {
     setGenerationError(false);
     setGenerating(true);
     try {
+    if(mode==="trusted"){await journeyAction({kind:"generate"});return;}
     // refresh adaptive state before generation
     const p = structuredClone(profile);
     const detected = detectUserState(p);
@@ -117,6 +127,13 @@ export default function DashboardPage() {
   const mission=missionProgress(profile,activeQuest);
 
   const answerEnergy = async (level: "high" | "mid" | "low") => {
+    if(dailyBusy)return;
+    if(mode==="trusted"){
+      setDailyBusy(true);setDailyError("");
+      try{await journeyAction({kind:"energy",energy:level});const q=await dailyQuestion(profile);if(q){setDailyQ(q);setPopupStage("question");}else setPopupStage("done");}
+      catch{setDailyError("We couldn’t save this check-in. Please try again, or choose Not now.");}finally{setDailyBusy(false);}
+      return;
+    }
     const p = structuredClone(profile);
     p.energy_today = level;
     p.energy_date = todayStr();
@@ -130,6 +147,11 @@ export default function DashboardPage() {
 
   const answerDaily = async (key: string | null) => {
     if (!dailyQ) return setPopupStage("done");
+    if(mode==="trusted"){
+      if(dailyBusy)return;setDailyBusy(true);setDailyError("");
+      try{await journeyAction({kind:"answer_daily",answer:key});setPopupStage("done");}catch{setDailyError("We couldn’t save this answer. Please try again.");}finally{setDailyBusy(false);}
+      return;
+    }
     const p = structuredClone(profile);
     p.continuous_profile_answers.push({
       question: dailyQ.question,
@@ -313,7 +335,7 @@ export default function DashboardPage() {
             >
               {popupStage === "energy" ? (
                 <>
-                  <button onClick={()=>setPopupStage("done")} className="mb-4 block ml-auto text-xs text-muted">Not now ×</button><p className="text-center text-sm text-muted">
+                  <button disabled={dailyBusy} onClick={()=>{setDailyError("");setPopupStage("done");}} className="mb-4 block ml-auto text-xs text-muted">Not now ×</button><p className="text-center text-sm text-muted">
                     Before anything — how&apos;s the engine today?
                   </p>
                   <div className="mt-5 flex justify-center gap-3">
@@ -326,6 +348,7 @@ export default function DashboardPage() {
                     ).map(([key, icon, label]) => (
                       <button
                         key={key}
+                        disabled={dailyBusy}
                         onClick={() => answerEnergy(key)}
                         className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-edge bg-bg py-4 transition-colors hover:border-amber"
                       >
@@ -347,6 +370,7 @@ export default function DashboardPage() {
                     {dailyQ.options.map((o) => (
                       <button
                         key={o.key}
+                        disabled={dailyBusy}
                         onClick={() => answerDaily(o.key)}
                         className="w-full rounded-lg border border-edge bg-bg px-4 py-3 text-left text-sm text-muted transition-colors hover:border-amber hover:text-primary"
                       >
@@ -355,6 +379,7 @@ export default function DashboardPage() {
                     ))}
                   </div>
                   <button
+                    disabled={dailyBusy}
                     onClick={() => answerDaily(null)}
                     className="mt-3 w-full text-center text-xs text-dim"
                   >
@@ -362,6 +387,7 @@ export default function DashboardPage() {
                   </button>
                 </>
               ) : null}
+              {dailyError&&<p role="alert" className="mt-3 text-xs text-amber">{dailyError}</p>}
             </motion.div>
           </motion.div>
         )}

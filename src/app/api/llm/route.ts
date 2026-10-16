@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     if(!token)return NextResponse.json({error:"Sign in required"},{status:401});
     const {data,error}=await createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}).auth.getUser(token);
     if(error||!data.user)return NextResponse.json({error:"Sign in required"},{status:401});
+    if(process.env.ZYNTH_TRUSTED_COMPLETION==="1")return NextResponse.json({error:"Use your journey actions for this request."},{status:403});
     const { prompt, purpose, expectJson } = await req.json();
     if (!prompt || typeof prompt !== "string" || prompt.length>48000 || !Object.hasOwn(MAX_TOKENS,purpose)) {
       return NextResponse.json({ error: "prompt required" }, { status: 400 });

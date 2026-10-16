@@ -30,14 +30,14 @@ function createAccountFixture() {
         if(state.failLeaderboard)return send({message:'Simulated board failure'},503);
         const current=state.tables.profiles.find(p=>p.user_id===owner);
         const norm=value=>(value??'').trim().toLowerCase().replace(/\s+/g,' '),member=p=>p.user_id===owner?account.user_metadata.zynth_leaderboard:p.fixture_membership;
-        const participants=state.tables.profiles.filter(p=>p.cumulative_exp>0&&!p.leaderboard_opt_out&&['global','regional'].includes(member(p)?.choice));
+        const participants=state.tables.profiles.filter(p=>!p.leaderboard_opt_out&&p.fixture_verified!==false);
         const area=p=>Object.fromEntries(['country','state','city'].map(key=>[key,norm(member(p)?.location?.[key])]));
         const regions=Array.from(new Map(participants.filter(p=>member(p)?.choice==='regional'&&Object.values(area(p)).every(Boolean)).map(p=>[JSON.stringify(area(p)),area(p)])).values());
         const mine=member(current);const selected=body.p_country||body.p_state||body.p_city?{country:norm(body.p_country),state:norm(body.p_state),city:norm(body.p_city)}:mine?.choice==='regional'?area(current):regions[0]??{country:'',state:'',city:''};
         const scope=body.p_scope??'global';
         const ranked=participants.filter(p=>(body.p_category==='all'||p.domain===body.p_category)&&(scope==='global'||member(p)?.choice==='regional'&&area(p).country===selected.country&&(scope==='national'||area(p).state===selected.state)&&(scope!=='local'||area(p).city===selected.city))).sort((a,b)=>b.cumulative_exp-a.cumulative_exp||a.user_id.localeCompare(b.user_id)).map((p,i)=>{const parts=p.display_name.trim().split(/\s+/);return {rank:i+1,display_name:parts[0]+(parts.length>1?' '+parts.at(-1)[0]+'.':''),domain:p.domain,level:p.level,streak:p.streak,score:p.cumulative_exp,is_user:p.user_id===owner};});
         const userRow=ranked.find(p=>p.is_user)??null;
-        return send({rows:ranked.slice(body.p_offset,body.p_offset+body.p_limit),total:ranked.length,userRank:userRow?.rank??0,userRow,participation:!['global','regional'].includes(mine?.choice)?'not_joined':current.leaderboard_opt_out?'opted_out':scope!=='global'&&mine.choice==='global'?'global_only':current.cumulative_exp<=0?'no_progress':body.p_category!=='all'&&body.p_category!==current.domain?'other_category':userRow?'ranked':'outside_region',updatedAt:new Date().toISOString(),region:selected,regions});
+        return send({rows:ranked.slice(body.p_offset,body.p_offset+body.p_limit),total:ranked.length,userRank:userRow?.rank??0,userRow,participation:current.leaderboard_opt_out?'opted_out':scope!=='global'&&mine?.choice!=='regional'?'global_only':body.p_category!=='all'&&body.p_category!==current.domain?'other_category':userRow?'ranked':'outside_region',updatedAt:new Date().toISOString(),region:selected,regions});
       }
       const table=url.pathname.split('/').at(-1);if(!state.tables[table])return send({message:'Unknown fixture table'},404);
       const matches=row=>(table==='leaderboard_cache'||row.user_id===owner)&&[...url.searchParams].every(([k,v])=>['select','order','limit','offset','on_conflict'].includes(k)||v.startsWith('eq.')&&String(row[k])===v.slice(3)||v.startsWith('neq.')&&String(row[k])!==v.slice(4));

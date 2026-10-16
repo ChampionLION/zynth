@@ -1,6 +1,39 @@
 # Progress update
 
-Updated: 15 October 2026 (Africa/Lagos).
+Updated: 16 October 2026 (Africa/Lagos).
+
+<!-- ZEC_PROGRESS_START -->
+## Current completion: 37%
+
+**37 of 100 weighted acceptance points complete; 63 points remaining.** Updated: 16 October 2026 (Africa/Lagos).
+
+Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
+
+- **M0 Architecture/documentation — 100%** (5/5 points): audit and versioned specification complete.
+- **M1 Quests/trusted progression — 95%** (21/22): all current server actions, gated client recovery and real Postgres privilege/concurrency checks pass locally; final hosted activation remains.
+- **M2 Profile/appearance — 88%** (7/8): implementation and local verification done; hosted cross-session proof remains.
+- **M3 Identity/avatar — 0%** (0/8).
+- **M4 Cosmetic inventory — 0%** (0/8).
+- **M5 World expansion — 0%** (0/8).
+- **M6 Living Mark Map — 0%** (0/7).
+- **M7 Chronicles foundation — 25%** (2/8): Lore Bible done; chapter runtime/first arc remain.
+- **M8 Personalization/archive — 0%** (0/5).
+- **M9 Chapter/world integration — 0%** (0/5).
+- **M10 Expansion readiness — 0%** (0/5).
+- **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
+
+**Next action:** finish the owner-approved coordinated M1 rollout after the private server key is configured, then verify M2 hosted persistence. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
+
+The original leaderboard UI and all four scopes are live; optional joining/location and unrestricted browsing are deployed at application commit eea7ce7fa5441a682554fb10c7396e37ff38af9b. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
+
+**How updates work:** the checked packages in ACTION_PLAN.md sum to the accepted points. Overall percentage uses those points directly; milestone percentages are rounded. Add implementation/check evidence before awarding points, update both progress/milestones together and preserve old entries. No points were awarded for writing this plan.
+<!-- ZEC_PROGRESS_END -->
+
+## Historical progress log
+
+Earlier entries below are dated snapshots. This dashboard and the action plan supersede their old pending-setup, deployment and no-percentage wording; they do not erase the original evidence or remaining limitations.
+
+### 15 October 2026 — Account and workspace checkpoint
 
 The app now has a minimal public landing page, real email/password accounts, and account-owned progress in Supabase. The primary product reference remains the complete application blueprint, with the user's aspiration-first onboarding and world-map additions.
 
@@ -125,3 +158,13 @@ Restored the original podium/list layout and all four scope tabs. First-time vis
 The owner separately approved the prepared participation/scopes migration; it is applied. It creates no tables/columns and changes no existing progress. Existing accounts must explicitly join before appearing. Hosted read-only checks confirm valid snapshots in all four scopes, anonymous execution denied and no private row fields. Zero initial participants is expected until consent is saved. The old Global RPC delegates to the new consent rules.
 
 Actual SQL tests, focused UI/SDK checks, lint, type checking and production build pass. The original two/one/three podium, scope browsing without location, regional membership, pagination, choice persistence and withdrawal are covered. Existing progression authority and broader expansion limits remain unchanged. Publication uses the already authorized GitHub/Vercel workflow; final deployment verification is recorded separately.
+
+## 16 October 2026 — Step 1 implementation and Global default
+
+Server-owned onboarding/private legacy archive, persisted generation plans, all existing gameplay mutation service paths and durable grade/event recovery are implemented behind a coordinated gate. Actual PostgreSQL separate-connection checks pass for overlapping generation/completion/skip requests, replay and revision conflicts; injected failures roll back quest/token changes. The real browser → Next → SDK → PostgreSQL fixture restores drafts and committed outcomes after a lost reply without duplicate rewards. Existing engine/account/voice suites, leaderboard SQL/UI checks, lint and the 29-entry production build pass. Phone settings/leaderboard layouts were inspected, and browser bundles contain neither local fixtures nor server credential names.
+
+The owner approved the foundation, actions and privilege-cutover migrations and activation after readiness checks. The compatible app is being published gated off; production activation waits for privately configured server credentials and the coordinated checks in docs/expansion/STEP1_ROLLOUT.md. Existing cloud progress stays in place; uncertain imported history never becomes new verified grant evidence. No hosted quest/reset/test-user mutation is used for release verification.
+
+The separately approved Global query is applied and read-only verified: all three verified saved profiles appear, including two at zero EXP. Settings opt-out is respected; optional approximate regional membership and unrestricted browsing remain. No user record was changed for this ranking fix.
+
+Weighted completion is 37/100 (37%); M1 is 21/22 (95%), with the final hosted activation point pending. M1-F was split into 2 local evidence points and 1 activation point, keeping the denominator unchanged. M11 dependency audit preparation was refreshed: the same 16 vulnerable package entries remain unresolved, so no hardening credit is added.

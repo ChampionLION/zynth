@@ -13,7 +13,9 @@ import { Particles } from "@/components/effects";
 export default function PrestigePage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { setProfile } = useZynth();
+  const { setProfile,mode,journeyAction } = useZynth();
+  const [requestId]=useState(()=>crypto.randomUUID());
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
   const [confirming, setConfirming] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -24,9 +26,12 @@ export default function PrestigePage() {
   }
 
   const doPrestige = async () => {
-    const p = applyPrestige(profile);
-    await setProfile(p);
-    setDone(true);
+    if(busy)return;setBusy(true);setError("");
+    try{
+      if(mode==="trusted")await journeyAction({kind:"prestige",requestId});
+      else await setProfile(applyPrestige(profile));
+      setDone(true);
+    }catch{setError("We couldn’t save this change. Please try again.");}finally{setBusy(false);}
   };
 
   if (done) {
@@ -99,7 +104,7 @@ export default function PrestigePage() {
               >
                 Not yet
               </button>
-              <button
+              <button disabled={busy}
                 onClick={doPrestige}
                 className="flex-1 rounded-lg bg-gold py-3 text-sm font-bold text-black"
               >
@@ -108,6 +113,7 @@ export default function PrestigePage() {
             </div>
           </div>
         )}
+        {error&&<p role="alert" className="mt-4 text-xs text-amber">{error}</p>}
       </div>
     </main>
   );

@@ -15,7 +15,7 @@ import type { OnboardingAnswers } from "@/lib/types";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const {user, profile, activeQuest, onboardingDraft, setProfile} = useZynth();
+  const {user, profile, activeQuest, onboardingDraft, setProfile,mode,journeyAction} = useZynth();
   const initialProfile = useRef(profile);
   const reducedMotion = useReducedMotion();
   const [step, setStep] = useState(onboardingDraft?.step ?? 0);
@@ -65,8 +65,11 @@ export default function OnboardingPage() {
     setSynthesizing(true);
     try {
       const complete = validateOnboardingAnswers(updated as OnboardingAnswers);
-      const result = await classifyOnboarding(complete);
-      await setProfile(buildProfile(user.id, user.name, result, complete.Q1[0]));
+      if(mode==="trusted")await journeyAction({kind:"onboard",answers:complete});
+      else {
+        const result = await classifyOnboarding(complete);
+        await setProfile(buildProfile(user.id, user.name, result, complete.Q1[0]));
+      }
       try { await clearOnboardingDraft(user.id); } catch { /* A saved profile takes precedence over an old draft. */ }
       router.replace("/reveal");
     } catch (e) {

@@ -11,8 +11,9 @@ import { CountUp } from "@/components/effects";
 
 export default function GradeRevealPage() {
   const router = useRouter();
-  const { gradeReveal, eventQueue, clearGradeReveal, profile } = useZynth();
+  const { gradeReveal, eventQueue, ackGrade, profile } = useZynth();
   const [t, setT] = useState(0);
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
 
   useEffect(() => {
     const timers = [400, 700, 1000, 1300, 1600, 1800, 2200].map((ms, i) =>
@@ -29,9 +30,10 @@ export default function GradeRevealPage() {
   const { gradeResult, expEarned, streakMultiplier, changedStats } = gradeReveal;
   const colors = GRADE_COLORS[gradeResult.grade];
 
-  const cont = () => {
-    clearGradeReveal();
-    router.replace(eventQueue.length > 0 ? "/events" : "/dashboard");
+  const cont = async () => {
+    if(busy)return;setBusy(true);setError("");
+    try{await ackGrade();router.replace(eventQueue.length > 0 ? "/events" : "/dashboard");}
+    catch{setError("We couldn’t save your place. Please try again.");setBusy(false);}
   };
 
   return (
@@ -145,12 +147,13 @@ export default function GradeRevealPage() {
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          onClick={cont}
+          onClick={()=>void cont()} disabled={busy}
           className="mt-8 w-full max-w-sm rounded-lg bg-amber py-3 font-semibold text-black"
         >
           Continue →
         </motion.button>
       )}
+      {error&&<p role="alert" className="mt-3 text-xs text-amber">{error}</p>}
     </main>
   );
 }

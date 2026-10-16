@@ -6,6 +6,10 @@ Owner's latest instruction: finish now and defer further tests to the next promp
 
 16 October follow-up: the M2/voice/six-stat changes and email reminder were pushed and deployed. The owner confirms the earlier migration and SMTP setup are complete. A subsequent functional-leaderboard request adds global/domain live ranking reads, full-board own position, counts/pagination, privacy/opt-out and refresh/error handling. Its separate read-only migration was explicitly approved, applied and verified on Supabase; focused SQL/browser checks pass. This resolves the old aggregation/current-user lookup gap below, while regional location preferences, progression authority and profession/reward integration remain open. Current details: [leaderboard implementation](../LEADERBOARD.md).
 
+## Current planning checkpoint — 16 October 2026
+
+**24% complete (24/100 weighted acceptance points).** The scoring source and next implementation batch are in [ACTION_PLAN.md](../../ACTION_PLAN.md). M0 is complete; M1 has 8/22 points; M2 has 7/8; M7 has 2/8; M11 has 2/11 for baseline evidence. All other milestones have no credited runtime package. This is a planning estimate, not production readiness. Hosted setup was reported complete by the owner, and the latest optional-participation leaderboard release is production-verified. Earlier checkpoints below retain their original verification scope; their pending-release/setup wording does not override the latest progress dashboard.
+
 ## Document format and authority
 
 At the owner's request, the revised blueprint and this report are Markdown documents. A Word export is no longer required. The [Complete Application Blueprint v2](<../blueprints/ZYNTH Complete Application Blueprint v2.md>) covers the expansion in 28 sections and separates requirements from current implementation. The original v1 Word document, extraction and historical PDF remain preserved; v1 numerical rules apply unless v2 explicitly supersedes them.
@@ -90,7 +94,7 @@ Other unresolved audited gaps include browser-owned progression and event/reveal
 7. Implement M7–M10: deterministic flexible chapters, truthful identity-aware branches, private paginated archive, chapter/world projections and compatibility fixtures for future content releases.
 8. Resolve dependency findings and remaining engine gaps; perform full release verification and reconcile all acceptance criteria. Seek separate authorization before any hosted migration, production deployment, remote push or external cost.
 
-No percentage-complete estimate is asserted. The full initiative remains open until its definition of done and milestone acceptance criteria are met.
+A weighted planning baseline was added on 16 October: 24/100 accepted points (24%). See ../../ACTION_PLAN.md for the scoring checklist and completion gates. The full initiative remains open until every acceptance criterion is met.
 
 ## 16 October 2026 — Original leaderboard and optional participation
 
@@ -99,3 +103,13 @@ Restored the original podium/list layout and all four scope tabs. First-time vis
 The owner separately approved the prepared participation/scopes migration; it is applied. It creates no tables/columns and changes no existing progress. Existing accounts must explicitly join before appearing. Hosted read-only checks confirm valid snapshots in all four scopes, anonymous execution denied and no private row fields. Zero initial participants is expected until consent is saved. The old Global RPC delegates to the new consent rules.
 
 Actual SQL tests, focused UI/SDK checks, lint, type checking and production build pass. The original two/one/three podium, scope browsing without location, regional membership, pagination, choice persistence and withdrawal are covered. Existing progression authority and broader expansion limits remain unchanged. Publication uses the already authorized GitHub/Vercel workflow; final deployment verification is recorded separately.
+
+## 16 October 2026 — Step 1 implementation and Global default
+
+Server-owned onboarding/private legacy archive, persisted generation plans, all existing gameplay mutation service paths and durable grade/event recovery are implemented behind a coordinated gate. Actual PostgreSQL separate-connection checks pass for overlapping generation/completion/skip requests, replay and revision conflicts; injected failures roll back quest/token changes. The real browser → Next → SDK → PostgreSQL fixture restores drafts and committed outcomes after a lost reply without duplicate rewards. Existing engine/account/voice suites, leaderboard SQL/UI checks, lint and the 29-entry production build pass. Phone settings/leaderboard layouts were inspected, and browser bundles contain neither local fixtures nor server credential names.
+
+The owner approved the foundation, actions and privilege-cutover migrations and activation after readiness checks. The compatible app is being published gated off; production activation waits for privately configured server credentials and the coordinated checks in docs/expansion/STEP1_ROLLOUT.md. Existing cloud progress stays in place; uncertain imported history never becomes new verified grant evidence. No hosted quest/reset/test-user mutation is used for release verification.
+
+The separately approved Global query is applied and read-only verified: all three verified saved profiles appear, including two at zero EXP. Settings opt-out is respected; optional approximate regional membership and unrestricted browsing remain. No user record was changed for this ranking fix.
+
+Weighted completion is 37/100 (37%); M1 is 21/22 (95%), with the final hosted activation point pending. M1-F was split into 2 local evidence points and 1 activation point, keeping the denominator unchanged. M11 dependency audit preparation was refreshed: the same 16 vulnerable package entries remain unresolved, so no hardening credit is added.

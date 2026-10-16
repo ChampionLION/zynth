@@ -6,12 +6,13 @@ async function main(){
  const db=new PGlite();
  try{
   await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE SCHEMA auth;
-  CREATE TABLE auth.users(id uuid PRIMARY KEY,raw_user_meta_data jsonb DEFAULT '{}');
+  CREATE TABLE auth.users(id uuid PRIMARY KEY,raw_user_meta_data jsonb DEFAULT '{}',confirmed_at timestamptz DEFAULT now());
   CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
   GRANT USAGE ON SCHEMA public,auth TO anon,authenticated; GRANT EXECUTE ON FUNCTION auth.uid() TO anon,authenticated;`);
   await db.exec(readFileSync("supabase/schema.sql","utf8"));
   await db.exec(readFileSync("supabase/migrations/20261016030828_live_leaderboard.sql","utf8"));
   await db.exec(readFileSync("supabase/migrations/20261016034313_leaderboard_membership_scopes.sql","utf8"));
+  await db.exec(readFileSync("supabase/migrations/20261016111757_leaderboard_global_by_default.sql","utf8"));
   await db.exec("GRANT SELECT,UPDATE ON public.profiles TO authenticated;");
   const owner="00000000-0000-4000-8000-000000000099";
   const ids=Array.from({length:60},(_,i)=>`00000000-0000-4000-8000-${String(i+1).padStart(12,"0")}`);
@@ -41,7 +42,7 @@ async function main(){
   await db.query("UPDATE public.profiles SET leaderboard_opt_out=false,cumulative_exp=1000 WHERE user_id=$1",[owner]);
   const tied=LeaderboardResultSchema.parse(await query());assert.equal(tied.userRank,2,"Equal scores use stable creation/account ordering");
   await db.query("UPDATE public.profiles SET cumulative_exp=1100 WHERE user_id=$1",[owner]);assert.equal(LeaderboardResultSchema.parse(await query()).userRank,1,"Saved progress must update ranking without a cron/cache job");
-  await db.query("UPDATE public.profiles SET cumulative_exp=0 WHERE user_id=$1",[owner]);assert.equal(LeaderboardResultSchema.parse(await query()).participation,"no_progress");
+  await db.query("UPDATE public.profiles SET cumulative_exp=0 WHERE user_id=$1",[owner]);assert.equal(LeaderboardResultSchema.parse(await query()).participation,"ranked");assert.equal(LeaderboardResultSchema.parse(await query()).userRow?.score,0);
   assert.equal(LeaderboardResultSchema.parse(await query("SOCIAL")).rows.length,0);
   await assert.rejects(()=>query("invalid"),/Invalid leaderboard/);await assert.rejects(()=>query("all",-1),/Invalid leaderboard/);await assert.rejects(()=>query("all",0,51),/Invalid leaderboard/);
   const membership=async(id:string,choice:string,location:unknown=null)=>{
@@ -56,9 +57,15 @@ async function main(){
   await membership(owner,"regional",{country:"Nigeria",state:"Lagos",city:"Ikeja"});
   assert.equal((await scoped("local")).total,3);assert.equal((await scoped("local")).userRank,3);assert.equal((await scoped("national")).total,4);
   assert.ok(!(await scoped("local")).rows.some(row=>"city" in row||"country" in row),"Per-user locations are never exposed in rank rows");
-  await membership(owner,"browse");assert.equal((await scoped("global")).userRank,0);assert.equal((await scoped("global")).participation,"not_joined");assert.equal((await scoped("local","Nigeria","Lagos","Ikeja")).total,2,"Browsers can read lists without joining");
+  await membership(owner,"browse");assert.ok((await scoped("global")).userRank>0,"Settings controls Global visibility, not legacy metadata");assert.equal((await scoped("local","Nigeria","Lagos","Ikeja")).total,2,"Anyone can read regions without joining");
   await db.exec("RESET ROLE;");await db.query("UPDATE auth.users SET raw_user_meta_data='{}' WHERE id=$1",[owner]);await db.exec("SET ROLE authenticated;");
-  assert.equal((await scoped("global")).participation,"not_joined");assert.equal(LeaderboardResultSchema.parse(await query()).userRank,0,"Legacy RPC also enforces membership");
+  assert.equal((await scoped("global")).participation,"ranked");assert.ok(LeaderboardResultSchema.parse(await query()).userRank>0,"Legacy RPC also includes verified accounts by default");
+  await db.exec("RESET ROLE;");
+  const zero="90000000-0000-4000-8000-000000000001",unverified="90000000-0000-4000-8000-000000000002";
+  await db.query("INSERT INTO auth.users(id,confirmed_at) VALUES($1,now()),($2,NULL)",[zero,unverified]);
+  for(const id of [zero,unverified])await db.query("INSERT INTO public.profiles(user_id,display_name,profession,domain,cumulative_exp,level,learning_style,behavior_signature,stats,onboarding_stats) VALUES($1,'New Private User','Designer','CREATIVE',0,1,'Practical Learner','test','{}','{}')",[id]);
+  await db.exec("SET ROLE authenticated;");assert.equal((await scoped("global")).total,62,"Verified zero-EXP accounts are included without joining; unverified accounts are excluded");
+  await db.query("UPDATE public.profiles SET leaderboard_opt_out=true WHERE user_id=$1",[owner]);assert.equal((await scoped("global")).total,61);assert.equal((await scoped("global")).participation,"opted_out");
   await assert.rejects(()=>scoped("invalid"),/Invalid leaderboard/);
   console.log("Leaderboard Postgres checks passed: real rankings/counts, category filters, paging, own rank outside page, ties, immediate progress/opt-out, anonymized output, private-profile RLS, authentication and bounded inputs.");
  }finally{await db.close();}

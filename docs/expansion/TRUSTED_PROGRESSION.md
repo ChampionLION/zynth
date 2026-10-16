@@ -51,3 +51,7 @@ No credential value was requested, fetched or committed for this foundation. No 
 ## Known timing and history limits
 
 The trusted service uses server-observed quest issuance age, not the browser's timer. This prevents caller-controlled elapsed-time claims but does not prove active work duration. Paused-session timing requires an explicit server session model if later needed. History remains the legacy profile array for compatibility; new outcomes/events are separately indexed. Migrating old unbounded arrays into pages is future work and must preserve their content.
+
+## 16 October Step 1 superseding status
+
+The earlier foundation-only status and required-next-work list above are historical. The server action boundary, gated client adoption/recovery and restrictive SQL cutover are now implemented and locally verified, including actual separate PostgreSQL connections and the browser-to-database flow. The owner has authorized the three migrations and activation after checks. See [the current rollout](STEP1_ROLLOUT.md) for exact SQL order, configuration, hosted status, preservation and recovery; do not infer activation from local test results.

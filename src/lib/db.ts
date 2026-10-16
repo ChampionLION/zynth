@@ -3,6 +3,8 @@ import type { AccountUser, OnboardingDraft, QuestDraft } from "./account-flow";
 import { newestDraft, parseOnboardingDraft, parseQuestDraft } from "./account-flow";
 import { isSupabaseConfigured, supabase } from "./supabase";
 import {EditableProfileSchema,type EditableProfile} from "./appearance";
+import {readJourneyState,trustedJourney,sendJourneyAction,journeyRequest} from "./journey-client";
+import type {PendingOutcome} from "./journey-contract";
 export { supabase };
 /** Data sync is independent of the model provider's mock/live setting. */
 export const isLive = isSupabaseConfigured;
@@ -31,6 +33,7 @@ export async function loadProfile(userId:string): Promise<Profile|null> {
   return profile?.user_id===userId ? profile : null;
 }
 export async function saveProfile(profile:Profile):Promise<void> {
+  if(trustedJourney(profile.user_id))throw new Error("Progress updates must be saved through your journey.");
   const row={...profile,updated_at:new Date().toISOString()};
   if(isLive()) {
     const {error}=await supabase().from("profiles").upsert(row,{onConflict:"user_id"});
@@ -60,6 +63,7 @@ export async function loadActiveQuest(userId:string):Promise<Quest|null> {
   return quest;
 }
 export async function saveActiveQuest(userId:string,quest:Quest|null):Promise<void> {
+  if(trustedJourney(userId))throw new Error("Challenges must be prepared through your journey.");
   if(isLive()) {
     if(!quest){
       const {error}=await supabase().from("quests").update({status:"completed",completed_at:new Date().toISOString()}).eq("user_id",userId).eq("status","active");
@@ -75,6 +79,7 @@ export async function saveActiveQuest(userId:string,quest:Quest|null):Promise<vo
   if(quest)writeLocal(LS_QUEST,quest);else localStorage.removeItem(LS_QUEST);
 }
 export async function retireQuest(userId:string,questId:string,status:"completed"|"skipped"):Promise<void>{
+ if(trustedJourney(userId))throw new Error("Challenges must be resolved through your journey.");
  if(isLive()){
    const {error}=await supabase().from("quests").update({status,completed_at:status==="completed"?new Date().toISOString():null}).eq("user_id",userId).eq("id",questId).eq("status","active");if(error)throw error;
  }else{const current=readLocal(LS_QUEST) as Quest|null;if(current?.id===questId)localStorage.removeItem(LS_QUEST);}
@@ -82,6 +87,7 @@ export async function retireQuest(userId:string,questId:string,status:"completed
 
 /** Repeated generation for a stable plan must not overwrite an existing draft. */
 export async function ensurePlannedQuest(userId:string,quest:Quest):Promise<Quest>{
+  if(trustedJourney(userId))throw new Error("Challenges must be prepared through your journey.");
   if(!isLive()){
     const existing=readLocal(LS_QUEST) as Quest|null;
     if(existing?.id===quest.id)return existing;
@@ -97,7 +103,23 @@ export async function ensurePlannedQuest(userId:string,quest:Quest):Promise<Ques
 }
 
 /** Only a verified account with the same email can import this browser's old local journey. */
-export async function loadAccountJourney(user:AccountUser):Promise<{profile:Profile|null;activeQuest:Quest|null}> {
+export async function loadAccountJourney(user:AccountUser):Promise<{profile:Profile|null;activeQuest:Quest|null;mode:"legacy"|"trusted";pendingOutcome:PendingOutcome|null}> {
+  const state=await readJourneyState(user.id);
+  if(state.mode==="trusted"){
+    const profile=state.profile??null,activeQuest=state.activeQuest??null;
+    if(!profile){
+      const legacy=(readLocal(LS_ACCOUNT)??readLocal(LS_USER)) as {id?:string;email?:string}|null;
+      const candidate=readLocal(LS_PROFILE) as Profile|null;
+      if(legacy?.id&&legacy.email?.toLowerCase()===user.email.toLowerCase()&&candidate?.user_id===legacy.id){
+        const snapshot={profile:candidate as unknown as Record<string,unknown>,quest:readLocal(LS_QUEST)};
+        // Oversize backups remain intact in the original browser. Never import
+        // claimed XP into the authoritative profile or promote legacy evidence.
+        if(new TextEncoder().encode(JSON.stringify(snapshot)).length<280000)await sendJourneyAction(user.id,{kind:"legacy_archive",snapshot});
+      }
+    }
+    if(activeQuest)activeQuest.draft=newestDraft(parseQuestDraft(activeQuest.draft,activeQuest.steps.length),readQuestDraft(user.id,activeQuest));
+    return {profile,activeQuest,mode:"trusted",pendingOutcome:state.pending??null};
+  }
   let profile=await loadProfile(user.id);
   if(!profile && isLive()) {
     const legacy=(readLocal(LS_ACCOUNT)??readLocal(LS_USER)) as {id?:string;email?:string}|null;
@@ -115,7 +137,7 @@ export async function loadAccountJourney(user:AccountUser):Promise<{profile:Prof
   }
   let activeQuest=profile ? await loadActiveQuest(user.id) : null;
   if(activeQuest && profile?.quest_history.some(q=>q.quest_id===activeQuest!.id))activeQuest=null;
-  return {profile,activeQuest};
+  return {profile,activeQuest,mode:"legacy",pendingOutcome:null};
 }
 
 const onboardingKey=(userId:string)=>`zynth:onboarding:${userId}`;
@@ -151,11 +173,22 @@ export async function saveQuestDraft(userId:string,questId:string,draft:QuestDra
   }
 }
 export function clearQuestDraft(userId:string,questId:string):void { localStorage.removeItem(questKey(userId,questId)); }
+const resetRequests=new Map<string,string>();
 export async function eraseProgress(user:AccountUser):Promise<void> {
   if(!isLive())throw new Error("Account access is not connected.");
+  if(trustedJourney(user.id)){
+    const key=`zynth:reset:${user.id}`;
+    let requestId=resetRequests.get(user.id);
+    try{requestId??=localStorage.getItem(key)??undefined;}catch{/* The in-memory receipt still prevents repeat requests. */}
+    requestId??=crypto.randomUUID();resetRequests.set(user.id,requestId);try{localStorage.setItem(key,requestId);}catch{/* Account storage may be disabled. */}
+    await journeyRequest(user.id,"reset",{confirmation:"reset-my-progress",requestId});
+    resetRequests.delete(user.id);try{localStorage.removeItem(key);}catch{/* Reset is already committed. */}
+  }
+  else {
   for(const table of ["quests","onboarding_drafts","profiles"]) {
     const {error}=await supabase().from(table).delete().eq("user_id",user.id);
     if(error)throw error;
+  }
   }
   for(const key of Object.keys(localStorage))if(key.startsWith(`zynth:quest:${user.id}:`)||key===onboardingKey(user.id))localStorage.removeItem(key);
   const legacy=(readLocal(LS_ACCOUNT)??readLocal(LS_USER)) as {email?:string}|null;

@@ -13,19 +13,18 @@ import type { ZynthEvent } from "@/lib/types";
 
 export default function EventsPage() {
   const router = useRouter();
-  const { shiftEvent } = useZynth();
-  const [current, setCurrent] = useState<ZynthEvent | null>(null);
+  const { eventQueue,ackEvent } = useZynth();
+  const current=eventQueue[0]??null;
+  const [busy,setBusy]=useState(false),[error,setError]=useState("");
 
   useEffect(() => {
     if (!current) {
-      const next = shiftEvent();
-      if (next) setCurrent(next);
-      else router.replace("/dashboard");
+      router.replace("/dashboard");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current]);
 
-  const advance = () => setCurrent(null);
+  const advance = async () => {if(busy)return;setBusy(true);setError("");try{await ackEvent();}catch{setError("We couldn’t save your place. Please try again.");}finally{setBusy(false);}};
 
   if (!current) return <main className="min-h-dvh" />;
 
@@ -38,7 +37,8 @@ export default function EventsPage() {
         exit={{ opacity: 0 }}
         className="relative flex min-h-dvh flex-col items-center justify-center px-8"
       >
-        <EventScreen event={current} onContinue={advance} />
+        <fieldset className="contents" disabled={busy} aria-busy={busy}><EventScreen event={current} onContinue={()=>void advance()} /></fieldset>
+        {error&&<p role="alert" className="mt-3 text-xs text-amber">{error}</p>}
       </motion.main>
     </AnimatePresence>
   );

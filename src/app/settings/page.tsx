@@ -10,6 +10,7 @@ import {EditableProfileSchema,type EditableProfile} from "@/lib/appearance";
 import type {Profile} from "@/lib/types";
 import {eraseProgress} from "@/lib/db";
 import {signOut as signOutAccount} from "@/lib/auth";
+import {journeyRequest} from "@/lib/journey-client";
 export default function SettingsPage(){
  const {profile,hydrated}=useRequireProfile();
  if(!hydrated||!profile)return null;
@@ -22,7 +23,7 @@ function restoredFields(profile:Profile):EditableProfile{
  return editable(profile);
 }
 function SettingsForm({profile}:{profile:Profile}){
- const router=useRouter(),{user,updateEditableProfile,reset}=useZynth();
+ const router=useRouter(),{user,updateEditableProfile,reset,mode}=useZynth();
  const {appearance,save:saveAppearance,retry,syncStatus,busy:appearanceBusy}=useAppearance();
  const [fields,setFields]=useState(()=>restoredFields(profile)),[saved,setSaved]=useState(()=>editable(profile));
  const [busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[notice,setNotice]=useState("");
@@ -68,6 +69,15 @@ function SettingsForm({profile}:{profile:Profile}){
    catch{setError("We couldn’t reset your progress. Please try again.");}
    finally{lock.current=false;setBusy(false);setConfirmReset(false);}
  };
+ const downloadEarlier=async()=>{
+   if(!user||busy)return;setBusy(true);setError(null);
+   try{
+     const result=await journeyRequest<{snapshot:unknown}>(user.id,"legacy");
+     if(!result.snapshot){setNotice("There is no earlier browser journey saved for this account.");return;}
+     const url=URL.createObjectURL(new Blob([JSON.stringify(result.snapshot,null,2)],{type:"application/json"}));
+     const link=document.createElement("a");link.href=url;link.download="zynth-earlier-journey.json";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+   }catch{setError("We couldn’t open your earlier journey. Please try again.");}finally{setBusy(false);}
+ };
  return <main className="app-page collection-page settings-page">
    <header className="workspace-header"><span>MAKE IT YOURS</span><span>ACCOUNT & APPEARANCE</span></header>
    <div className="settings-heading"><p className="eyebrow">YOUR SPACE</p><h1>Settings</h1><p>Adjust how you appear and how your world feels.</p></div>
@@ -75,8 +85,9 @@ function SettingsForm({profile}:{profile:Profile}){
    <form onSubmit={save}>
      <label htmlFor="display-name">Display name</label><input id="display-name" autoComplete="nickname" required maxLength={60} value={fields.display_name} disabled={busy} onChange={e=>{setFields({...fields,display_name:e.target.value});setNotice("");}}/>
      <label htmlFor="character-name">Character name <span>optional</span></label><input id="character-name" maxLength={60} value={fields.character_name??""} disabled={busy} placeholder="Your Wayfarer’s name" onChange={e=>{setFields({...fields,character_name:e.target.value});setNotice("");}}/>
-     <label className="settings-check"><input type="checkbox" checked={!fields.leaderboard_opt_out} disabled={busy} onChange={e=>setFields({...fields,leaderboard_opt_out:!e.target.checked})}/><span>Show me on the leaderboard<small>Only your first name and last initial are displayed.</small></span></label>
+     <label className="settings-check"><input type="checkbox" checked={!fields.leaderboard_opt_out} disabled={busy} onChange={e=>setFields({...fields,leaderboard_opt_out:!e.target.checked})}/><span>Show me on the leaderboard<small>Global is on by default for verified accounts. Turn this off to hide your entry. Only your first name and last initial are displayed; regional participation is optional.</small></span></label>
      <div className="settings-actions"><button type="submit" disabled={busy||!dirty} className="settings-save">{busy?"Saving…":"Save changes"}</button><button type="button" disabled={busy||!dirty} onClick={()=>{setFields(saved);setError(null);setNotice("Edits discarded.");}}>Discard</button></div>
+     {mode==="trusted"&&<button type="button" disabled={busy} className="mt-4 text-xs text-amber" onClick={()=>void downloadEarlier()}>Download earlier journey</button>}
      {dirty&&<p className="settings-status">You have unsaved changes.</p>}{notice&&<p role="status" className="settings-status">{notice}</p>}
    </form></section>
    <section className="settings-panel"><p className="eyebrow">02 / APPEARANCE</p><h2>Set the atmosphere.</h2><p>A quieter canvas, your way. Appearance never changes your progress.</p>

@@ -25,6 +25,7 @@ let gateProfile:Promise<void>|null=null;
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json"}});
 const jwt=(id:string)=>[Buffer.from(JSON.stringify({alg:"HS256",typ:"JWT"})).toString("base64url"),Buffer.from(JSON.stringify({sub:id,exp:Math.floor(Date.now()/1000)+3600,role:"authenticated"})).toString("base64url"),"testsignature"].join(".");
 globalThis.fetch=async(input,init)=>{
+ if(input==="/api/journey/state")return reply({mode:"legacy"});
  const url=new URL(typeof input==="string"?input:input instanceof URL?input.href:input.url);
  assert.equal(url.hostname,"account-test.supabase.co","Tests must never contact an external service");
  const method=init?.method??"GET",headers=new Headers(init?.headers);
@@ -39,6 +40,7 @@ globalThis.fetch=async(input,init)=>{
  }
  if(url.pathname==="/auth/v1/user")return caller?reply(caller):reply({msg:"Invalid token"},401);
  if(url.pathname==="/auth/v1/logout")return new Response(null,{status:204});
+ if(url.pathname==="/api/journey/state")return reply({mode:"legacy"});
  const table=url.pathname.split("/").at(-1)!;
  assert.ok(tables[table],`Unexpected request: ${url.pathname}`);
  if(!caller)return reply({message:"not authenticated"},401);

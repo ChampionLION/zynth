@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
           )}
           {userRank === 0 && (
             <p className="mt-6 text-center text-xs text-dim">
-              {participation==="not_joined"?"You can browse every list. Join whenever you’re ready.":participation==="global_only"?"You’re participating in Global. You can still browse every regional list.":participation==="opted_out"?"You’re browsing privately. You can change leaderboard visibility in Settings.":participation==="outside_region"?"You can browse this area too. Your regional entry follows the area you shared.":participation==="other_category"?`Your rank appears in All Skills and ${profile.domain.toLowerCase()}.`:"Complete a quest to earn EXP and appear in the rankings."}
+              {participation==="not_verified"?"Confirm your account to appear in the rankings.":participation==="global_only"?"You’re participating in Global. You can still browse every regional list.":participation==="opted_out"?"You’re browsing privately. You can change leaderboard visibility in Settings.":participation==="outside_region"?"You can browse this area too. Your regional entry follows the area you shared.":participation==="other_category"?`Your rank appears in All Skills and ${profile.domain.toLowerCase()}.`:"Your account’s rankings will appear here."}
             </p>
           )}
         </>

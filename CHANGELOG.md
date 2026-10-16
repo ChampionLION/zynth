@@ -1,5 +1,12 @@
 # Changelog
 
+## 16 October — trusted progression release preparation
+
+- Added gated server-owned onboarding, persisted quest plans and current gameplay actions, with private legacy archives and durable grade/event recovery.
+- Added owner rate budgets, atomic costs, replay-safe reset, restricted SQL cutover and separate-connection PostgreSQL/browser verification.
+- Made Global rankings default for verified profiles, including zero EXP, with Settings opt-out and optional regions. The approved query is applied.
+- Recorded 37% weighted progress and the owner-approved production rollout; activation is tracked separately from implementation.
+
 ## Unreleased — Evolution and Chronicles
 
 ### 16 October — Original leaderboard and optional joining
