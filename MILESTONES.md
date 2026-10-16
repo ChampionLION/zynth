@@ -134,6 +134,8 @@ Objective: validated editable names, safe save/discard and centralized light/dar
 
 Related owner additions — locally implemented and verified: voice replies with editable transcripts, local audio playback and saved text drafts for quests/missions; Overview shows all six stats in three desktop/two phone columns. Speech-provider accuracy and real-microphone transcription remain manual checks. See `docs/VOICE_REPLIES.md`.
 
+16 October functional leaderboard addition: global/domain rankings, true counts, pagination, own rank beyond the visible page, privacy/opt-out and refresh/error states are implemented. The owner approved the read-only ranking migration; it is applied and verified on the hosted project, with no profile/reward changes. Targeted PostgreSQL and browser checks pass. Regional rankings await location preferences; rank-triggered profession/reward grants remain outside this read-only feature. See `docs/LEADERBOARD.md`.
+
 ### ZEC-M3 Identity and Avatar Foundation — NOT STARTED
 
 Objective: prominent responsive avatar environment and optional editor. Scope/tasks: layered default, appearance preview/save/reset, keyboard/focus, room presentation, stats beside compact skills. Dependencies: M2, trusted persistence contract from M1. Acceptance: defaults, saved appearance, locked equipment, error fallback, mobile and keyboard tests. Evidence: none. References: blueprint section 8. Risk: no production avatar schema yet. Next: small coherent default and editor, not an asset explosion.

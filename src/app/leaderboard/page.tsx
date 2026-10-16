@@ -1,217 +1,63 @@
 "use client";
-
-// LEADERBOARD — scopes, categories, podium, list, sticky user row.
-// Climbing can trigger profession evolution (checked on load).
-
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import {useEffect,useState} from "react";
 import {BrandLogo} from "@/components/BrandLogo";
-import { useRequireProfile } from "@/components/useRequireProfile";
-import { useZynth } from "@/lib/store";
-import { BottomNav } from "@/components/BottomNav";
-import { DOMAIN_COLORS, domainColor } from "@/lib/ui";
-import {
-  getLeaderboard,
-  checkProfessionEvolution,
-  type Scope,
-  type Category,
-} from "@/lib/engines/leaderboard";
-import { writeMilestone } from "@/lib/engines/memory";
-import {isSupabaseConfigured} from "@/lib/supabase";
-import type { LeaderboardRow } from "@/lib/types";
-
-const SCOPES: { key: Scope; label: string }[] = [
-  { key: "local", label: "Local" },
-  { key: "state", label: "State" },
-  { key: "national", label: "National" },
-  { key: "global", label: "Global" },
-];
-const CATEGORIES: { key: Category; label: string }[] = [
-  { key: "all", label: "All Skills" },
-  { key: "TECHNICAL", label: "Technical" },
-  { key: "CREATIVE", label: "Creative" },
-  { key: "ANALYTICAL", label: "Analytical" },
-  { key: "SOCIAL", label: "Social" },
-  { key: "STRATEGIC", label: "Strategic" },
-];
-
-export default function LeaderboardPage() {
-  const { profile, hydrated } = useRequireProfile();
-  const { setProfile } = useZynth();
-  const [scope, setScope] = useState<Scope>("global");
-  const [category, setCategory] = useState<Category>("all");
-  const [rows, setRows] = useState<LeaderboardRow[]>([]);
-  const [userRank, setUserRank] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!profile) return;
-    setLoading(true);
-    void getLeaderboard(profile, scope, category).then(async (r) => {
-      setRows(r.rows);
-      setUserRank(r.userRank);
-      setTotal(r.total);
-      setLoading(false);
-
-      // Profession evolution check — skill-category board only
-      if (category === profile.domain && r.userRank > 0) {
-        const evo = checkProfessionEvolution(profile, r.userRank, r.total);
-        if (evo) {
-          const p = structuredClone(profile);
-          p.profession = evo.to;
-          writeMilestone(p, "profession_evolution", {
-            from: evo.from,
-            to: evo.to,
-            at_level: p.level,
-          });
-          await setProfile(p);
-        }
-      }
-    });
-  }, [profile?.user_id, scope, category]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  if (!hydrated || !profile) return null;
-
-  const top3 = rows.slice(0, 3);
-  const rest = rows.slice(3);
-  const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
-
-  return (
-    <main className="app-page collection-page">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Leaderboard</h1>
-        <BrandLogo tone="light" className="leaderboard-brand"/>
-      </div>
-
-      {!isSupabaseConfigured() && <p className="mt-3 text-xs text-muted">Demo rankings · sample players for preview</p>}
-      {isSupabaseConfigured() && !loading && rows.length===0 && <p className="mt-6 text-sm text-muted">Rankings are being prepared. Your progress is saved in your profile.</p>}
-      {/* SCOPE TABS */}
-      <div className="mt-4 flex rounded-lg border border-edge bg-surface p-1">
-        {SCOPES.map((s) => (
-          <button
-            key={s.key}
-            onClick={() => setScope(s.key)}
-            className={`flex-1 rounded-md py-1.5 text-xs transition-colors ${
-              scope === s.key ? "bg-amber text-black" : "text-muted"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      {/* CATEGORY PILLS */}
-      <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => setCategory(c.key)}
-            className={`shrink-0 rounded-full px-3 py-1 text-[11px] transition-colors ${
-              category === c.key
-                ? "bg-amber text-black"
-                : "border border-edge text-muted"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="mt-8 space-y-3">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="shimmer h-12 rounded-xl" />
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* PODIUM */}
-          <div className="mt-6 flex items-end justify-center gap-3">
-            {podiumOrder.map((r) => {
-              const isFirst = r.rank === 1;
-              return (
-                <motion.div
-                  key={r.rank}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className={`flex w-24 flex-col items-center rounded-t-xl border border-edge bg-surface px-2 pt-3 ${
-                    isFirst ? "pb-8" : "pb-4"
-                  } ${r.is_user ? "border-amber" : ""}`}
-                >
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
-                    style={{ background: domainColor(r.domain,.27), color: DOMAIN_COLORS[r.domain] }}
-                  >
-                    {r.display_name[0]}
-                  </div>
-                  <p className={`mt-1 text-lg font-black ${isFirst ? "text-gold" : "text-muted"}`}>
-                    {r.rank}
-                  </p>
-                  <p className="max-w-full truncate text-[11px]">{r.display_name}</p>
-                  <p className="text-[10px] text-dim">Lv {r.level}</p>
-                  <p className="text-[11px] font-semibold text-amber">
-                    {r.score.toLocaleString()}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* LIST */}
-          <div className="mt-4 space-y-1.5">
-            {rest.map((r) => (
-              <div
-                key={r.rank}
-                className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${
-                  r.is_user
-                    ? "border-amber bg-amber/10"
-                    : "border-edge bg-surface"
-                }`}
-              >
-                <span className="w-8 text-sm font-bold text-muted">{r.rank}</span>
-                <span className="flex-1 truncate text-sm">
-                  {r.display_name}
-                  {r.is_user && <span className="ml-1 text-[10px] text-amber">you</span>}
-                </span>
-                <span
-                  className="rounded-full px-2 py-0.5 text-[9px]"
-                  style={{
-                    background: domainColor(r.domain,.13),
-                    color: DOMAIN_COLORS[r.domain],
-                  }}
-                >
-                  {r.domain.slice(0, 4)}
-                </span>
-                <span className="w-10 text-right text-xs text-dim">Lv {r.level}</span>
-                <span className="w-16 text-right text-xs font-semibold text-amber">
-                  {r.score.toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* STICKY USER ROW */}
-          {userRank > 0 && !rows.slice(0, 50).some((r) => r.is_user) && (
-            <div className="fixed bottom-16 left-0 right-0 z-30 mx-auto max-w-lg px-4">
-              <div className="flex items-center gap-3 rounded-xl border border-amber bg-surface px-4 py-3 shadow-lg">
-                <span className="w-10 text-sm font-bold text-amber">#{userRank}</span>
-                <span className="flex-1 text-sm">You</span>
-                <span className="text-xs text-dim">of {total.toLocaleString()}</span>
-                <span className="text-xs font-semibold text-amber">
-                  {profile.cumulative_exp.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
-          {userRank === 0 && (
-            <p className="mt-6 text-center text-xs text-dim">
-              You compete in the {profile.domain.toLowerCase()} category — switch to it to see your rank.
-            </p>
-          )}
-        </>
-      )}
-      <BottomNav />
-    </main>
-  );
+import {useRequireProfile} from "@/components/useRequireProfile";
+import {BottomNav} from "@/components/BottomNav";
+import {domainColor,display} from "@/lib/ui";
+import {getLeaderboard,LEADERBOARD_PAGE_SIZE,type Category} from "@/lib/engines/leaderboard";
+import type {LeaderboardResult} from "@/lib/leaderboard-result";
+import type {LeaderboardRow} from "@/lib/types";
+const categories:Category[]=["all","TECHNICAL","CREATIVE","ANALYTICAL","SOCIAL","STRATEGIC"];
+export default function LeaderboardPage(){
+  const {profile,hydrated}=useRequireProfile();
+  const [category,setCategory]=useState<Category>("all"),[offset,setOffset]=useState(0),[refresh,setRefresh]=useState(0);
+  const [snapshot,setSnapshot]=useState<{key:string;data:LeaderboardResult}|null>(null),[error,setError]=useState("");
+  const [pending,setPending]=useState(true);
+  const key=`${profile?.user_id}:${category}:${offset}`;
+  useEffect(()=>{
+    if(!profile)return;
+    let current=true;const controller=new AbortController();setPending(true);setError("");
+    void getLeaderboard(profile,"global",category,offset,controller.signal).then(data=>{
+      if(!current)return;
+      if(offset>0&&offset>=data.total){setOffset(Math.max(0,Math.floor((data.total-1)/LEADERBOARD_PAGE_SIZE)*LEADERBOARD_PAGE_SIZE));return;}
+      setSnapshot({key,data});
+    }).catch(()=>{if(current)setError("We couldn’t load the rankings. Please try again.");}).finally(()=>{if(current)setPending(false);});
+    return()=>{current=false;controller.abort();};
+  // Only saved fields that can change this read need to refresh the board.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[key,refresh,profile?.cumulative_exp,profile?.leaderboard_opt_out,profile?.display_name,profile?.domain]);
+  useEffect(()=>{
+    const update=()=>{if(!document.hidden)setRefresh(value=>value+1);};
+    const interval=setInterval(update,60000);window.addEventListener("focus",update);
+    return()=>{clearInterval(interval);window.removeEventListener("focus",update);};
+  },[]);
+  if(!hydrated||!profile)return null;
+  const data=snapshot?.key===key?snapshot.data:null;
+  const loading=pending||!data&&!error;
+  const podium=data&&offset===0?data.rows.slice(0,3):[];
+  const rows=data?(offset===0?data.rows.slice(3):data.rows):[];
+  return <main className="app-page collection-page leaderboard-page">
+    <header className="workspace-header"><span>GROW TOGETHER</span><span>GLOBAL RANKINGS</span></header>
+    <div className="leaderboard-heading"><div><p className="eyebrow">EVERY STEP COUNTS</p><h1>Leaderboard</h1><p>Real journeys. Shared momentum. Ranked by saved lifetime EXP.</p></div><BrandLogo className="leaderboard-brand" tone="light"/></div>
+    <div className="leaderboard-toolbar"><div><span className="leaderboard-global">◎ Global</span><span>{data?`${data.total.toLocaleString()} ${data.total===1?"participant":"participants"}`:"Finding your community…"}</span></div><button type="button" disabled={pending} onClick={()=>setRefresh(value=>value+1)}>{pending?"Refreshing…":"Refresh ↻"}</button></div>
+    <div className="leaderboard-categories" role="group" aria-label="Ranking category">{categories.map(value=><button type="button" key={value} aria-pressed={category===value} onClick={()=>{setCategory(value);setOffset(0);}}>{value==="all"?"All skills":display(value.toLowerCase())}</button>)}</div>
+    <p className="leaderboard-note">First name and last initial only. You control visibility in <Link href="/settings">Settings</Link>. Regional boards will follow optional location preferences.</p>
+    {error?<div className="leaderboard-empty" role="alert"><h2>Rankings couldn’t load.</h2><p>{error}</p><button onClick={()=>setRefresh(value=>value+1)}>Try again</button></div>:loading?<div className="mt-8 space-y-3" role="status" aria-label="Loading rankings">{Array.from({length:5},(_,i)=><div key={i} className="shimmer h-14 rounded-xl"/>)}</div>:data&&<>
+      {data.participation==="opted_out"&&<p className="leaderboard-message">You’re browsing privately and aren’t included in these rankings. <Link href="/settings">Change visibility →</Link></p>}
+      {data.participation==="no_progress"&&<p className="leaderboard-message">Complete a quest to earn EXP and join the rankings.</p>}
+      {data.participation==="other_category"&&<p className="leaderboard-message">Your rank appears in All skills and {profile.domain.toLowerCase()}. You can explore every category.</p>}
+      {data.total===0?<section className="leaderboard-empty"><span aria-hidden="true">✧</span><h2>A new board. A first step.</h2><p>No public journeys have earned EXP in this category yet.</p><Link href="/dashboard">Continue your journey →</Link></section>:<>
+        {podium.length>0&&<section className="leaderboard-podium" aria-label="Leading journeys">{podium.map(row=><article key={row.rank} className={row.rank===1?"podium-first":""} aria-label={`Rank ${row.rank}: ${row.display_name}`}><span className="podium-rank">{row.rank===1?"✦":"#"}{row.rank}</span><div className="leaderboard-avatar" style={{background:domainColor(row.domain,.12),color:domainColor(row.domain)}}>{row.display_name[0]}</div><h2>{row.display_name}{row.is_user&&<small>you</small>}</h2><p>Level {row.level} · {row.domain.toLowerCase()}</p><strong>{row.score.toLocaleString()}<small>lifetime EXP</small></strong></article>)}</section>}
+        {rows.length>0&&<section className="leaderboard-list" aria-label="Rankings"><div className="leaderboard-list-heading"><span>RANK / WAYFARER</span><span>LIFETIME EXP</span></div><ol start={offset===0?4:offset+1}>{rows.map(row=><RankingRow key={row.rank} row={row}/>)}</ol></section>}
+        <div className="leaderboard-pagination"><span>{offset+1}–{Math.min(offset+data.rows.length,data.total)} of {data.total.toLocaleString()}</span><div><button disabled={offset===0||pending} onClick={()=>setOffset(value=>Math.max(0,value-LEADERBOARD_PAGE_SIZE))}>← Previous</button><button disabled={offset+data.rows.length>=data.total||pending} onClick={()=>setOffset(value=>value+LEADERBOARD_PAGE_SIZE)}>Next →</button></div></div>
+      </>}
+      {data.userRow&&<section className="leaderboard-own" aria-label="Your position"><div><span>YOUR POSITION</span><strong>#{data.userRank.toLocaleString()} <small>of {data.total.toLocaleString()}</small></strong></div><div><strong>{data.userRow.score.toLocaleString()}</strong><span>LIFETIME EXP</span></div></section>}
+      <p className="leaderboard-note">Updated {new Date(data.updatedAt).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}. Refreshes every minute while you’re here. Equal EXP is ordered by account creation.</p>
+    </>}
+    <BottomNav/>
+  </main>;
+}
+function RankingRow({row}:{row:LeaderboardRow}){
+  return <li className={row.is_user?"is-current-user":""}><span className="ranking-number">#{row.rank}</span><div className="ranking-person"><strong>{row.display_name}{row.is_user&&<small>you</small>}</strong><span>Level {row.level} · {row.domain.toLowerCase()}</span></div><strong>{row.score.toLocaleString()}</strong></li>;
 }

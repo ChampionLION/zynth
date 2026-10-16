@@ -30,6 +30,10 @@ The local Evolution and Chronicles foundation adds mission policy, validated pro
 
 The dashboard uses a fluid browser workspace with a desktop sidebar and columns. Below 700px it switches to bottom navigation and a single content column. Immersive quest and reveal screens remain centered. The design supports widescreen desktops and portrait mobile browsers without forcing a fixed aspect ratio.
 
+## Leaderboard
+
+Authenticated global/domain rankings now read saved lifetime EXP directly with pagination, account visibility, anonymized names and the user's full-board position. The authorized migration is applied; no cache-refresh job is required. Regional boards await optional location preferences. See [leaderboard implementation](docs/LEADERBOARD.md).
+
 ## Voice replies and appearance
 
 Quest and mission replies can be recorded in browsers with speech recognition, then reviewed as editable text before grading. Final words use the normal saved draft flow; playback audio stays only on the page. Typing remains available. See [voice reply behavior and browser checks](docs/VOICE_REPLIES.md).

@@ -4,6 +4,8 @@ Updated: **15 October 2026**, Africa/Lagos. Local branch: `feature/evolution-chr
 
 Owner's latest instruction: finish now and defer further tests to the next prompt. The checks reported below completed before that instruction. The last defensive recording-timeout cleanup and documentation edits were not followed by another test/build run. Production deployment, hosted preference migration and real microphone/provider checks remain pending.
 
+16 October follow-up: the M2/voice/six-stat changes and email reminder were pushed and deployed. The owner confirms the earlier migration and SMTP setup are complete. A subsequent functional-leaderboard request adds global/domain live ranking reads, full-board own position, counts/pagination, privacy/opt-out and refresh/error handling. Its separate read-only migration was explicitly approved, applied and verified on Supabase; focused SQL/browser checks pass. This resolves the old aggregation/current-user lookup gap below, while regional location preferences, progression authority and profession/reward integration remain open. Current details: [leaderboard implementation](../LEADERBOARD.md).
+
 ## Document format and authority
 
 At the owner's request, the revised blueprint and this report are Markdown documents. A Word export is no longer required. The [Complete Application Blueprint v2](<../blueprints/ZYNTH Complete Application Blueprint v2.md>) covers the expansion in 28 sections and separates requirements from current implementation. The original v1 Word document, extraction and historical PDF remain preserved; v1 numerical rules apply unless v2 explicitly supersedes them.

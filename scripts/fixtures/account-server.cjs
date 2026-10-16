@@ -10,7 +10,7 @@ function createAccountFixture() {
   const profile = buildProfile(owner,'Mira Cole',mockClassifyOnboarding({Q1:['Designer'],Q2:['A'],Q3:['B'],Q4:['C'],Q5:['D']}));
   profile.energy_date=now.slice(0,10);profile.energy_today='mid';
   const quest = {...mockGenerateQuest(profile,'mission',2),id:'00000000-0000-4000-8000-000000000004',created_at:now,date:now.slice(0,10),status:'active'};
-  const state = {failPreferences:false,failProfile:false,tables:{profiles:[profile],quests:[{id:quest.id,user_id:owner,quest_data:quest,status:'active',created_at:now,draft_data:{response:'',step_responses:[],current_step:0,elapsed_seconds:120,updated_at:now}}],onboarding_drafts:[],user_preferences:[]}};
+  const state = {failPreferences:false,failProfile:false,failLeaderboard:false,tables:{profiles:[profile],quests:[{id:quest.id,user_id:owner,quest_data:quest,status:'active',created_at:now,draft_data:{response:'',step_responses:[],current_step:0,elapsed_seconds:120,updated_at:now}}],onboarding_drafts:[],user_preferences:[]}};
   const server = http.createServer(async (req,res) => {
     res.setHeader('Access-Control-Allow-Origin','http://localhost:3002');
     res.setHeader('Access-Control-Allow-Headers','*');res.setHeader('Access-Control-Allow-Methods','GET,POST,PATCH,DELETE,OPTIONS');
@@ -22,6 +22,13 @@ function createAccountFixture() {
       if(url.pathname==='/auth/v1/user')return send(account);
       if(url.pathname==='/auth/v1/logout')return send({});
       if(req.headers.authorization!==`Bearer ${jwt}`)return send({message:'Local sign-in required'},401);
+      if(url.pathname==='/rest/v1/rpc/get_live_leaderboard'){
+        if(state.failLeaderboard)return send({message:'Simulated board failure'},503);
+        const current=state.tables.profiles.find(p=>p.user_id===owner);
+        const ranked=state.tables.profiles.filter(p=>p.cumulative_exp>0&&!p.leaderboard_opt_out&&(body.p_category==='all'||p.domain===body.p_category)).sort((a,b)=>b.cumulative_exp-a.cumulative_exp||a.user_id.localeCompare(b.user_id)).map((p,i)=>{const parts=p.display_name.trim().split(/\s+/);return {rank:i+1,display_name:parts[0]+(parts.length>1?' '+parts.at(-1)[0]+'.':''),domain:p.domain,level:p.level,streak:p.streak,score:p.cumulative_exp,is_user:p.user_id===owner};});
+        const userRow=ranked.find(p=>p.is_user)??null;
+        return send({rows:ranked.slice(body.p_offset,body.p_offset+body.p_limit),total:ranked.length,userRank:userRow?.rank??0,userRow,participation:current.leaderboard_opt_out?'opted_out':current.cumulative_exp<=0?'no_progress':body.p_category!=='all'&&body.p_category!==current.domain?'other_category':'ranked',updatedAt:new Date().toISOString()});
+      }
       const table=url.pathname.split('/').at(-1);if(!state.tables[table])return send({message:'Unknown fixture table'},404);
       const matches=row=>row.user_id===owner&&[...url.searchParams].every(([k,v])=>['select','order','limit','on_conflict'].includes(k)||v.startsWith('eq.')&&String(row[k])===v.slice(3)||v.startsWith('neq.')&&String(row[k])!==v.slice(4));
       const project=row=>{const fields=url.searchParams.get('select');return !fields||fields==='*'?row:Object.fromEntries(fields.split(',').map(k=>[k,row[k]]));};

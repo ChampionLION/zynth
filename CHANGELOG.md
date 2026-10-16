@@ -2,6 +2,14 @@
 
 ## Unreleased — Evolution and Chronicles
 
+### 16 October — Functional leaderboard
+
+- Replace the empty cache read with authenticated live global/domain rankings, pagination, real counts and full-board own rank.
+- Respect Settings opt-out and publish only shortened names and ranking fields; keep all private profile policies intact.
+- Add manual/focus/minute refresh, errors/retry and honest empty/category/privacy states. Regional rankings await optional location data.
+- Apply the explicitly approved read-only database migration; validate actual SQL, hosted permissions and focused browser flows. No profile/reward backfill or rank-based profession write.
+- Prevent account-form submission before initialization and use POST as the non-JavaScript fallback.
+
 ### Architecture and documentation
 
 - Registered initiative ZEC without renumbering historical milestones.
