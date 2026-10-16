@@ -1,6 +1,7 @@
 // ─── Engine 2: Quest type resolver + difficulty ──────────────────
 
 import type { AdaptiveState, Profile, QuestType } from "../types";
+import {missionProgress} from "./quest-cycle";
 
 export function daysSince(iso: string | null): number {
   if (!iso) return 999;
@@ -13,25 +14,18 @@ export function todayStr(): string {
 }
 
 export function resolveQuestType(profile: Profile): QuestType {
-  const { quest_history, streak, level } = profile;
+  const { quest_history, level } = profile;
 
   // First quest ever → calibration
   if (!quest_history || quest_history.length === 0) return "calibration";
+
+  // A playable mission follows seven qualifying completions, independent of days.
+  if (missionProgress(profile).eligible) return "mission";
 
   // Three consecutive Fails → weakness quest
   const lastThree = quest_history.slice(-3);
   if (lastThree.length === 3 && lastThree.every((q) => q.grade === "Fail")) {
     return "weakness";
-  }
-
-  // Weekly mission — streak multiple of 7
-  if (streak > 0 && streak % 7 === 0) {
-    const lastMission = [...quest_history]
-      .reverse()
-      .find((q) => q.quest_type === "mission");
-    if (!lastMission || daysSince(lastMission.completed_at) >= 7) {
-      return "mission";
-    }
   }
 
   // Challenge — level 10+, 20% chance
@@ -66,7 +60,7 @@ const STATE_QUEST_OVERRIDE: Partial<Record<AdaptiveState, QuestType[]>> = {
   burned_out: ["daily"],
   struggling: ["weakness"],
   returning: ["daily"],
-  peaking: ["challenge", "mission"],
+  peaking: ["challenge"],
 };
 
 export function resolveQuestPlan(profile: Profile): {
@@ -91,6 +85,7 @@ export function resolveQuestPlan(profile: Profile): {
   }
 
   const base = calculateDifficulty(profile.level);
-  const difficulty = Math.min(5, Math.max(1, base + (STATE_DIFFICULTY_MOD[state] ?? 0)));
+  const ordinary = Math.max(1, base + (STATE_DIFFICULTY_MOD[state] ?? 0));
+  const difficulty = Math.min(5, ordinary + (questType === "mission" ? 1 : 0));
   return { questType, difficulty };
 }

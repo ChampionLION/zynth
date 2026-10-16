@@ -2,6 +2,7 @@ import type { Profile, Quest } from "./types";
 import type { AccountUser, OnboardingDraft, QuestDraft } from "./account-flow";
 import { newestDraft, parseOnboardingDraft, parseQuestDraft } from "./account-flow";
 import { isSupabaseConfigured, supabase } from "./supabase";
+import {EditableProfileSchema,type EditableProfile} from "./appearance";
 export { supabase };
 /** Data sync is independent of the model provider's mock/live setting. */
 export const isLive = isSupabaseConfigured;
@@ -36,6 +37,15 @@ export async function saveProfile(profile:Profile):Promise<void> {
     if(error)throw error;
   } else writeLocal(LS_PROFILE,row);
 }
+/** Settings patch only editable fields, preserving concurrently earned progress. */
+export async function saveEditableProfile(userId:string,input:EditableProfile):Promise<EditableProfile>{
+ const clean=EditableProfileSchema.parse(input);
+ if(isLive()){
+   const {data,error}=await supabase().from("profiles").update({...clean,updated_at:new Date().toISOString()}).eq("user_id",userId).select("display_name,character_name,leaderboard_opt_out").single();
+   if(error)throw error;if(!data)throw new Error("Your profile could not be updated.");return EditableProfileSchema.parse(data);
+ }
+ const current=await loadProfile(userId);if(!current)throw new Error("Please sign in again.");await saveProfile({...current,...clean});return clean;
+}
 export async function loadActiveQuest(userId:string):Promise<Quest|null> {
   if(isLive()) {
     const {data,error}=await supabase().from("quests").select("*").eq("user_id",userId).eq("status","active").order("created_at",{ascending:false}).limit(1).maybeSingle();
@@ -63,6 +73,27 @@ export async function saveActiveQuest(userId:string,quest:Quest|null):Promise<vo
     return;
   }
   if(quest)writeLocal(LS_QUEST,quest);else localStorage.removeItem(LS_QUEST);
+}
+export async function retireQuest(userId:string,questId:string,status:"completed"|"skipped"):Promise<void>{
+ if(isLive()){
+   const {error}=await supabase().from("quests").update({status,completed_at:status==="completed"?new Date().toISOString():null}).eq("user_id",userId).eq("id",questId).eq("status","active");if(error)throw error;
+ }else{const current=readLocal(LS_QUEST) as Quest|null;if(current?.id===questId)localStorage.removeItem(LS_QUEST);}
+}
+
+/** Repeated generation for a stable plan must not overwrite an existing draft. */
+export async function ensurePlannedQuest(userId:string,quest:Quest):Promise<Quest>{
+  if(!isLive()){
+    const existing=readLocal(LS_QUEST) as Quest|null;
+    if(existing?.id===quest.id)return existing;
+    await saveActiveQuest(userId,quest);return quest;
+  }
+  const {data,error}=await supabase().from("quests").upsert({id:quest.id,user_id:userId,quest_data:quest,quest_type:quest.type,difficulty:quest.difficulty,status:"active",is_multi_step:quest.steps.length>0,steps:quest.steps,created_at:quest.created_at},{onConflict:"id",ignoreDuplicates:true}).select("*");
+  if(error)throw error;
+  const row=data?.[0]??(await supabase().from("quests").select("*").eq("id",quest.id).eq("user_id",userId).single()).data;
+  if(!row||row.status!=="active")throw new Error("This challenge has already been resolved. Refresh your journey.");
+  const result={...row.quest_data,id:row.id,status:row.status} as Quest;
+  result.draft=newestDraft(parseQuestDraft(row.draft_data,result.steps.length),readQuestDraft(userId,result));
+  return result;
 }
 
 /** Only a verified account with the same email can import this browser's old local journey. */

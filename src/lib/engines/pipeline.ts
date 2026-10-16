@@ -40,6 +40,7 @@ import {
 import { getDiscoveryMessage, getEvolvedSkillName, getBehaviorSummary } from "../llm/client";
 import { daysSince, todayStr } from "./quest";
 import { detectUserState } from "./adaptive";
+import {isSuccessfulChallenge} from "./quest-cycle";
 
 export interface PipelineResult {
   profile: Profile;
@@ -48,6 +49,11 @@ export interface PipelineResult {
   changedStats: string[];
   events: ZynthEvent[];
   leveledUp: boolean;
+}
+export interface PipelineEnrichment {
+ skillName: typeof getEvolvedSkillName;
+ discoveryMessage: typeof getDiscoveryMessage;
+ behaviorSummary: typeof getBehaviorSummary;
 }
 
 const STREAK_MILESTONES = [7, 14, 30, 60, 100];
@@ -60,11 +66,13 @@ export async function runPostGradePipeline(args: {
   responseTimeSeconds: number;
   exploit: ExploitCheckResult;
   swiftModeUsed: boolean;
+  enrichment?: PipelineEnrichment;
 }): Promise<PipelineResult> {
   if (args.profile.quest_history.some(q => q.quest_id === args.quest.id)) throw new Error("Quest already graded");
   if (args.exploit.rejected) throw new Error("Rejected submission cannot earn rewards");
   const profile = structuredClone(args.profile);
   const { quest, gradeResult, responseText, exploit } = args;
+  const enrichment=args.enrichment??{skillName:getEvolvedSkillName,discoveryMessage:getDiscoveryMessage,behaviorSummary:getBehaviorSummary};
   const events: ZynthEvent[] = [];
   const now = new Date().toISOString();
   const today = todayStr();
@@ -203,7 +211,7 @@ export async function runPostGradePipeline(args: {
     const skill = profile.skills.find((s) => s.name === evolutionCandidate);
     if (skill) {
       const tier = getSkillTier(skill.level).tier;
-      const newName = await getEvolvedSkillName(skill.name, profile, tier + 1);
+      const newName = await enrichment.skillName(skill.name, profile, tier + 1);
       if (newName && newName !== skill.name) {
         const oldName = skill.name;
         skill.evolutions = [...(skill.evolutions ?? []), oldName];
@@ -254,7 +262,7 @@ export async function runPostGradePipeline(args: {
     const eventDiscoveries = checkEventHiddenSkills(profile);
     const all = Array.from(new Set([...textDiscoveries, ...eventDiscoveries]));
     for (const name of all) {
-      const message = await getDiscoveryMessage(name, profile);
+      const message = await enrichment.discoveryMessage(name, profile);
       const existing = profile.hidden_skills.find((s) => s.name === name);
       if (existing) {
         existing.discovered = true;
@@ -284,7 +292,7 @@ export async function runPostGradePipeline(args: {
   } else if (grade === "Excellent") {
     awardXPCards(profile, XP_CARD_EARN_EVENTS.excellent_grade, "excellent");
   }
-  if (quest.type === "mission" && grade !== "Fail") {
+  if (quest.type === "mission" && isSuccessfulChallenge({grade})) {
     awardXPCards(profile, XP_CARD_EARN_EVENTS.mission_complete, "mission");
   }
   if (quest.type === "challenge" && grade !== "Fail") {
@@ -334,7 +342,7 @@ export async function runPostGradePipeline(args: {
   if (
     profile.quest_history.length - profile.behavior_summary_quest_count >= 10
   ) {
-    profile.behavior_summary_cache = await getBehaviorSummary(profile);
+    profile.behavior_summary_cache = await enrichment.behaviorSummary(profile);
     profile.behavior_summary_quest_count = profile.quest_history.length;
     if (profile.quest_history.length % 20 === 0) profile.memory.pattern_summary = profile.behavior_summary_cache;
   }

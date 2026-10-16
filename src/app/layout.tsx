@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AccountProvider } from "@/components/AccountProvider";
+import {AppearanceProvider} from "@/components/AppearanceProvider";
 import {BRAND_NAME,BRAND_TITLE,BRAND_DESCRIPTION,BRAND_URL,BRAND_SLOGAN,BRAND_EXPLANATION} from "@/lib/brand";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased"><AccountProvider>{children}</AccountProvider></body>
+      <body className="antialiased"><AppearanceProvider><AccountProvider>{children}</AccountProvider></AppearanceProvider></body>
     </html>
   );
 }

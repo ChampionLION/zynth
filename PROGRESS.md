@@ -59,3 +59,49 @@ Brand assets and generation notes are documented in `docs/brand/og-image-v1.md` 
 - Lint and production compilation pass. Browser checks confirm the headline fits the normal desktop preview and 390 × 844 phone viewport without horizontal overflow. Metadata and image endpoint checks pass locally.
 
 See `docs/brand/og-image-v2.md` for the current wording and image edit record.
+
+## 15 October 2026 — ZEC-M0 expansion discovery
+
+Status: IN PROGRESS. Registered **ZYNTH EVOLUTION & CHRONICLES — INFINITE WORLD EXPANSION** in the existing milestone file. Baseline working tree clean; created local branch `feature/evolution-chronicles`. Preserved the supplied directive in `docs/expansion/MASTER_DIRECTIVE.md` and original Word/PDF/text sources unchanged.
+
+Inspected installed stack, engine interfaces, routes, state, database adapters/schema/migrations, existing status records and original blueprint. Read-only hosted schema/policy/migration inspection confirms owner RLS, but owner writes can alter progression; no authoritative completion transaction existed at discovery. No live user data was changed. Created the engine matrix, explicit mission eligibility/legacy transition policy, source-conflict resolutions, and versioned expanded Markdown blueprint. Later checkpoint below supersedes the initial Word-export plan and records implementation.
+
+Baseline evidence: `npm test` passes all existing 68 local checks, 500 onboarding combinations and SDK-backed simulated account integration; `npm ls --depth=0` confirms the actual dependency versions. Database changes at discovery: none. Main limitation: browser math/whole-profile writes cannot support secure concurrent new rewards. Initial next actions were document export, mission policy and foundational UI; the owner subsequently selected Markdown. No remote push, deployment, live migration or paid API call is authorized.
+
+## 15 October 2026 — ZEC-M1 mission policy phase
+
+Status: IN PROGRESS, local domain policy verified; trusted reward persistence is incomplete. Added `src/lib/engines/quest-cycle.ts` as an Engine 2 helper, with explicit eligibility, unique-ID history replay, banked credits, legacy mission preservation, retry/active/completed state and stable user/cycle/attempt generation IDs. Quest planning now unlocks a slightly harder mission after seven qualifying completions, independent of streaks. Invalid multi-step model output falls back to real mission templates. A Bad mission does not earn the successful-mission card grant.
+
+Dashboard retains unfinished challenges across days, exposes mission progress, and no longer fades a returning user's character. Insert-if-absent generation preserves an existing planned quest/draft. Mark Map now calls fourteen-mark views segments and removes invented every-seventh-day mission markers; Overview continues using shared landscape geometry.
+
+Tests: `npm test` passes updated smoke checks, the 500-case onboarding sweep, existing SDK account integration and `expansion.test.ts`. The new suite checks six/seven, duplicate/failing/Swift/retest exclusion, generation failure, real mission steps, pending/retry, banking, completion/next cycle, legacy history, streak independence, prestige and concurrent planner IDs. Stable IDs are not a cross-request reward transaction test.
+
+Database changes: none applied. Remaining: trusted stored-quest grading, atomic reward/event commit, privilege hardening and real Postgres race tests. New permanent cosmetic/world rewards must remain disabled until that boundary is verified. Next independent work: M2 validated field-only settings and theme infrastructure. M1 is not complete.
+
+## 15 October 2026 — Markdown deliverables and local foundation checkpoint
+
+**M0 COMPLETED; M1, M2 and M7 IN PROGRESS. The full initiative is not complete.** The owner requested `.md`; the current v2 blueprint and development report are Markdown. The original v1 Word document remains unchanged. The unreviewed export draft is excluded from deliverables. See [Blueprint v2](<docs/blueprints/ZYNTH Complete Application Blueprint v2.md>) and [Development report](docs/expansion/DEVELOPMENT_REPORT.md).
+
+Implemented the staged response-only trusted completion service/route and CLI-generated additive migration with profile revision checks, service-only atomic commit, immutable outcomes/events and expiring grading leases. Actual SQL and full service tests execute in isolated embedded Postgres, including RLS, replay, rollback, conflict, ownership, concurrent service submissions and grader-failure cleanup. The browser still uses legacy writes; the new route remains disabled, and the migration is **not applied to hosted Supabase**. Other mutating flows, privilege cutover, durable reveal recovery and separate-connection races remain open.
+
+Settings now supports validated name edits, field-only save/discard, unsaved-change confirmation and account-scoped draft recovery. Semantic light/dark/system themes, operating-system following, cross-tab synchronization, reduced motion and native dialogs are implemented. SDK tests verify profile-field isolation, failure handling and preference restoration; SQL tests verify preference ownership. Hosted sync and new private-screen visual/keyboard checks remain pending. Browser fallback is explicitly labeled.
+
+Corrected ordinary retry IDs, mission skip/retry tracking, specific-quest retirement and calendar achievement handling for extra same-day missions. Skip remains a multi-write legacy operation, not a completed atomic server action. Overview retains the shared landscape. Authored the versioned Lore Bible; runtime engines 14–18, avatar, inventory, modular worlds, chapters and archive remain unimplemented.
+
+Latest verification: `npm test`, lint and production build pass, including all 24 build entries. Public/account entry HTTP checks and unauthenticated API rejection pass; these are not authenticated UI or inbox proof. Browser control is unavailable for new private UI checks. The dependency audit reports 16 vulnerable entries (1 critical, 13 high, 2 moderate); coordinated upgrades are a release blocker.
+
+Next: trusted onboarding/import and all gameplay mutations, client/result recovery and grants/RLS cutover, separate-connection tests, then avatar/inventory/regions/Chronicles in milestone order. The development report records the exact continuation sequence and limits. No expansion push, deployment, hosted migration, live user-data write or paid external call was performed.
+
+## 15 October 2026 — M2, voice replies and all six Overview stats
+
+**ZEC-M2 is implemented and locally verified.** Finished editable-name save/discard behavior, native navigation confirmation, free light/dark/system themes, reduced motion, shared domain/rarity colors and light dashboard surfaces. Offline appearance choices remain queued across reloads, with account-sync retry/reconnect recovery and explicit temporary behavior if browser storage is unavailable. Discard-and-leave now removes unsaved edits. Hosted preferences still need the prepared migration; no hosted changes were made.
+
+Added voice replies for ordinary quests and every mission step: microphone recording, optional local playback, language selection and editable transcripts. Final words append to existing text, save through normal account drafts and reach the existing grader; capture/finalization blocks submission or step changes. Audio stays only on the page and is cleared on leave/step/account changes. Permission/provider errors and unsupported browsers keep typing available. Browser speech processing is disclosed before recording. See [Voice replies](docs/VOICE_REPLIES.md).
+
+Overview now shows Focus, Consistency, Adaptability, Execution and both saved domain attributes, in three columns on desktop and two on phones. No numerical progression rules changed.
+
+Before the owner's request to defer further testing, engine/account/SQL/voice suites, lint and the 24-entry production build passed. Browser checks against a disposable local backend covered M2 saves/failures/discard, themes/system/reduced motion, pending preference retries, mobile layouts, six stats, synthetic microphone capture, draft recovery and both quest/mission grading. Screenshots were inspected. Real microphone/provider accuracy, hosted preferences and full release checks remain unverified. A final defensive recording-timeout cleanup and documentation edits were made afterward; further checks are deferred to the next prompt as requested. No push, deployment, hosted write or external cost occurred.
+
+## 16 October 2026 — Publication authorized
+
+The owner requested the current changes be pushed to GitHub and deployed to the existing Vercel site. Release preparation is in progress. This authorizes publishing application code, while leaving hosted database migrations and paid services outside scope. The trusted completion feature gate remains off; appearance cloud synchronization awaits its prepared migration. Prior implementation evidence and unresolved security/release limitations remain documented above and in the development report.

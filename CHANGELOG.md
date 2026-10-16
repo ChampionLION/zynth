@@ -1,0 +1,47 @@
+# Changelog
+
+## Unreleased — Evolution and Chronicles
+
+### Architecture and documentation
+
+- Registered initiative ZEC without renumbering historical milestones.
+- Preserved the expansion directive and original v1 specification.
+- Audited all thirteen engines and documented the missing trusted progression boundary.
+- Created version 2 of the expanded blueprint with explicit quest/mission, narrative, identity, world and security responsibilities.
+
+Implementation and verification entries are added as each phase is completed. No production changes are part of this release yet.
+
+### Mission policy and map correction
+
+- Resolve missions from seven qualifying completions rather than streaks; preserve historical mission records and bank excess progress.
+- Reuse stable mission plan identifiers and preserve unfinished challenges/drafts across days.
+- Require two or three linked steps in generated missions; keep fallback challenges playable.
+- Label map rendering pages as segments and draw mission markers from actual progress.
+- Remove absence-related character fading. Existing streak/EXP mechanics remain separate.
+- Added mission-domain regression tests; trusted transactional reward persistence remains unfinished.
+
+### Local trusted completion foundation
+
+- Added an authenticated, disabled-by-default completion route that accepts response input and derives gameplay outcomes from stored records through existing engines.
+- Added service-only SQL completion, immutable outcome/event records, revision conflict handling and expiring grading leases.
+- Generated the additive expansion migration with the Supabase CLI and validated its actual SQL, RLS, rollback, replay and trusted service using embedded Postgres.
+- Preserved the legacy client path pending a coordinated mutation/privilege cutover. No new permanent world or cosmetic rewards are enabled.
+- Fixed failed ordinary quest retries, skipped mission handling and calendar achievement checks for extra same-day missions.
+
+### Profile and appearance
+
+- Added validated display/character-name editing, field-only persistence, save/discard/error states and account-scoped draft recovery.
+- Added centralized workspace light/dark/system themes, account-scoped preference caching/sync and explicit reduced motion.
+- Added native accessible confirmation dialogs and theme-aware grade/radar colours.
+- Preference synchronization is verified locally; hosted migration and private-screen visual checks remain pending.
+
+### Documentation and release limits
+
+- Finished M2's local settings/theme work, including offline preference retry and actual discard-on-leave. Added shared domain/rarity tokens and corrected light dashboard surfaces.
+- Added voice recording with editable transcripts, local audio playback, language selection and recovery for quest/mission replies; transcripts reuse existing saved drafts and grading.
+- Overview now shows all six existing stats in three desktop/two phone columns.
+- Local browser checks passed against a disposable account backend using synthetic microphone input. Hosted migration and live speech accuracy remain separate checks. Further testing after the final defensive cleanup is deferred at the owner's request.
+
+- Added the versioned Lore Bible, trusted progression cutover guide and detailed development report.
+- Delivered the v2 blueprint and development report as Markdown at the owner's request; preserved the original v1 Word document unchanged.
+- Dependency audit reports 16 vulnerable entries, including one critical; framework/toolchain hardening remains a release blocker. No force upgrade, deployment or production data change was performed.

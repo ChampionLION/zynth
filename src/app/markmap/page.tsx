@@ -9,7 +9,6 @@ import { WorldMapArt } from "@/components/WorldMap";
 import { activeWorldChapter, buildWorldMarks, completedMarks, MARKS_PER_CHAPTER } from "@/lib/engines/markmap";
 import { GRADE_COLORS, formatDate } from "@/lib/ui";
 import { useZynth } from "@/lib/store";
-import { todayStr } from "@/lib/engines/quest";
 
 export default function MarkMapPage() {
   const router = useRouter();
@@ -34,15 +33,15 @@ export default function MarkMapPage() {
 
   if (!hydrated || !profile) return null;
   const completed=completedMarks(profile).length;
-  const readyQuest=activeQuest?.date===todayStr() && activeQuest.status==="active";
+  const readyQuest=activeQuest && activeQuest.status==="active";
   const isSelectedActive=selected?.state==="current";
   const selectChapter=(next:number)=>{setChapter(next);setSelectedNumber(null);};
 
   return <motion.main className="app-page world-page" initial={reducedMotion?false:{opacity:0,x:35}} animate={{opacity:1,x:0}} transition={{duration:.35}}>
     <header className="workspace-header"><span>THE ZYNTH ATLAS</span><span>{completed} {completed===1?"MARK":"MARKS"} MADE</span></header>
-    <div className="world-page-heading"><div><p className="eyebrow">A WORLD BUILT BY SHOWING UP</p><h1>Your Mark Map.</h1><p>Every completed day leaves a mark. Every seventh checkpoint is a mission landmark.</p></div><button className="quiet-link" onClick={()=>{setChapter(null);setSelectedNumber(null);}}>Return to my checkpoint ↗</button></div>
-    <div className="world-toolbar"><div><p className="eyebrow">CHAPTER {String(visibleChapter+1).padStart(2,"0")}</p><h2>{visibleChapter===0?"The first crossing":`Beyond the crossing · ${visibleChapter+1}`}</h2><span>Marks {visibleChapter*MARKS_PER_CHAPTER+1}–{(visibleChapter+1)*MARKS_PER_CHAPTER}</span></div><div className="world-chapter-controls"><button aria-label="Previous chapter" disabled={visibleChapter===0} onClick={()=>selectChapter(visibleChapter-1)}>←</button><span>{visibleChapter+1} / {Math.max(3,currentChapter+2)}</span><button aria-label="Next chapter" disabled={visibleChapter>=Math.max(3,currentChapter+2)-1} onClick={()=>selectChapter(visibleChapter+1)}>→</button></div></div>
-    <section className="world-map-frame" aria-label={`World map chapter ${visibleChapter+1}`}>
+    <div className="world-page-heading"><div><p className="eyebrow">A WORLD BUILT BY SHOWING UP</p><h1>Your Mark Map.</h1><p>Every completed day leaves a mark. Missions unlock after seven qualifying quests.</p></div><button className="quiet-link" onClick={()=>{setChapter(null);setSelectedNumber(null);}}>Return to my checkpoint ↗</button></div>
+    <div className="world-toolbar"><div><p className="eyebrow">SEGMENT {String(visibleChapter+1).padStart(2,"0")}</p><h2>{visibleChapter===0?"The first crossing":`Beyond the crossing · ${visibleChapter+1}`}</h2><span>Marks {visibleChapter*MARKS_PER_CHAPTER+1}–{(visibleChapter+1)*MARKS_PER_CHAPTER}</span></div><div className="world-chapter-controls"><button aria-label="Previous map segment" disabled={visibleChapter===0} onClick={()=>selectChapter(visibleChapter-1)}>←</button><span>{visibleChapter+1} / {Math.max(3,currentChapter+2)}</span><button aria-label="Next map segment" disabled={visibleChapter>=Math.max(3,currentChapter+2)-1} onClick={()=>selectChapter(visibleChapter+1)}>→</button></div></div>
+    <section className="world-map-frame" aria-label={`World map segment ${visibleChapter+1}`}>
       <div className="world-map-scroll" ref={mapScroll} tabIndex={0} aria-label="Scrollable world map; use arrow keys to explore">
         <div className="world-map-stage">
           <WorldMapArt marks={marks} />
@@ -56,7 +55,7 @@ export default function MarkMapPage() {
       <div className="world-detail-copy"><p className="eyebrow">{selected?.isMission?"MISSION LANDMARK":"CHECKPOINT"} / MARK {selected?.number}</p><h2>{selected?.entry?.quest_title ?? (isSelectedActive ? readyQuest?activeQuest!.quest_title:"Your next mark starts here." : selected?.state==="tomorrow"?"Today's journey is complete.":"Uncharted territory.")}</h2>{selected?.entry ? <><p><span style={{color:GRADE_COLORS[selected.entry.grade].text}}>{selected.entry.grade}</span> · {formatDate(selected.entry.completed_at)} · +{selected.exp} EXP</p>{selected.entry.feedback&&<p className="world-detail-feedback">{selected.entry.feedback}</p>}</> : <p>{isSelectedActive?readyQuest?`${activeQuest!.estimated_time} · ${activeQuest!.type}${activeQuest!.steps.length?` · ${activeQuest!.steps.length} steps`:""}`:"Your daily check-in and quest are waiting in Overview.":selected?.state==="tomorrow"?"Your next checkpoint opens tomorrow. Your progress is saved.":selected?.isMission?"A mission landmark ahead. Keep making marks to reach it.":"This checkpoint opens as your journey advances."}</p>}</div>
       {isSelectedActive && <button className="world-detail-action" onClick={()=>router.push(readyQuest?"/quest":"/dashboard")}>{readyQuest?"Begin quest":"Prepare my quest"} →</button>}
     </section>
-    <p className="world-map-note">The landscape is a view of your progress. Locked checkpoints are previews; weekly missions still follow your streak.</p>
+    <p className="world-map-note">Map segments organize your checkpoints. Story chapters follow their own narrative conditions.</p>
     <BottomNav />
   </motion.main>;
 }

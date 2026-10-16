@@ -10,10 +10,10 @@ import { formatDate, display } from "@/lib/ui";
 
 const RARITY_ORDER: Rarity[] = ["Legendary", "Rare", "Uncommon", "Common"];
 const RARITY_COLORS: Record<Rarity, string> = {
-  Legendary: "#FFD700",
-  Rare: "#534AB7",
-  Uncommon: "#1D9E75",
-  Common: "#8888A0",
+  Legendary: "var(--grade-excellent)",
+  Rare: "rgb(var(--domain-technical))",
+  Uncommon: "var(--grade-good)",
+  Common: "rgb(var(--color-muted))",
 };
 
 export default function AchievementsPage() {
@@ -65,14 +65,14 @@ export default function AchievementsPage() {
                     className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${
                       isUnlocked
                         ? "border-edge bg-surface"
-                        : "border-edge/50 bg-surface/50 opacity-60"
+                        : "border-edge/50 bg-surface/50"
                     }`}
                   >
                     <span
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm"
                       style={{
-                        borderColor: isUnlocked ? RARITY_COLORS[rarity] : "#2A2A3A",
-                        color: isUnlocked ? RARITY_COLORS[rarity] : "#4A4A60",
+                        borderColor: isUnlocked ? RARITY_COLORS[rarity] : "rgb(var(--color-edge))",
+                        color: isUnlocked ? RARITY_COLORS[rarity] : "rgb(var(--color-muted))",
                       }}
                     >
                       {isSecret ? "?" : "★"}

@@ -41,3 +41,6 @@ next-env.d.ts
 
 # Read-only blueprint extraction intermediates
 .review/
+
+# Local Supabase CLI cache
+/supabase/.temp/

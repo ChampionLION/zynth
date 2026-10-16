@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import {signIn,signUp,signOut,getCurrentUser} from "./src/lib/auth";
 import {useZynth} from "./src/lib/store";
 import {supabase} from "./src/lib/supabase";
-import {saveOnboardingDraft,saveQuestDraft,loadProfile} from "./src/lib/db";
+import {saveOnboardingDraft,saveQuestDraft,loadProfile,ensurePlannedQuest} from "./src/lib/db";
 import {resumePath,parseOnboardingDraft,parseQuestDraft,newestDraft} from "./src/lib/account-flow";
 import {buildProfile} from "./src/lib/engines/onboarding";
 import {mockClassifyOnboarding,mockGenerateQuest} from "./src/lib/llm/mock";
 import type {Quest} from "./src/lib/types";
+import {saveAppearance,loadAppearance,cachedAppearance,cacheAppearance,queueAppearance,pendingAppearance,acknowledgeAppearance} from "./src/lib/appearance-db";
 
 // Exercise the actual Supabase SDK, data layer, and store against a deterministic
 // Auth/PostgREST contract. No real accounts, email, or external requests are used.
@@ -17,7 +18,7 @@ const storage=new Map<string,string>();
 Object.defineProperty(globalThis,"window",{value:{location:{origin:"http://localhost:3001"}},configurable:true});
 Object.defineProperty(globalThis,"localStorage",{value:{getItem:(k:string)=>storage.get(k)??null,setItem:(k:string,v:string)=>storage.set(k,v),removeItem:(k:string)=>storage.delete(k)},configurable:true});
 const accounts=["a","b"].map((name,i)=>({id:`00000000-0000-4000-8000-00000000000${i+1}`,email:`${name}@local.test`,aud:"authenticated",role:"authenticated",user_metadata:{full_name:`Explorer ${name}`},created_at:new Date().toISOString()}));
-const tables:Record<string,Record<string,unknown>[]>={profiles:[],quests:[],onboarding_drafts:[]};
+const tables:Record<string,Record<string,unknown>[]>={profiles:[],quests:[],onboarding_drafts:[],user_preferences:[]};
 const originalFetch=globalThis.fetch;
 let failWrites=false;
 let gateProfile:Promise<void>|null=null;
@@ -48,7 +49,11 @@ globalThis.fetch=async(input,init)=>{
    if(value.startsWith("neq."))return String(row[key])!==value.slice(4);
    throw new Error(`Unhandled filter ${key}=${value}`);
  });
- if(method==="GET")return reply(tables[table].filter(matches).slice(0,Number(url.searchParams.get("limit")??100)));
+ const project=(row:Record<string,unknown>)=>{const select=url.searchParams.get("select");return !select||select==="*"?row:Object.fromEntries(select.split(",").map(key=>[key,row[key]]));};
+ if(method==="GET"){
+   const rows=tables[table].filter(matches).slice(0,Number(url.searchParams.get("limit")??100)).map(project);
+   return headers.get("accept")?.includes("vnd.pgrst.object+json")?rows.length===1?reply(rows[0]):reply({message:"Expected one row"},406):reply(rows);
+ }
  if(failWrites)return reply({message:"simulated save failure"},503);
  if(method==="POST"){
    if(body.user_id!==caller.id)return reply({message:"row-level security policy"},403);
@@ -57,7 +62,12 @@ globalThis.fetch=async(input,init)=>{
    if(index<0)tables[table].push(body);else if(!headers.get("prefer")?.includes("resolution=ignore-duplicates"))tables[table][index]=body;
    return headers.get("prefer")?.includes("return=representation")?reply(index<0?[body]:[]):new Response(null,{status:201});
  }
- if(method==="PATCH"){tables[table]=tables[table].map(r=>matches(r)?{...r,...body}:r);return new Response(null,{status:204});}
+ if(method==="PATCH"){
+   const changed=tables[table].filter(matches).map(r=>project({...r,...body}));
+   tables[table]=tables[table].map(r=>matches(r)?{...r,...body}:r);
+   if(headers.get("prefer")?.includes("return=representation"))return headers.get("accept")?.includes("vnd.pgrst.object+json")?changed.length===1?reply(changed[0]):reply({message:"Expected one row"},406):reply(changed);
+   return new Response(null,{status:204});
+ }
  if(method==="DELETE"){tables[table]=tables[table].filter(r=>!matches(r));return new Response(null,{status:204});}
  throw new Error(`Unexpected method ${method}`);
 };
@@ -84,6 +94,26 @@ async function main(){
  await useZynth.getState().setActiveQuest(quest,accounts[0].id);
  const draft={response:"My unfinished animation idea",step_responses:[],current_step:0,elapsed_seconds:81,updated_at:now};
  await saveQuestDraft(accounts[0].id,quest.id,draft);
+ const samePlans=await Promise.all(Array.from({length:8},()=>ensurePlannedQuest(accounts[0].id,{...quest,quest_title:"Must not overwrite saved challenge"})));
+ assert.equal(tables.quests.length,1);assert.ok(samePlans.every(q=>q.quest_title===quest.quest_title&&q.draft?.response===draft.response),"Concurrent insert-if-absent requests preserve stored content and draft");
+ await useZynth.getState().updateEditableProfile({display_name:"Updated Explorer",character_name:"Wayfarer",leaderboard_opt_out:true});
+ assert.equal(useZynth.getState().profile?.display_name,"Updated Explorer");
+ assert.equal(useZynth.getState().profile?.level,7);assert.equal(useZynth.getState().profile?.exp,35);
+ assert.deepEqual((tables.profiles[0]).quest_history,profile.quest_history,"Settings must not overwrite numerical/history fields");
+ await assert.rejects(()=>useZynth.getState().updateEditableProfile({display_name:"",character_name:null,leaderboard_opt_out:false}));
+ failWrites=true;await assert.rejects(()=>useZynth.getState().updateEditableProfile({display_name:"Unsaved",character_name:null,leaderboard_opt_out:false}));failWrites=false;
+ assert.equal(useZynth.getState().profile?.display_name,"Updated Explorer","Failed field saves preserve committed global state");
+ cacheAppearance(accounts[0].id,{theme:"dark",motion:"reduced"});
+ assert.deepEqual(cachedAppearance(accounts[1].id),{theme:"system",motion:"system"},"Appearance caches are account-scoped");
+ await saveAppearance(accounts[0].id,{theme:"light",motion:"reduced"});storage.clear();
+ assert.deepEqual(await loadAppearance(accounts[0].id),{theme:"light",motion:"reduced"},"Appearance restores from account without browser cache");
+ queueAppearance(accounts[0].id,{theme:"dark",motion:"system"});
+ failWrites=true;await assert.rejects(()=>saveAppearance(accounts[0].id,pendingAppearance(accounts[0].id)!));failWrites=false;
+ assert.deepEqual(pendingAppearance(accounts[0].id),{theme:"dark",motion:"system"},"Offline preference remains queued after failure/reload");
+ acknowledgeAppearance(accounts[0].id,{theme:"light",motion:"reduced"});assert.ok(pendingAppearance(accounts[0].id),"Stale acknowledgement must not remove newer preferences");
+ await saveAppearance(accounts[0].id,pendingAppearance(accounts[0].id)!);acknowledgeAppearance(accounts[0].id,{theme:"dark",motion:"system"});
+ assert.equal(pendingAppearance(accounts[0].id),null);assert.deepEqual(await loadAppearance(accounts[0].id),{theme:"dark",motion:"system"});
+ assert.equal(pendingAppearance(accounts[1].id),null,"Sync queue is scoped to its account");
  assert.equal(parseQuestDraft({...draft,current_step:1},0),null);
  assert.equal(newestDraft(draft,{...draft,response:"Newer",updated_at:new Date(Date.parse(now)+1000).toISOString()})?.response,"Newer");
  await signOut();useZynth.getState().reset();await useZynth.getState().hydrate();
@@ -96,6 +126,9 @@ async function main(){
  assert.equal(await loadProfile(accounts[0].id),null,"Other account queries are empty under RLS");
  await assert.rejects(()=>useZynth.getState().setProfile(profile),/sign in again/);
  await assert.rejects(()=>useZynth.getState().setActiveQuest(quest,accounts[0].id),/sign in again/);
+ await assert.rejects(()=>useZynth.getState().updateEditableProfile({display_name:"Intruder",character_name:null,leaderboard_opt_out:false}),/sign in again/);
+ assert.equal(await loadAppearance(accounts[0].id),null,"Another account cannot read appearance preferences");
+ await assert.rejects(()=>saveAppearance(accounts[0].id,{theme:"dark",motion:"system"}));
  storage.set("zynth_account",JSON.stringify({id:"legacy-b",email:accounts[1].email}));
  storage.set("zynth_profile",JSON.stringify({...profile,user_id:"legacy-b",level:4}));
  useZynth.getState().reset();await useZynth.getState().hydrate();

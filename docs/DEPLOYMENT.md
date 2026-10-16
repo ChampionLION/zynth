@@ -2,6 +2,10 @@
 
 Updated 15 October 2026.
 
+## 16 October 2026 release request
+
+The owner explicitly authorized a GitHub push and Vercel deployment of the current local work. This supersedes the expansion directive's earlier restriction for these two actions only. No hosted database migration, data reset or paid service is included. The staged trusted completion route remains disabled; hosted appearance preferences retain their labeled browser fallback until their migration is separately authorized. This is an incremental M2/voice/Overview release, not completion of the full expansion or its security cutover. Broader tests remain deferred as requested; prior local verification is recorded in the development report.
+
 ## Targets
 
 - GitHub: `ChampionLION/zynth`, production branch `master`, repository root contains `package.json`.

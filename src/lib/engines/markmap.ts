@@ -1,7 +1,10 @@
 import type { Profile, QuestHistoryEntry } from "../types";
 import { todayStr } from "./quest";
+import {missionProgress} from "./quest-cycle";
 
-export const MARKS_PER_CHAPTER = 14;
+/** Rendering segments are not narrative chapters. Alias retained for old clients. */
+export const MARKS_PER_SEGMENT = 14;
+export const MARKS_PER_CHAPTER = MARKS_PER_SEGMENT;
 export const WORLD_POINTS = [
   [115, 470], [170, 350], [260, 395], [335, 295], [425, 365], [490, 255], [595, 315],
   [695, 205], [795, 265], [895, 185], [1005, 265], [1050, 385], [945, 460], [835, 510],
@@ -29,21 +32,24 @@ export function completedMarks(profile: Profile): { entry: QuestHistoryEntry; ex
   return [...days.values()];
 }
 
-export function activeWorldChapter(profile: Profile): number {
+export function activeWorldSegment(profile: Profile): number {
   return Math.floor(completedMarks(profile).length / MARKS_PER_CHAPTER);
 }
+/** @deprecated This is a visual segment, not a narrative chapter. */
+export const activeWorldChapter=activeWorldSegment;
 
 export function buildWorldMarks(profile: Profile, chapter = activeWorldChapter(profile), today = todayStr()): WorldMark[] {
   const marks = completedMarks(profile);
   const dayDone = profile.last_quest_date === today;
+  const missionDue=missionProgress(profile).eligible;
   const safeChapter = Math.max(0, Math.floor(chapter));
   return WORLD_POINTS.map(([x,y], index) => {
     const overall = safeChapter * MARKS_PER_CHAPTER + index;
     const completed = marks[overall];
     return {
       number: overall + 1, x, y,
-      state: completed ? "completed" : overall === marks.length ? dayDone ? "tomorrow" : "current" : "future",
-      isMission: (overall + 1) % 7 === 0 || completed?.entry.quest_type === "mission",
+      state: completed ? "completed" : overall === marks.length ? dayDone&&!missionDue ? "tomorrow" : "current" : "future",
+      isMission: completed?.entry.quest_type === "mission" || (overall===marks.length&&missionDue),
       entry: completed?.entry ?? null,
       exp: completed?.exp ?? 0,
     };

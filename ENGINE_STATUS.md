@@ -53,3 +53,18 @@ All 68 local checks, the 500-combination onboarding sweep, lint, TypeScript, and
 ## 15 October 2026 account update
 
 Public landing and email/password access now lead into the existing engines. Authenticated identity replaces local identity; account hydration restores profiles, current quest drafts, and partial onboarding. Practice/AI mode no longer controls database synchronization. The new integration suite verifies account continuity and isolation using the actual SDK with a simulated backend. See PROGRESS.md and docs/DEPLOYMENT.md for live checks and release status.
+
+## ZEC expansion working branch — 15 October 2026
+
+Current detailed engine matrix: `docs/expansion/ENGINE_AUDIT.md`. Historical findings above are retained; the following supersedes their mission/map wording.
+
+- Engine 2 now projects seven qualifying unique completions into a pending playable mission, with banked credits, legacy compatibility, retries, stable plan IDs and explicit Swift/retest/failure exclusion. Streaks remain separate. Successful additional same-day missions no longer break the calendar-based Flawless Week check in Engine 11.
+- Mark Map uses fourteen-mark **segments**, not narrative chapters, and mission markers reflect actual progress. Unfinished challenges retain their drafts across days. Returning users no longer fade.
+- Engine 3 has a new staged server completion boundary and service-only atomic SQL commit, immutable outcomes/events, grading leases and version checks. `database.integration.test.ts` executes the real SQL and full trusted service in embedded Postgres. This is a locally verified foundation, not a completed production security cutover: current client writes and other mutation flows remain to migrate.
+- Profile settings patch only editable fields and preserve concurrent numerical progress. Free light/dark/system themes and explicit reduced motion are implemented. The preference migration is prepared and locally SQL-tested, not hosted.
+- Engines 14–18 are still SPECIFIED ONLY. Canonical lore documentation exists; runtime chapters, avatar/equipment, inventory and modular living regions are not implemented.
+- `npm audit` reports 16 vulnerable package entries (1 critical, 13 high, 2 moderate), including Next.js and the existing styling/lint toolchain. No force upgrade was performed; framework/toolchain hardening is a release acceptance blocker under ZEC-M11.
+
+No remote push, deployment, hosted migration or live user-data mutation is part of this branch's authorization. See `docs/expansion/TRUSTED_PROGRESSION.md` and the current development report for exact continuation work.
+
+M2 follow-up: settings/themes now pass local browser interaction checks against a disposable account fixture, including offline preference recovery and discard-on-leave. Overview exposes all six stored stats. Voice replies transcribe to editable text and reuse existing drafts and Engine 3/pipeline grading; audio remains page-local. Synthetic-microphone browser checks completed both ordinary quest and mission grading. This adds no new engine or reward rules. Further testing after the final defensive cleanup is deferred at the owner's request; hosted preference sync and live speech-provider accuracy remain unverified. See `docs/VOICE_REPLIES.md`.

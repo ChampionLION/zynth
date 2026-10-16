@@ -11,16 +11,17 @@ import { useRequireProfile } from "@/components/useRequireProfile";
 import { OverviewMapBackground } from "@/components/WorldMap";
 import { BottomNav } from "@/components/BottomNav";
 import { DifficultyPips, Particles } from "@/components/effects";
-import { DOMAIN_COLORS, display } from "@/lib/ui";
+import { DOMAIN_COLORS, domainColor, display } from "@/lib/ui";
 import { resolveQuestPlan, todayStr, daysSince } from "@/lib/engines/quest";
 import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive";
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
+import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { activeQuest, setActiveQuest, setProfile, eventQueue } = useZynth();
+  const { activeQuest, createPlannedQuest, setProfile, eventQueue } = useZynth();
   const generationLock = useRef(false);
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(false);
@@ -75,15 +76,14 @@ export default function DashboardPage() {
     );
     const quest: Quest = {
       ...generated,
-      id: crypto.randomUUID(),
+      id: await plannedQuestId(p.user_id,questType,missionProgress(p).cycle,questType==="mission"?missionProgress(p).attempts:p.quest_history.filter(q=>q.completed_at.slice(0,10)===todayStr()&&q.quest_type!=="mission").length,todayStr()),
       status: "active",
       created_at: new Date().toISOString(),
       date: todayStr(),
     };
     const latest = useZynth.getState().profile;
     if (!latest || latest.user_id !== p.user_id) return;
-    await setProfile({...latest, current_adaptive_state: detected.state});
-    await setActiveQuest(quest,p.user_id);
+    await createPlannedQuest(quest,p.user_id);
     } catch { setGenerationError(true); } finally { generationLock.current = false; setGenerating(false); }
   };
 
@@ -92,21 +92,17 @@ export default function DashboardPage() {
     if (!profile || !hydrated) return;
     if (!dailyChecked || generationError || popupStage !== "done") return;
     const doneToday = profile.last_quest_date === todayStr();
-    if (!activeQuest && !doneToday && !generating) {
+    if (!activeQuest && (!doneToday||missionProgress(profile).eligible) && !generating) {
       void generateTodaysQuest();
     }
-    if (activeQuest && activeQuest.date !== todayStr() && activeQuest.status === "active") {
-      // stale quest from a previous day — regenerate
-      void generateTodaysQuest();
-    }
+    // Keep unfinished challenges and their drafts, including missions after a break.
   }, [profile, hydrated, activeQuest, popupStage, dailyChecked, generationError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const characterState = useMemo(() => {
     if (!profile) return "active";
     const absent = daysSince(profile.last_active);
     const trailing = profile.quest_history.slice(-3);
-    if (absent >= 7) return "long_absent";
-    if (absent >= 3) return "absent";
+    if (absent >= 3) return "returning";
     if (trailing.length === 3 && trailing.every((q) => q.grade === "Excellent")) return "peak";
     if (profile.streak >= 7) return "streak";
     if (profile.last_quest_date === todayStr()) return "active";
@@ -118,6 +114,7 @@ export default function DashboardPage() {
   const color = DOMAIN_COLORS[profile.domain];
   const expPct = Math.min(100, (profile.exp / profile.exp_to_next) * 100);
   const doneToday = profile.last_quest_date === todayStr();
+  const mission=missionProgress(profile,activeQuest);
 
   const answerEnergy = async (level: "high" | "mid" | "low") => {
     const p = structuredClone(profile);
@@ -192,8 +189,9 @@ export default function DashboardPage() {
       </p>
 
       {/* QUEST CARD */}
+      <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`${mission.progress} of 7 qualifying quests toward your next mission.`} <span>Streaks and story chapters progress separately.</span></p>
       <div className="quest-feature">
-        {doneToday && !activeQuest ? (
+        {doneToday && !activeQuest && !mission.eligible ? (
           <div className="py-6 text-center">
             <p className="text-2xl">✓</p>
             <p className="mt-2 font-semibold">Today&apos;s mark is complete.</p>
@@ -245,21 +243,23 @@ export default function DashboardPage() {
       </div>
 
       <div className="section-label mt-8"><h2>Your attributes</h2><span>BUILT THROUGH ACTION</span></div>
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <dl aria-label="Your attributes" className="overview-attributes mt-4 grid grid-cols-2 gap-3">
         {(
           [
             ["Focus", profile.stats.focus],
             ["Consistency", profile.stats.consistency],
+            ["Adaptability", profile.stats.adaptability],
+            ["Execution", profile.stats.execution],
             [profile.stats.stat_5.name, profile.stats.stat_5.value],
             [profile.stats.stat_6.name, profile.stats.stat_6.value],
           ] as [string, number][]
-        ).map(([name, value]) => (
-          <div key={name} className="rounded-xl border border-edge bg-surface px-4 py-3">
-            <p className="text-[11px] text-muted">{display(name)}</p>
-            <p className="text-xl font-bold">{value}</p>
+        ).map(([name, value],index) => (
+          <div key={index} className="rounded-xl border border-edge bg-surface px-4 py-3">
+            <dt className="text-[11px] text-muted">{display(name)}</dt>
+            <dd className="text-xl font-bold">{value}</dd>
           </div>
         ))}
-      </div>
+      </dl>
 
 <section className="journey-card"><p className="eyebrow">EVERY MARK MATTERS</p><h2>A little further, every day.</h2><p>Your journey is built one deliberate action at a time.</p><button className="quiet-link" onClick={()=>router.push("/markmap")}>Explore your Mark Map →</button></section></section><aside className="dashboard-aside"><section className="identity-card"><div className="section-label"><h2>Your synthesis</h2><span>● {display(characterState)}</span></div>      {/* CHARACTER AREA */}
       <div className="relative mt-4 flex h-44 items-center justify-center">
@@ -269,17 +269,15 @@ export default function DashboardPage() {
         <motion.div
           animate={{
             scale: characterState === "peak" ? [1, 1.04, 1] : 1,
-            opacity:
-              characterState === "long_absent" ? 0.35
-              : characterState === "absent" ? 0.6 : 1,
+            opacity: 1,
           }}
           transition={{ repeat: characterState === "peak" ? Infinity : 0, duration: 2 }}
           className="relative flex h-32 w-32 items-center justify-center rounded-full"
           style={{
-            background: `radial-gradient(circle, ${color}33 0%, transparent 70%)`,
+            background: `radial-gradient(circle, ${domainColor(profile.domain,.2)} 0%, transparent 70%)`,
             filter:
               characterState === "active" || characterState === "peak" || characterState === "streak"
-                ? `drop-shadow(0 0 20px ${color}88)`
+                ? `drop-shadow(0 0 20px ${domainColor(profile.domain,.53)})`
                 : "none",
           }}
         >

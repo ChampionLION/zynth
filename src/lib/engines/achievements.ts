@@ -41,11 +41,16 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     description: "Excellent or Good every day for 7 straight days",
     rarity: "Rare", xpCards: 3, visibility: "hidden",
     check: (p) => {
-      const last7 = p.quest_history.slice(-7);
+      const days=new Map<string,{date:string;successful:boolean}>();
+      for(const quest of [...p.quest_history].sort((a,b)=>a.completed_at.localeCompare(b.completed_at))){
+        const day=quest.completed_at.slice(0,10),previous=days.get(day);
+        days.set(day,{date:day,successful:(previous?.successful??true)&&(quest.grade==="Excellent"||quest.grade==="Good")});
+      }
+      const last7 = [...days.values()].slice(-7);
       return (
         last7.length === 7 &&
-        last7.every((q) => q.grade === "Excellent" || q.grade === "Good") &&
-        last7.every((q,i) => i===0 || Math.round((Date.parse(q.completed_at.slice(0,10))-Date.parse(last7[i-1].completed_at.slice(0,10)))/86400_000)===1)
+        last7.every(q=>q.successful) &&
+        last7.every((q,i) => i===0 || Math.round((Date.parse(q.date)-Date.parse(last7[i-1].date))/86400_000)===1)
       );
     },
   },

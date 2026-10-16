@@ -16,11 +16,15 @@ import { runPostGradePipeline } from "@/lib/engines/pipeline";
 import { spendToken } from "@/lib/engines/economy";
 import { todayStr } from "@/lib/engines/quest";
 import {cacheQuestDraft,saveQuestDraft} from "@/lib/db";
+import {missionProgress} from "@/lib/engines/quest-cycle";
+import {writeMilestone} from "@/lib/engines/memory";
+import {VoiceReply} from "@/components/VoiceReply";
+import {Dialog} from "@/components/Dialog";
 
 export default function QuestPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
-  const { user, activeQuest, setActiveQuest, setProfile, applyPipelineResult } = useZynth();
+  const { user, activeQuest, retireActiveQuest, setProfile, applyPipelineResult } = useZynth();
 
   const [response, setResponse] = useState("");
   const [stepResponses, setStepResponses] = useState<string[]>([]);
@@ -30,6 +34,7 @@ export default function QuestPage() {
   const [skipConfirm, setSkipConfirm] = useState(false);
   const [backConfirm, setBackConfirm] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
+  const [voiceBusy,setVoiceBusy]=useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const submissionLock = useRef(false);
   const [rejected, setRejected] = useState(false);
@@ -77,14 +82,14 @@ export default function QuestPage() {
   const ss = String(seconds % 60).padStart(2, "0");
 
   const nextStep = () => {
-    if (!response.trim()) return;
+    if (!response.trim()||voiceBusy) return;
     setStepResponses([...stepResponses, response]);
     setResponse("");
     setCurrentStep(currentStep + 1);
   };
 
   const submit = async () => {
-    if (!response.trim() || submissionLock.current) return;
+    if (!response.trim() || submissionLock.current || voiceBusy) return;
     submissionLock.current = true;
     setSubmitError(null);
     setEvaluating(true);
@@ -143,16 +148,22 @@ export default function QuestPage() {
   };
 
   const skip = async () => {
+    if(submissionLock.current||voiceBusy)return;submissionLock.current=true;setSubmitError(null);
+    try{
     const p = structuredClone(profile);
-    if (!spendToken(p)) {
+    const recorded=p.memory.milestones.some(m=>m.type==="quest_skipped"&&m.quest_id===activeQuest.id);
+    if (!recorded && !spendToken(p)) {
       setSkipConfirm(false);
       return;
     }
     p.last_quest_date = todayStr(); // skip preserves the day
     p.last_active = new Date().toISOString();
+    if(!recorded)writeMilestone(p,"quest_skipped",{quest_id:activeQuest.id});
+    if(activeQuest.type==="mission"&&!p.memory.milestones.some(m=>m.type==="mission_skipped"&&m.quest_id===activeQuest.id))writeMilestone(p,"mission_skipped",{quest_id:activeQuest.id,cycle:missionProgress(p).cycle});
     await setProfile(p);
-    await setActiveQuest(null,p.user_id);
+    await retireActiveQuest("skipped",p.user_id);
     router.replace("/dashboard");
+    }catch{setSubmitError("We couldn’t finish skipping this challenge. Please reopen your journey before trying again.");setSkipConfirm(false);}finally{submissionLock.current=false;}
   };
 
   if (evaluating) {
@@ -181,6 +192,8 @@ export default function QuestPage() {
       {/* TOP BAR */}
       <div className="flex items-center justify-between">
         <button
+          disabled={voiceBusy}
+          aria-label="Back to your journey"
           onClick={() =>
             response.trim() || stepResponses.length
               ? setBackConfirm(true)
@@ -267,12 +280,16 @@ export default function QuestPage() {
       </div>
 
       {/* INPUT */}
+      <VoiceReply key={`${user?.id}:${activeQuest.id}:${currentStep}`} value={response} onChange={setResponse} onBusyChange={setVoiceBusy}/>
+      <label htmlFor="quest-response" className="mt-5 text-xs font-medium text-muted">Your reply / editable transcript</label>
       <textarea
+        id="quest-response"
+        disabled={voiceBusy}
         maxLength={24000}
         value={response}
         onChange={(e) => setResponse(e.target.value)}
-        placeholder="Write your response here..."
-        className="mt-4 min-h-[200px] flex-1 resize-none rounded-xl border border-edge bg-surface p-4 text-sm leading-relaxed text-primary placeholder:text-dim"
+        placeholder="Type your answer, or record it above and review the transcript here…"
+        className="mt-2 min-h-[200px] flex-1 resize-none rounded-xl border border-edge bg-surface p-4 text-sm leading-relaxed text-primary placeholder:text-dim disabled:opacity-70"
       />
       <p className="mt-2 text-xs text-muted" role="status">{syncStatus}</p>
 
@@ -287,7 +304,7 @@ export default function QuestPage() {
         </button>
         <button
           onClick={() => setSkipConfirm(true)}
-          disabled={profile.tokens < 1}
+          disabled={profile.tokens < 1||voiceBusy}
           className="rounded-lg border border-edge px-4 py-3 text-sm text-muted disabled:opacity-30"
         >
           Skip ◈{profile.tokens}
@@ -295,7 +312,7 @@ export default function QuestPage() {
         {isLastStep ? (
           <button
             onClick={submit}
-            disabled={!response.trim()}
+            disabled={!response.trim()||voiceBusy}
             className="flex-1 rounded-lg bg-amber py-3 font-semibold text-black transition-opacity disabled:opacity-30"
           >
             {isMultiStep ? "Complete Mission →" : "Submit →"}
@@ -303,7 +320,7 @@ export default function QuestPage() {
         ) : (
           <button
             onClick={nextStep}
-            disabled={!response.trim()}
+            disabled={!response.trim()||voiceBusy}
             className="flex-1 rounded-lg bg-amber py-3 font-semibold text-black transition-opacity disabled:opacity-30"
           >
             Next Step →
@@ -379,21 +396,11 @@ function ConfirmModal({
   onCancel: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-8"
-    >
-      <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        className="w-full max-w-sm rounded-2xl border border-edge bg-surface p-6"
-      >
-        <h3 className="font-semibold">{title}</h3>
+    <Dialog title={title} onClose={onCancel}>
         <p className="mt-2 text-sm text-muted">{body}</p>
         <div className="mt-5 flex gap-3">
           <button
+            autoFocus
             onClick={onCancel}
             className="flex-1 rounded-lg border border-edge py-2.5 text-sm text-muted"
           >
@@ -406,7 +413,6 @@ function ConfirmModal({
             {confirmLabel}
           </button>
         </div>
-      </motion.div>
-    </motion.div>
+    </Dialog>
   );
 }

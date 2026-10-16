@@ -9,7 +9,7 @@ import {BrandLogo} from "@/components/BrandLogo";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { useZynth } from "@/lib/store";
 import { BottomNav } from "@/components/BottomNav";
-import { DOMAIN_COLORS } from "@/lib/ui";
+import { DOMAIN_COLORS, domainColor } from "@/lib/ui";
 import {
   getLeaderboard,
   checkProfessionEvolution,
@@ -141,7 +141,7 @@ export default function LeaderboardPage() {
                 >
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
-                    style={{ background: DOMAIN_COLORS[r.domain] + "44", color: DOMAIN_COLORS[r.domain] }}
+                    style={{ background: domainColor(r.domain,.27), color: DOMAIN_COLORS[r.domain] }}
                   >
                     {r.display_name[0]}
                   </div>
@@ -177,7 +177,7 @@ export default function LeaderboardPage() {
                 <span
                   className="rounded-full px-2 py-0.5 text-[9px]"
                   style={{
-                    background: DOMAIN_COLORS[r.domain] + "22",
+                    background: domainColor(r.domain,.13),
                     color: DOMAIN_COLORS[r.domain],
                   }}
                 >

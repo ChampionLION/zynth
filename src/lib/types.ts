@@ -101,6 +101,7 @@ export interface QuestHistoryEntry {
   response?: string;
   swift_mode_used?: boolean;
   response_time_seconds?: number;
+  retest_of?: string;
 }
 
 export interface Milestone {
@@ -151,6 +152,7 @@ export interface ContinuousProfileAnswer {
 }
 
 export interface Profile {
+  progression_revision?: number; // Added by the staged trusted-progression migration.
   user_id: string;
   display_name: string;
   aspiration?: string | null; // Added in schema v2; absent on existing profiles.

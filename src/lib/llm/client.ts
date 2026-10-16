@@ -120,6 +120,7 @@ export async function generateQuest(
         "quest_generation"
       );
       const parsed = QuestResultSchema.parse(parseJson(raw));
+      if((questType==="mission"||questType==="prestige")&&(parsed.steps.length<2||parsed.steps.length>3))throw new Error("A mission needs two or three linked steps");
       return {
         ...parsed,
         type: questType,

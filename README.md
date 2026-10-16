@@ -8,7 +8,7 @@ Install dependencies with `npm install`, copy `.env.example` to `.env.local`, co
 
 ## Checks
 
-- `npm test` — engine regression checks plus account persistence/isolation integration checks using the actual SDK with a simulated backend.
+- `npm test` — engine, mission, appearance and voice lifecycle checks; account persistence/isolation using the actual SDK with a simulated backend; actual migration/RLS/transaction checks in isolated embedded Postgres.
 - `npm run lint` — lint checks.
 - `npm run build` — production compilation, type checking, and page generation.
 
@@ -20,11 +20,21 @@ See [ENGINE_STATUS.md](ENGINE_STATUS.md) for all 13 engine connections and remai
 
 Onboarding v2 starts with a written aspiration, followed by four ordinary scenarios. Question definitions and signal mappings are shared by local classification and live prompts. Existing profiles remain valid. Existing Supabase databases need the nullable column migration in `supabase/migrations/20261014_onboarding_aspiration.sql` before new profiles are saved.
 
-Mark Map is now a landscape of fourteen checkpoints per chapter, with mission landmarks every seventh mark. It uses successful quest days, groups same-day retries, and excludes failed attempts. The same artwork and progression appear behind Overview.
+Mark Map is a landscape of fourteen checkpoints per rendering segment. Mission landmarks reflect actual mission progress; narrative chapters are separate. It uses successful quest days, groups same-day retries, and excludes failed attempts. The same artwork and progression appear behind Overview. Seven qualifying quests unlock a playable mission independently of streaks.
+
+## Expansion branch
+
+The local Evolution and Chronicles foundation adds mission policy, validated profile editing, free light/dark/system themes and reduced motion. Trusted completion and its migration are staged and tested locally; the browser still uses legacy progression writes. Keep the staged route disabled until the coordinated security cutover is complete. Avatar, inventory, modular regions and runtime chapters remain planned. No expansion changes have been deployed or applied to the hosted database. See the [development report](docs/expansion/DEVELOPMENT_REPORT.md) and [trusted progression guide](docs/expansion/TRUSTED_PROGRESSION.md).
 
 ## Layout
 
 The dashboard uses a fluid browser workspace with a desktop sidebar and columns. Below 700px it switches to bottom navigation and a single content column. Immersive quest and reveal screens remain centered. The design supports widescreen desktops and portrait mobile browsers without forcing a fixed aspect ratio.
+
+## Voice replies and appearance
+
+Quest and mission replies can be recorded in browsers with speech recognition, then reviewed as editable text before grading. Final words use the normal saved draft flow; playback audio stays only on the page. Typing remains available. See [voice reply behavior and browser checks](docs/VOICE_REPLIES.md).
+
+Settings supports editable names, save/discard, light/dark/system themes, reduced motion and account preference retry. M2 is verified locally; hosted preference synchronization requires the prepared migration. Overview shows all six core/domain stats with three desktop/two phone columns.
 
 ## Brand identity
 
@@ -34,5 +44,9 @@ The approved staircase Z and serif wordmark are shared through `BrandLogo`. The 
 
 - [Progress](PROGRESS.md)
 - [Milestones](MILESTONES.md)
-- [Complete application blueprint](<docs/blueprints/ZYNTH Complete Application Blueprint v1.docx>)
+- [Complete application blueprint v2 — Markdown](<docs/blueprints/ZYNTH Complete Application Blueprint v2.md>)
+- [Original complete application blueprint v1 — preserved](<docs/blueprints/ZYNTH Complete Application Blueprint v1.docx>)
+- [Expansion development report](docs/expansion/DEVELOPMENT_REPORT.md)
+- [Engine audit](docs/expansion/ENGINE_AUDIT.md)
+- [Chronicles Lore Bible](docs/chronicles/ZYNTH-CHRONICLES-LORE-BIBLE.md)
 - [Blueprint PDF](docs/blueprints/Zynth_Blueprint_v1.md.pdf)

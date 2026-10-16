@@ -192,7 +192,7 @@ check("all 500 primary scenario combinations produce valid profiles",foundations
 console.log("12. Shared world-map progression");
 const firstMap=buildWorldMarks(profile,0);
 check("new journey has one current checkpoint",firstMap.filter(m=>m.state==="current").length===1 && firstMap[0].state==="current");
-check("mission landmarks at marks seven and fourteen",firstMap[6].isMission && firstMap[13].isMission);
+check("future day marks do not invent completed missions",!firstMap[6].isMission && !firstMap[13].isMission);
 check("map geometry spans both axes",new Set(firstMap.map(m=>m.x)).size>10 && new Set(firstMap.map(m=>m.y)).size>8);
 const dayProfile=structuredClone(result.profile);
 dayProfile.quest_history.push({...dayProfile.quest_history[0],quest_id:"same-day"});
@@ -203,8 +203,8 @@ check("completed day fills checkpoint and opens next tomorrow",doneMap[0].state=
 check("checkpoint retains quest detail",doneMap[0].entry?.quest_title===quest.quest_title);
 const longJourney=structuredClone(profile);
 longJourney.quest_history=Array.from({length:14},(_,i)=>({...result.profile.quest_history[0],quest_id:String(i),completed_at:new Date(Date.UTC(2020,0,i+1,12)).toISOString()}));
-check("fourteen days advance to the next world chapter",activeWorldChapter(longJourney)===1 && buildWorldMarks(longJourney)[0].number===15);
-check("earlier chapters remain completed",buildWorldMarks(longJourney,0).every(m=>m.state==="completed"));
+check("fourteen days advance the rendering segment, not a story chapter",activeWorldChapter(longJourney)===1 && buildWorldMarks(longJourney)[0].number===15);
+check("earlier map segments remain completed",buildWorldMarks(longJourney,0).every(m=>m.state==="completed"));
 console.log(failures === 0 ? "\nALL CHECKS PASSED" : `\n${failures} FAILURES`);
 process.exit(failures === 0 ? 0 : 1);
 }

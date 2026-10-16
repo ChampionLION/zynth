@@ -219,13 +219,13 @@ function RadarChart({
           key={ring}
           points={stats.map((_, i) => point(i, (ring / MAX) * R).join(",")).join(" ")}
           fill="none"
-          stroke="#2A2A3A"
+          stroke="rgb(var(--color-edge))"
           strokeWidth="1"
         />
       ))}
       {stats.map((_, i) => {
         const [x, y] = point(i, R);
-        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="#2A2A3A" strokeWidth="1" />;
+        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgb(var(--color-edge))" strokeWidth="1" />;
       })}
       <polygon points={polygon} fill={color} fillOpacity="0.25" stroke={color} strokeWidth="2" />
       {stats.map(([name, v], i) => {
@@ -237,7 +237,7 @@ function RadarChart({
             y={y}
             textAnchor="middle"
             dominantBaseline="middle"
-            className="fill-[#8888A0]"
+            className="profile-radar-label"
             fontSize="10"
           >
             {display(name)} {v}
