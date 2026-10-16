@@ -105,3 +105,9 @@ Before the owner's request to defer further testing, engine/account/SQL/voice su
 ## 16 October 2026 — Publication authorized
 
 The owner requested the current changes be pushed to GitHub and deployed to the existing Vercel site. Release preparation is in progress. This authorizes publishing application code, while leaving hosted database migrations and paid services outside scope. The trusted completion feature gate remains off; appearance cloud synchronization awaits its prepared migration. Prior implementation evidence and unresolved security/release limitations remain documented above and in the development report.
+
+## 16 October 2026 — Release and owner setup confirmation
+
+Application commit `a93bb0b3a38924abe948141b662a45402244f7ac` was pushed to GitHub and successfully deployed to the existing production site. Read-only checks confirmed the published M2, voice and six-stat interfaces, correct Supabase configuration and anonymous API rejection.
+
+The owner confirms that the database migration and SMTP configuration were already completed. This supersedes earlier pending-setup notes; no migration was reapplied and no SMTP credentials were requested. Live preference synchronization and inbox delivery have not been independently rechecked. Added a Spam-or-Trash reminder to signup confirmation and password-reset notices. This is a copy change; broader tests remain deferred as requested.

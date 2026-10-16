@@ -29,10 +29,10 @@ export function AuthForm(){
    event.preventDefault();if(lock.current||!configured)return;
    lock.current=true;setBusy(true);setError(null);setNotice(null);
    try{
-     if(resetting){await sendPasswordReset(email);setNotice("If an account uses that email, a reset link is on its way. Check your inbox.");}
+     if(resetting){await sendPasswordReset(email);setNotice("If an account uses that email, a reset link is on its way. Check your inbox. If you don’t see it, check your Spam or Trash folder.");}
      else if(mode==="signup"){
        const result=await signUp(email,password,name);
-       if(result.needsConfirmation)setNotice("Check your inbox to confirm your email. Then sign in to begin your journey.");
+       if(result.needsConfirmation)setNotice("Check your inbox to confirm your email. If you don’t see the confirmation email, check your Spam or Trash folder. Then sign in to begin your journey.");
        else await resume();
      }else{await signIn(email,password);await resume();}
    }catch(e){setError(friendlyAuthError(e));}finally{lock.current=false;setBusy(false);}
