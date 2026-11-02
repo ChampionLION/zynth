@@ -1,16 +1,16 @@
 # Zynth milestone completion action plan
 
-Updated: 16 October 2026 (Africa/Lagos).
+Updated: 2 November 2026 (Africa/Lagos).
 
 ## Goal and current position
 
 Complete the ZYNTH EVOLUTION & CHRONICLES roadmap, ZEC-M0 through ZEC-M11, against the Complete Application Blueprint v2, retaining unchanged v1 progression rules and the owner's onboarding, landscape Overview map, voice replies and leaderboard additions.
 
-**Current tracked completion: 37% — 37 of 100 weighted acceptance points. Remaining: 63 points.**
+**Current tracked completion: 38% — 38 of 100 weighted acceptance points. Remaining: 62 points.**
 
 This is an initial planning estimate based on evidenced work packages, not elapsed time, lines of code, test coverage or production readiness. Weights reflect scope and risk; they are not promised durations. The existing account, landing, branding and leaderboard features are shipped foundations, not extra credits counted again in this expansion denominator. A plan, schema draft or passing build alone does not complete a feature.
 
-The base app and leaderboard are live at the owner-approved production address. The separately approved Global-default query returns all three verified profiles. Step 1 local implementation/checks are complete, with production activation explicitly authorized and pending private server configuration and coordinated rollout. Hosted preference/inbox behavior still needs dedicated verification.
+The base app and leaderboard are live at the owner-approved production address. The separately approved Global-default query returns all three verified profiles. Step 1 is activated and its restrictive production permissions/configuration are verified. Hosted preference/inbox behavior still needs dedicated verification.
 
 ## Execution order
 
@@ -26,7 +26,7 @@ This is dependency order, not a promise to implement every milestone in one chan
 
 ## Step 1 implementation and activation checklist
 
-Local implementation and tests cover items 1–6 below. Item 7 is the remaining hosted activation gate; the owner has approved the three migrations and activation after checks. Follow docs/expansion/STEP1_ROLLOUT.md.
+Items 1–7 are complete for Step 1, including the owner-approved hosted activation on 2 November. Historical execution detail follows. Follow docs/expansion/STEP1_ROLLOUT.md.
 
 1. Inspect hosted migration history/schema read-only against the prepared foundation; record the actual delta and preserve existing accounts. Never assume all foundation objects are present or absent from an old note.
 2. Add server-owned onboarding/scaffolding and conservative legacy import. The server derives identity, initial stats and allowed transitions; legacy records retain their history without becoming verified grant evidence.
@@ -48,7 +48,7 @@ Check a package only when its whole deliverable and relevant checks are complete
 
 Exit: the implementation has a common specification and known gaps. Audit completion does not resolve those gaps.
 
-### M1 — Quests, missions and trusted progression: 21/22 points (95%)
+### M1 — Quests, missions and trusted progression: 22/22 points (100%)
 
 - [x] M1-A — **4 points:** seven-quest eligibility, banking, retries, stable plan IDs, legacy mission preservation and map-label correction. Evidence: quest-cycle.ts, expansion.test.ts and recorded browser behavior.
 - [x] M1-B — **4 points:** staged server completion, atomic outcome/event commit, revision checks and grading leases. Evidence: complete-quest.ts, foundation migration and database.integration.test.ts. Credit covers the tested local foundation only.
@@ -56,7 +56,7 @@ Exit: the implementation has a common specification and known gaps. Audit comple
 - [x] M1-D — **4 points:** atomic skip, prestige, check-in, profession and existing economy effect mutation paths preserving rules/balances. Evidence: service/SQL tests, failure rollback and replay checks; locally verified 16 October. Future Swift/retest/bonus interfaces remain M11 scope.
 - [x] M1-E — **3 points:** gated client typed/reviewed-transcript integration, durable outcomes/reveals and network/reload recovery without numerical re-upserts. Evidence: verify-trusted-journey.cjs, browser → Next → SDK → real PostgreSQL; locally verified 16 October.
 - [x] M1-F1 — **2 points:** prepared grants/RLS cutover, separate-connection generation/completion/skip races, existing-account upgrade and rollback/runbook. Evidence: verify-journey-postgres.cjs and docs/expansion/STEP1_ROLLOUT.md; locally verified 16 October.
-- [ ] M1-F2 — **1 point:** authorized hosted activation and read-back of restrictive grants/configuration on the deployed compatible app. Owner approval received; private server credential and coordinated release pending.
+- [x] M1-F2 — **1 point:** authorized hosted activation and read-back of restrictive grants/configuration on the deployed compatible app, verified 2 November. Evidence: docs/expansion/STEP1_ROLLOUT.md release record; profiles/quests/EXP preserved, direct numerical writes denied, editable fields retained.
 
 Exit: gameplay authority is server-owned across every write path; replay is safe; original accounts/data and all quest types remain usable. M1-C through M1-F form one coordinated release boundary.
 
@@ -150,7 +150,7 @@ Dependencies: final closure requires M1 through M10; audit/limit/upgrade prepara
 
 ## Evidence and percentage update rules
 
-The checklist above is the scoring source. Its weights sum to 100; checked packages currently sum to 37. Overall completion is checked weight divided by total weight, multiplied by 100. Per-milestone percentages are rounded to the nearest whole number; overall progress uses the points directly, not the average of those rounded percentages. On 16 October M1-F was explicitly split into F1 (2 local evidence points) and F2 (1 hosted activation point), preserving its original 3-point weight and the 100-point denominator. Baseline was 24%.
+The checklist above is the scoring source. Its weights sum to 100; checked packages currently sum to 38. Overall completion is checked weight divided by total weight, multiplied by 100. Per-milestone percentages are rounded to the nearest whole number; overall progress uses the points directly, not the average of those rounded percentages. On 16 October M1-F was explicitly split into F1 (2 local evidence points) and F2 (1 hosted activation point), preserving its original 3-point weight and the 100-point denominator. Baseline was 24%.
 
 After a package completes, add its implementation reference, relevant check result, date and local/hosted distinction before checking it. Update the leading dashboard in PROGRESS.md and the snapshot in MILESTONES.md together. Preserve historical progress entries. If scope changes, record the new denominator/reason before changing the percentage. Never award points merely for planning or re-running an already credited test.
 

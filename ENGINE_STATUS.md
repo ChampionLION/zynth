@@ -82,3 +82,13 @@ The owner approved the foundation, actions and privilege-cutover migrations and 
 The separately approved Global query is applied and read-only verified: all three verified saved profiles appear, including two at zero EXP. Settings opt-out is respected; optional approximate regional membership and unrestricted browsing remain. No user record was changed for this ranking fix.
 
 Weighted completion is 37/100 (37%); M1 is 21/22 (95%), with the final hosted activation point pending. M1-F was split into 2 local evidence points and 1 activation point, keeping the denominator unchanged. M11 dependency audit preparation was refreshed: the same 16 vulnerable package entries remain unresolved, so no hardening credit is added.
+
+## 2 November 2026 — Step 1 production activation
+
+Resumed the owner's paused Supabase project with explicit permission. Verified the compatible production deployment dpl_54T8yZ1eMwN2WhYNjjHgULgKDVoC at application commit 0bdc38da81c6758b988c803849d255156f55d672 and the production alias. Confirmed the non-secret server gate is 1 and grading mode is practice, preserving the existing mock experience; Production Secret values were excluded from the configuration export.
+
+Applied the previously authorized trusted_journey_cutover migration (hosted version 20261102131859). Read-back confirms trusted_writes=true, browser XP and quest-definition edits denied, editable names/privacy and quest drafts retained with owner RLS. Profile/quest counts and aggregate lifetime EXP are unchanged across this cutover: 3 profiles, 4 quests, 30 EXP. The Global query returns 3 verified visible profiles, including zero-EXP entries. No real account was reset or graded for release verification.
+
+Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
+
+Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.

@@ -49,4 +49,22 @@ Swift/retest/bonus interfaces, future cosmetic/world/chapter grants and unbounde
 
 ## Release state
 
-Local implementation and required local checks pass. Hosted activation is pending the privately configured server credential and coordinated release. Overall weighted progress is 37/100 while M1's final production activation point remains open. Update this state only with actual deployment, migration and permission evidence.
+Local implementation and required local checks pass. The foundation and actions migrations are applied under the owner's approval (hosted versions 20261016113018 and 20261016113049). Read-back preserves 3 profiles, 4 quests and lifetime EXP total 30, with zero trusted outcomes and the DB activation flag false. All 10 new public tables have RLS. The compatible gated-off app at commit 0bdc38da81c6758b988c803849d255156f55d672 is production-ready and public/authentication smoke checks pass. The owner saved a Production Secret; practice mode and the server gate have been configured, with a redeployment preceding the final cutover. Overall weighted progress remains 37/100 until the final activation read-back passes.
+
+Local migration SHA-256 records:
+
+- Foundation: 67DE1FECD51D1C8409499813B201DCCC77FAF4B538FB518B23615122B24059FF.
+- Actions: 8B5807C636E3F15386914F2FDEDA8ADDF2B5321BBA180D935B34B6927A612A3F.
+- Cutover: 0D010874608A4837AF6F8B4454DC19EB1B7A999C697B99CF3062D261BFD67957.
+
+Advisor review: service-only leases/actions/configuration/budget/reset tables intentionally have RLS with no client policies and no client grants ([deny-by-default notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)). The narrow cross-account leaderboard function retains its intentional [authenticated SECURITY DEFINER notice](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable). The pre-existing [leaked-password protection setting](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remains unchanged. No missing-RLS finding was returned.
+
+## 2 November 2026 — Step 1 production activation
+
+Resumed the owner's paused Supabase project with explicit permission. Verified the compatible production deployment dpl_54T8yZ1eMwN2WhYNjjHgULgKDVoC at application commit 0bdc38da81c6758b988c803849d255156f55d672 and the production alias. Confirmed the non-secret server gate is 1 and grading mode is practice, preserving the existing mock experience; Production Secret values were excluded from the configuration export.
+
+Applied the previously authorized trusted_journey_cutover migration (hosted version 20261102131859). Read-back confirms trusted_writes=true, browser XP and quest-definition edits denied, editable names/privacy and quest drafts retained with owner RLS. Profile/quest counts and aggregate lifetime EXP are unchanged across this cutover: 3 profiles, 4 quests, 30 EXP. The Global query returns 3 verified visible profiles, including zero-EXP entries. No real account was reset or graded for release verification.
+
+Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
+
+Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.

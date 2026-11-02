@@ -24,7 +24,7 @@ Mark Map is a landscape of fourteen checkpoints per rendering segment. Mission l
 
 ## Expansion branch
 
-The Evolution and Chronicles work includes mission policy, profile editing, themes and reviewed voice transcripts. Step 1 now implements server-owned onboarding, stored quest plans, grading, daily inputs, skip, prestige and current economy/profession actions, with durable result recovery. Its coordinated production activation is separately gated; use the [rollout runbook](docs/expansion/STEP1_ROLLOUT.md) before enabling it. Global rankings include verified saved profiles by default, including zero EXP; Settings can hide a profile and regional participation is optional. Avatar, inventory, modular living regions and runtime chapters remain planned. See [weighted progress](PROGRESS.md) and the [development report](docs/expansion/DEVELOPMENT_REPORT.md).
+The Evolution and Chronicles work includes mission policy, profile editing, themes and reviewed voice transcripts. Step 1 now implements server-owned onboarding, stored quest plans, grading, daily inputs, skip, prestige and current economy/profession actions, with durable result recovery. Its owner-approved production activation is complete; see the [rollout evidence and recovery runbook](docs/expansion/STEP1_ROLLOUT.md). Global rankings include verified saved profiles by default, including zero EXP; Settings can hide a profile and regional participation is optional. Avatar, inventory, modular living regions and runtime chapters remain planned. See [weighted progress](PROGRESS.md) and the [development report](docs/expansion/DEVELOPMENT_REPORT.md).
 
 ## Layout
 

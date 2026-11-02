@@ -1,16 +1,16 @@
 # Progress update
 
-Updated: 16 October 2026 (Africa/Lagos).
+Updated: 2 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
-## Current completion: 37%
+## Current completion: 38%
 
-**37 of 100 weighted acceptance points complete; 63 points remaining.** Updated: 16 October 2026 (Africa/Lagos).
+**38 of 100 weighted acceptance points complete; 62 points remaining.** Updated: 2 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
 - **M0 Architecture/documentation — 100%** (5/5 points): audit and versioned specification complete.
-- **M1 Quests/trusted progression — 95%** (21/22): all current server actions, gated client recovery and real Postgres privilege/concurrency checks pass locally; final hosted activation remains.
+- **M1 Quests/trusted progression — 100%** (22/22): trusted actions/recovery, local PostgreSQL concurrency checks and owner-approved hosted permissions/configuration activation complete.
 - **M2 Profile/appearance — 88%** (7/8): implementation and local verification done; hosted cross-session proof remains.
 - **M3 Identity/avatar — 0%** (0/8).
 - **M4 Cosmetic inventory — 0%** (0/8).
@@ -22,9 +22,9 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M10 Expansion readiness — 0%** (0/5).
 - **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
 
-**Next action:** finish the owner-approved coordinated M1 rollout after the private server key is configured, then verify M2 hosted persistence. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
+**Next action:** verify M2 hosted cross-session appearance/persistence, then start M3 avatar work. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
 
-The original leaderboard UI and all four scopes are live; optional joining/location and unrestricted browsing are deployed at application commit eea7ce7fa5441a682554fb10c7396e37ff38af9b. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
+The original leaderboard UI and all four scopes are live. Global includes verified profiles by default, including zero EXP; Settings can hide entries, and regional location remains optional. Current application commit: 0bdc38da81c6758b988c803849d255156f55d672. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
 
 **How updates work:** the checked packages in ACTION_PLAN.md sum to the accepted points. Overall percentage uses those points directly; milestone percentages are rounded. Add implementation/check evidence before awarding points, update both progress/milestones together and preserve old entries. No points were awarded for writing this plan.
 <!-- ZEC_PROGRESS_END -->
@@ -168,3 +168,13 @@ The owner approved the foundation, actions and privilege-cutover migrations and 
 The separately approved Global query is applied and read-only verified: all three verified saved profiles appear, including two at zero EXP. Settings opt-out is respected; optional approximate regional membership and unrestricted browsing remain. No user record was changed for this ranking fix.
 
 Weighted completion is 37/100 (37%); M1 is 21/22 (95%), with the final hosted activation point pending. M1-F was split into 2 local evidence points and 1 activation point, keeping the denominator unchanged. M11 dependency audit preparation was refreshed: the same 16 vulnerable package entries remain unresolved, so no hardening credit is added.
+
+## 2 November 2026 — Step 1 production activation
+
+Resumed the owner's paused Supabase project with explicit permission. Verified the compatible production deployment dpl_54T8yZ1eMwN2WhYNjjHgULgKDVoC at application commit 0bdc38da81c6758b988c803849d255156f55d672 and the production alias. Confirmed the non-secret server gate is 1 and grading mode is practice, preserving the existing mock experience; Production Secret values were excluded from the configuration export.
+
+Applied the previously authorized trusted_journey_cutover migration (hosted version 20261102131859). Read-back confirms trusted_writes=true, browser XP and quest-definition edits denied, editable names/privacy and quest drafts retained with owner RLS. Profile/quest counts and aggregate lifetime EXP are unchanged across this cutover: 3 profiles, 4 quests, 30 EXP. The Global query returns 3 verified visible profiles, including zero-EXP entries. No real account was reset or graded for release verification.
+
+Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
+
+Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.
