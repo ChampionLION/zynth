@@ -1,6 +1,6 @@
 # Project milestones
 
-Updated: 2 November 2026 (Africa/Lagos).
+Updated: 3 November 2026 (Africa/Lagos).
 
 ## Current roadmap snapshot — 38%
 
@@ -10,6 +10,22 @@ Execution order: M1 trusted mutations/recovery/cutover → M2 hosted proof → M
 
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
 ## Completed milestones
+
+### 3 November 2026 — Android quest focus implementation
+
+- [x] Native Android project and reproducible Gradle wrapper, using the approved Zynth mark.
+- [x] Existing hosted sign-in, onboarding, progress and quest UI retained in a secure WebView.
+- [x] First-use overlay permission explanation, explicit system permission request and Settings controls.
+- [x] Device-local daily alarm, time-zone/reboot rearming and non-resetting three-minute focus timer.
+- [x] Matching committed quest submission closes focus; emergency exit remains reachable.
+- [x] Overlay denial/unavailability falls back to allowed notifications at configurable 5/10/15-minute intervals for up to 30 minutes, with Pause today.
+- [x] Sign-out/account changes disable the saved alarm and cancel the active focus/reminder series.
+- [x] Device settings introduce no database migration or progression-engine rule changes.
+- [x] Installable debug APK compiled and signature verified; six native policy tests, Android lint, web checks and the simulated-device browser flow passed.
+- [ ] Physical-device acceptance for alarms, permissions, system overlays, keyboard and manufacturer battery behavior.
+- [ ] Release signing, store package and store-policy review for public store distribution.
+
+See [Android build and verification notes](docs/ANDROID_APP.md). These are additional requested deliverables; the weighted ZEC roadmap remains **38/100**.
 
 ### 13 October 2026 — Local engine review and responsive workspace
 

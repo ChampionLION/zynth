@@ -44,6 +44,10 @@ Settings supports editable names, save/discard, light/dark/system themes, reduce
 
 The approved staircase Z and serif wordmark are shared through `BrandLogo`. The slogan is **Synthesize your Zenith**, with **Build who you want to become.** as the explanation. Social previews use the matching 1200 × 630 image without a domain. SVG, favicon, Apple, and app-icon exports live alongside the refined originals; see [brand notes](docs/brand/og-image-v2.md).
 
+## Android application
+
+The `android` project packages the hosted application with device-local daily quest alarms. First-use setup requests overlay access explicitly; denied/unavailable overlays use optional repeated notifications at 5, 10 or 15-minute intervals within a 30-minute window. Focus closes after three minutes or a committed quest submission, with an emergency exit always available. See [Android setup, build and verification limits](docs/ANDROID_APP.md).
+
 ## Project records
 
 - [Progress](PROGRESS.md)

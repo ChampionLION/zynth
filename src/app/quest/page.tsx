@@ -62,7 +62,9 @@ export default function QuestPage() {
     let disposed=false;
     setSyncStatus("Saving draft…");
     const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Draft saved to your account.");}).catch(()=>{if(!disposed)setSyncStatus("Saved on this browser. Reconnect to sync your draft.");});},600);
-    return()=>{disposed=true;clearTimeout(timer);};
+    const flush=()=>{cacheQuestDraft(user.id,activeQuest.id,draft);void saveQuestDraft(user.id,activeQuest.id,draft).catch(()=>{});};
+    window.addEventListener("zynth-focus-ending",flush);
+    return()=>{disposed=true;clearTimeout(timer);window.removeEventListener("zynth-focus-ending",flush);};
   },[user,activeQuest,restoredId,response,stepResponses,currentStep,evaluating]);
 
   useEffect(() => {

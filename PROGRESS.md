@@ -1,6 +1,6 @@
 # Progress update
 
-Updated: 2 November 2026 (Africa/Lagos).
+Updated: 3 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
 ## Current completion: 38%
@@ -30,6 +30,16 @@ The original leaderboard UI and all four scopes are live. Global includes verifi
 <!-- ZEC_PROGRESS_END -->
 
 ## Historical progress log
+
+### 3 November 2026 — Android application and scheduled quest focus
+
+Added an Android shell for the existing hosted account/quest experience, with an explicit first-use overlay permission explanation and prominent Settings permission controls. A device-local daily alarm opens the quest overlay when Android permits it. The focus timer lasts approximately three minutes or ends after a matching committed quest submission; an emergency exit and Android's controls remain available.
+
+Denied/unavailable overlays use optional repeat notifications. Settings offers 5, 10 or 15-minute requested intervals, defaulting to 5, within a 30-minute reminder window. Completing a quest, Pause today, disabling/changing the alarm or signing out cancels the repeats. Android can delay inexact alarms. Existing progress and database schema are preserved; no hosted migration is required.
+
+The APK, build instructions, account boundaries and verification limits are recorded in [Android application notes](docs/ANDROID_APP.md). Real-device alarm/overlay acceptance and release signing remain separate from compilation. This requested addition earns no extra ZEC acceptance points: the weighted roadmap remains **38%**.
+
+Verification: debug APK compilation and signature verification passed, along with six native policy tests, Android lint (no errors), web lint/TypeScript, bridge tests, existing engine/account/database/voice suites and the portrait browser integration flow using a simulated Android port. The actual device alarm/overlay walkthrough remains open.
 
 Earlier entries below are dated snapshots. This dashboard and the action plan supersede their old pending-setup, deployment and no-percentage wording; they do not erase the original evidence or remaining limitations.
 

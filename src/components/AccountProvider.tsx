@@ -4,6 +4,8 @@ import {ZynthMark} from "@/components/BrandLogo";
 import {usePathname,useRouter} from "next/navigation";
 import {useZynth} from "@/lib/store";
 import {isSupabaseConfigured,supabase} from "@/lib/supabase";
+import {NativeFocusController} from "./NativeFocusController";
+import {nativeFocusRequest} from "@/lib/native-focus";
 const protectedRoutes=["/dashboard","/quest","/markmap","/chronicle","/leaderboard","/profile","/settings","/onboarding","/reveal","/grade","/events","/achievements","/prestige"];
 export function AccountProvider({children}:{children:React.ReactNode}) {
  const router=useRouter(),pathname=usePathname();
@@ -16,6 +18,7 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
    const {data:{subscription}}=supabase().auth.onAuthStateChange((event,session)=>{
      const state=useZynth.getState();
      if(event==="SIGNED_OUT" || (session?.user.id && session.user.id!==state.user?.id)) {
+       if(event==="SIGNED_OUT"||(state.user&&session?.user.id!==state.user.id))void nativeFocusRequest("bindOwner",{owner:""}).catch(()=>{});
        state.reset();
        // Do not await Supabase calls inside its auth-state callback.
        setTimeout(()=>{if(!disposed)void useZynth.getState().hydrate();},0);
@@ -32,5 +35,5 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
  },[protectedPage,hydrated,loading,hydrationError,user,profile,activeQuest,gradeReveal,pendingOutcome,pathname,router]);
  if(protectedPage && hydrationError)return <main className="account-state"><ZynthMark className="account-brand-mark"/><h1>Your journey is still yours.</h1><p role="alert">{hydrationError}</p><button onClick={()=>void hydrate()}>Try again →</button></main>;
  if(protectedPage && (!hydrated||loading||!user||(!profile&&pathname!=="/onboarding")))return <main className="account-state"><ZynthMark className="account-brand-mark"/><p role="status">Opening your journey…</p></main>;
- return <>{children}</>;
+ return <><NativeFocusController/>{children}</>;
 }

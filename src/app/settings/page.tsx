@@ -11,6 +11,7 @@ import type {Profile} from "@/lib/types";
 import {eraseProgress} from "@/lib/db";
 import {signOut as signOutAccount} from "@/lib/auth";
 import {journeyRequest} from "@/lib/journey-client";
+import {FocusSettings} from "@/components/FocusSettings";
 export default function SettingsPage(){
  const {profile,hydrated}=useRequireProfile();
  if(!hydrated||!profile)return null;
@@ -96,7 +97,8 @@ function SettingsForm({profile}:{profile:Profile}){
      {syncStatus&&<p role="status" className="settings-status">{syncStatus}</p>}
      {syncStatus.includes("unavailable")&&<button className="settings-retry" type="button" disabled={appearanceBusy} onClick={retry}>Retry account sync</button>}
    </section>
-   <section className="settings-panel settings-account"><div><p className="eyebrow">03 / YOUR ACCOUNT</p><h2>{user?.email}</h2><p>Your saved journey stays with your account.</p></div><button disabled={busy} onClick={()=>void signOut()}>Sign out ↗</button></section>
+   <FocusSettings owner={profile.user_id}/>
+   <section className="settings-panel settings-account"><div><p className="eyebrow">04 / YOUR ACCOUNT</p><h2>{user?.email}</h2><p>Your saved journey stays with your account.</p></div><button disabled={busy} onClick={()=>void signOut()}>Sign out ↗</button></section>
    <details className="settings-danger"><summary>Reset progress</summary><p>This permanently removes your current profile and quests.</p><button disabled={busy} onClick={()=>setConfirmReset(true)}>Reset my progress</button></details></div>
    {error&&<p role="alert" className="settings-error">{error}</p>}
    {pendingLeave&&<Dialog title="Leave your unsaved edits?" onClose={()=>setPendingLeave(null)}><p>Your saved profile stays as it is. These edits will be discarded.</p><div className="settings-actions"><button autoFocus onClick={()=>setPendingLeave(null)}>Keep editing</button><button disabled={busy} onClick={()=>void leave(pendingLeave)}>Discard and leave</button></div></Dialog>}

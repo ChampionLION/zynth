@@ -8,6 +8,7 @@ import type {EditableProfile} from "./appearance";
 import type {PipelineResult} from "./engines/pipeline";
 import {sendJourneyAction,sendCompletion,journeyRequest} from "./journey-client";
 import {outcomePresentation,type JourneyAction,type JourneyActionResult,type PendingOutcome} from "./journey-contract";
+import {notifyNativeQuestCompleted} from "./native-focus";
 interface GradeRevealData {gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[]}
 interface ZynthStore {
  user:AccountUser|null;profile:Profile|null;activeQuest:Quest|null;onboardingDraft:OnboardingDraft|null;
@@ -64,6 +65,7 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    const pendingOutcome={questId,result:response.result,gradeSeen:false,eventCursor:0};const presentation=outcomePresentation(pendingOutcome);
    set({profile:response.profile,activeQuest:null,pendingOutcome,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events});
    clearQuestDraft(owner,questId);
+   notifyNativeQuestCompleted(owner,questId);
  },
  ackGrade:async()=>{
    const owner=get().user?.id,pending=get().pendingOutcome,epoch=authEpoch;
@@ -127,6 +129,7 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    const quest=get().activeQuest;
    set({profile:r.profile,eventQueue:[...get().eventQueue,...r.events],gradeReveal:reveal,activeQuest:null});
    if(quest)clearQuestDraft(user.id,quest.id);
+   if(quest)notifyNativeQuestCompleted(user.id,quest.id);
    if(quest)try{await retireQuest(user.id,quest.id,"completed");}catch{/* Committed history prevents reopening this completed quest. */}
  },
  shiftEvent:()=>{const[head,...rest]=get().eventQueue;set({eventQueue:rest});return head;},
