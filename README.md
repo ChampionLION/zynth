@@ -46,7 +46,7 @@ Settings supports editable names, save/discard, light/dark/system themes, reduce
 
 ## Remembered sign-in, offline lessons and downloads
 
-Remember me keeps a refreshable sign-in on the device, with a session-only option. Settings opens an offline library containing the issued quest/draft and three upcoming foundation lessons. Reconnecting syncs saved study/quest answers and refills the next three; server-confirmed rewards and rankings still require a connection. Sign-out locks the local pack without discarding unsynced work. See [offline behavior and verification](docs/OFFLINE_LEARNING.md). `/download` provides the signed early-access Android 0.1.2 APK and checksum, linked from the landing page and Settings.
+Remember me keeps a refreshable sign-in on the device, with a session-only option. Daily quests are the lessons: teaching, worked examples and one small check in the normal quest screen. The same pages use cached account data and three server-prepared upcoming daily lessons when the connection is unavailable. Replies sync automatically; there is no separate library, study track or mode interface. Sign-out locks the saved journey without discarding queued work. See [offline behavior and verification](docs/OFFLINE_LEARNING.md). `/download` provides the signed early-access Android 0.1.2 APK and checksum, linked from the landing page and Settings.
 
 ## Brand identity
 

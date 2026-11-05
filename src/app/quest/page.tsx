@@ -24,7 +24,7 @@ import {JourneyRequestError} from "@/lib/journey-client";
 import {QuestLearning} from "@/components/QuestLearning";
 import {learningChoiceResponse,selectedLearningOption} from "@/lib/learning";
 import {useAppearance} from "@/components/AppearanceProvider";
-import {queueQuest} from "@/lib/offline-learning";
+
 
 export default function QuestPage() {
   const router = useRouter();
@@ -52,13 +52,14 @@ export default function QuestPage() {
 
   useEffect(()=>{
     if(!activeQuest){if(hydrated&&profile)router.replace("/dashboard");return;}
-    if(restoredRef.current===activeQuest.id)return;
+    const revision=`${activeQuest.id}:${activeQuest.learning?"lesson-v1":"legacy"}`;
+    if(restoredRef.current===revision)return;
     const draft=activeQuest.draft;
-    setResponse(draft?.response??"");setStepResponses(draft?.step_responses??[]);
-    setCurrentStep(draft?.current_step??0);setSeconds(draft?.elapsed_seconds??0);
+    setResponse(draft?.response??"");setStepResponses(activeQuest.steps.length?draft?.step_responses??[]:[]);
+    setCurrentStep(activeQuest.steps.length?draft?.current_step??0:0);setSeconds(draft?.elapsed_seconds??0);
     startRef.current=Date.now()-(draft?.elapsed_seconds??0)*1000;
     setRestoredId(activeQuest.id);
-    restoredRef.current=activeQuest.id;
+    restoredRef.current=revision;
   },[activeQuest,hydrated,profile,router]);
 
   useEffect(()=>{
@@ -67,7 +68,7 @@ export default function QuestPage() {
     cacheQuestDraft(user.id,activeQuest.id,draft);
     let disposed=false;
     setSyncStatus("Saving draft…");
-    const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Draft saved to your account.");}).catch(()=>{if(!disposed)setSyncStatus("Saved on this browser. Reconnect to sync your draft.");});},600);
+    const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Draft saved to your account.");}).catch(()=>{if(!disposed)setSyncStatus("Draft saved.");});},600);
     const flush=()=>{cacheQuestDraft(user.id,activeQuest.id,draft);void saveQuestDraft(user.id,activeQuest.id,draft).catch(()=>{});};
     window.addEventListener("zynth-focus-ending",flush);
     return()=>{disposed=true;clearTimeout(timer);window.removeEventListener("zynth-focus-ending",flush);};
@@ -112,7 +113,7 @@ export default function QuestPage() {
       : response;
 
     if(mode==="trusted"){
-      if(!navigator.onLine&&user){queueQuest(user.id,activeQuest.id,fullResponse);router.replace("/offline");return;}
+
       await completeQuest(activeQuest.id,fullResponse);
       router.replace("/grade");return;
     }
@@ -161,7 +162,7 @@ export default function QuestPage() {
       changedStats: result.changedStats,
     });
     router.replace("/grade");
-    } catch(error) { setSubmitError(error instanceof JourneyRequestError&&[413,422,429].includes(error.status)?error.message:"Your response is still here. We couldn’t save the result. Please try again."); } finally { submissionLock.current = false; setEvaluating(false); }
+    } catch(error) { setSubmitError(error instanceof Error&&error.message==="Reply saved."?error.message:error instanceof JourneyRequestError&&[413,422,429].includes(error.status)?error.message:"Your response is still here. We couldn’t save the result. Please try again."); } finally { submissionLock.current = false; setEvaluating(false); }
   };
 
   const skip = async () => {

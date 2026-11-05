@@ -17,7 +17,7 @@ import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
 import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
-import {OverviewLessons} from "@/components/OverviewLessons";
+
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -212,13 +212,13 @@ export default function DashboardPage() {
       </p>
 
       {/* QUEST CARD */}
-      <OverviewLessons owner={profile.user_id} quest={activeQuest}/>
+      
       <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`Mission readiness: ${mission.progress} concepts practised successfully. Keep learning and reinforcing the ideas.`} <span>Streaks and story chapters progress separately.</span></p>
       <div className="quest-feature">
         {doneToday && !activeQuest && !mission.eligible ? (
           <div className="py-6 text-center">
             <p className="text-2xl">✓</p>
-            <p className="mt-2 font-semibold">Today&apos;s mark is complete.</p>
+            <p className="mt-2 font-semibold">Today&apos;s lesson is complete.</p>
             <p className="mt-1 text-sm text-muted">
               Your progress is saved. Take a breath and come back tomorrow.
             </p>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
             <div className="shimmer h-8 w-full rounded" />
             <div className="shimmer h-4 w-1/2 rounded" />
             <p className="pt-2 text-center text-xs text-dim">
-              Forging today&apos;s quest...
+              Preparing today&apos;s lesson...
             </p>
           </div>
         ) : (
@@ -243,7 +243,7 @@ export default function DashboardPage() {
               <DifficultyPips difficulty={activeQuest.difficulty} />
               <span>{activeQuest.estimated_time}</span>
               <span className="rounded-full border border-edge px-2 py-0.5 uppercase tracking-wider">
-                {activeQuest.type}
+                {activeQuest.type==="mission"?"Mission":"Daily lesson"}
               </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">

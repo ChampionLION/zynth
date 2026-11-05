@@ -78,3 +78,11 @@ Implementation and verification entries are added as each phase is completed. No
 - Added the versioned Lore Bible, trusted progression cutover guide and detailed development report.
 - Delivered the v2 blueprint and development report as Markdown at the owner's request; preserved the original v1 Word document unchanged.
 - Dependency audit reports 16 vulnerable entries, including one critical; framework/toolchain hardening remains a release blocker. No force upgrade, deployment or production data change was performed.
+
+## 5 November 2026 — Unified daily lessons and transparent caching
+
+Owner correction: the daily quests themselves are the lessons. Removed the separate Overview lesson panel, extra study track, alternate library UI, mode banner and links to an offline experience. Older non-mission daily quests now convert to teaching plus a small check through the trusted service, retaining their IDs/drafts and archiving the previous definition. Missions remain the substantial assessments and use readiness rather than a calendar quota.
+
+The normal application routes and account snapshot are cached. Three upcoming server-prepared daily quest definitions and the relevant mission case are recorded durably, activated through the same quest flow, and replayed through trusted completion after reconnection. The normal feedback screen handles cached formative checks. Profile edits, energy choices, draft/presentation receipts and previously fetched ranking snapshots use the same UI and synchronize quietly. No migration is required. Prior separate-library implementation and its acceptance notes are superseded.
+
+Focused acceptance: normal Overview/quest/grade pages, same lesson identity after disconnected cold reload, local check feedback, one automatic saved-answer submission and three upcoming definitions passed against disposable accounts. Cache hydration/reconnection checks, TypeScript, lint and production compilation passed. Wider multi-date reward/streak reconciliation, distributed races and physical Android acceptance remain for the dedicated testing day. Weighted roadmap remains 38/100. Publication follows the existing authorized release workflow.

@@ -4,10 +4,10 @@ import type {CompletionResponse} from "./server/complete-quest";
 const modes=new Map<string,"legacy"|"trusted">();
 export class JourneyRequestError extends Error{constructor(message:string,public status:number){super(message);}}
 export function trustedJourney(owner:string){return modes.get(owner)==="trusted";}
-export async function journeyRequest<T>(owner:string,path:string,input?:unknown):Promise<T>{
+export async function journeyRequest<T>(owner:string,path:string,input?:unknown,method?:string):Promise<T>{
  const {data:{session},error}=await supabase().auth.getSession();
  if(error||!session||session.user.id!==owner)throw new Error("Please sign in again.");
- const response=await fetch(`/api/journey/${path}`,{method:input===undefined?"GET":"POST",cache:"no-store",signal:AbortSignal.timeout(55000),headers:{Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json"},...(input===undefined?{}:{body:JSON.stringify(input)})});
+ const response=await fetch(`/api/journey/${path}`,{method:method??(input===undefined?"GET":"POST"),cache:"no-store",signal:AbortSignal.timeout(55000),headers:{Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json"},...(input===undefined?{}:{body:JSON.stringify(input)})});
  const value=await response.json();
  if(!response.ok)throw new JourneyRequestError(typeof value.error==="string"?value.error:"We couldn’t update your journey. Please try again.",response.status);
  const latest=await supabase().auth.getSession();if(latest.data.session?.user.id!==owner)throw new Error("Your account changed. Please sign in again.");

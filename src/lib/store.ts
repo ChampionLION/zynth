@@ -11,6 +11,11 @@ import {outcomePresentation,type JourneyAction,type JourneyActionResult,type Pen
 import {notifyNativeQuestCompleted} from "./native-focus";
 import {cachedSessionUser} from "./supabase";
 import {readOfflinePack} from "./offline-learning";
+import {readJourneyCache,saveJourneyCache,savedReplies,saveReplies,nextCachedLesson} from "./lesson-cache";
+import {gradeLearningCheck} from "./learning";
+import {runPostGradePipeline} from "./engines/pipeline";
+import {runExploitCheck} from "./engines/exploit";
+import {mockEvolveSkillName,mockDiscoveryMessage,mockBehaviorSummary} from "./llm/mock";
 interface GradeRevealData {gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[]}
 interface ZynthStore {
  user:AccountUser|null;profile:Profile|null;activeQuest:Quest|null;onboardingDraft:OnboardingDraft|null;
@@ -37,6 +42,11 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    set({loading:!get().hydrated,hydrationError:null});
    const promise=(async()=>{
      try {
+       const savedOwner=cachedSessionUser()?.id;
+       if(savedOwner&&((typeof navigator!=="undefined"&&navigator.onLine===false)||savedReplies(savedOwner).length)){
+         const cache=readJourneyCache(savedOwner);
+         if(cache){const presentation=cache.pendingOutcome?outcomePresentation(cache.pendingOutcome):{gradeReveal:null,events:[]};set({...empty,...cache,activeQuest:cache.activeQuest??nextCachedLesson(savedOwner,cache.profile),gradeReveal:presentation.gradeReveal,eventQueue:presentation.events,hydrated:true,loading:false});return;}
+       }
        if(typeof navigator!=="undefined"&&navigator.onLine===false){
          const owner=cachedSessionUser()?.id,cache=owner?readOfflinePack(owner):null;
          if(cache){set({...empty,user:cache.user,profile:cache.profile,activeQuest:cache.quest,mode:cache.mode,hydrated:true,loading:false});return;}
@@ -55,11 +65,27 @@ export const useZynth=create<ZynthStore>((set,get)=>({
      }finally{if(pending?.epoch===epoch)pending=null;}
    })();
    pending={epoch,promise};
+   // A cache restore can finish synchronously before the assignment above.
+   // Clear its receipt in a microtask too, so reconnection can hydrate afresh.
+   void promise.finally(()=>{if(pending?.promise===promise)pending=null;});
    return promise;
  },
  journeyAction:async input=>{
    const owner=get().user?.id,epoch=authEpoch;if(!owner||get().mode!=="trusted")throw new Error("Please reopen your journey.");
-   const result=await sendJourneyAction(owner,input);
+   let result:JourneyActionResult;
+   if(!navigator.onLine&&get().profile){
+    if(input.kind==="energy"){
+     const profile={...get().profile!,energy_today:input.energy,energy_date:new Date().toISOString().slice(0,10)};
+     localStorage.setItem(`zynth:energy:${owner}`,JSON.stringify(input));set({profile});
+     const cache=readJourneyCache(owner);if(cache)saveJourneyCache({...cache,profile});return {profile,quest:get().activeQuest};
+    }
+    if(input.kind==="daily_question")return {profile:get().profile,quest:get().activeQuest,question:null};
+   }
+   const cached=input.kind==="generate"&&get().profile?nextCachedLesson(owner,get().profile!):null;
+   if(cached&&!get().activeQuest){
+    if(navigator.onLine)result=await journeyRequest(owner,"lessons",{key:readJourneyCache(owner)?.pack?.key,questId:cached.id});
+    else result={profile:get().profile,quest:cached};
+   }else result=await sendJourneyAction(owner,input);
    if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed. Please sign in again.");
    if(result.profile&&result.profile.user_id!==owner)throw new Error("Please sign in again.");
    set(state=>({profile:result.profile,onboardingDraft:result.profile?null:state.onboardingDraft,activeQuest:input.kind==="skip"?null:result.quest?{...result.quest,draft:result.quest.id===state.activeQuest?.id?state.activeQuest.draft:result.quest.draft}:state.activeQuest}));
@@ -67,7 +93,22 @@ export const useZynth=create<ZynthStore>((set,get)=>({
  },
  completeQuest:async(questId,responseText)=>{
    const owner=get().user?.id,epoch=authEpoch;if(!owner||get().mode!=="trusted")throw new Error("Please reopen your journey.");
-   const response=await sendCompletion(owner,questId,responseText);
+   const local=async()=>{
+    const state=get(),quest=state.activeQuest,cache=readJourneyCache(owner);
+    if(!quest||quest.id!==questId||!state.profile)throw new Error("Reopen your lesson.");
+    const gradeResult=gradeLearningCheck(quest,responseText);
+    const replies=savedReplies(owner),packKey=cache?.pack&&(cache.pack.lessons.some(l=>l.quest.id===questId)||cache.pack.mission?.id===questId)?cache.pack.key:undefined;
+    saveReplies(owner,[...replies.filter(r=>r.quest.id!==questId),{quest,responseText,packKey,gradeSeen:false,eventCursor:0}]);
+    if(!gradeResult)throw new Error("Reply saved.");
+    const result=await runPostGradePipeline({profile:state.profile,quest,gradeResult,responseText,responseTimeSeconds:Math.max(0,(Date.now()-Date.parse(quest.created_at))/1000),exploit:runExploitCheck({profile:state.profile,quest,response:responseText,responseTimeSeconds:180}),swiftModeUsed:false,enrichment:{skillName:async(name,_profile,tier)=>mockEvolveSkillName(name,tier),discoveryMessage:async(name,profile)=>mockDiscoveryMessage(name,profile.profession),behaviorSummary:async profile=>mockBehaviorSummary(profile)}});
+    if(epoch!==authEpoch||get().user?.id!==owner)return;
+    const outcome={questId,result:{...result,gradeResult},gradeSeen:false,eventCursor:0};const presentation=outcomePresentation(outcome);
+    set({profile:result.profile,activeQuest:null,pendingOutcome:outcome,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events});
+    if(cache)saveJourneyCache({...cache,profile:result.profile,activeQuest:null,pendingOutcome:outcome});
+   };
+   if(typeof navigator!=="undefined"&&!navigator.onLine){await local();return;}
+   let response;
+   try{response=await sendCompletion(owner,questId,responseText);}catch(error){if(error instanceof TypeError||(error instanceof DOMException&&error.name==="TimeoutError")){await local();return;}throw error;}
    if(epoch!==authEpoch||get().user?.id!==owner||response.profile.user_id!==owner)throw new Error("Your account changed. Please sign in again.");
    const pendingOutcome={questId,result:response.result,gradeSeen:false,eventCursor:0};const presentation=outcomePresentation(pendingOutcome);
    set({profile:response.profile,activeQuest:null,pendingOutcome,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events});
@@ -77,7 +118,10 @@ export const useZynth=create<ZynthStore>((set,get)=>({
  ackGrade:async()=>{
    const owner=get().user?.id,pending=get().pendingOutcome,epoch=authEpoch;
    if(get().mode==="trusted"&&owner&&pending){
-    await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor});
+    const replies=savedReplies(owner);
+    if(replies.some(r=>r.quest.id===pending.questId))saveReplies(owner,replies.map(r=>r.quest.id===pending.questId?{...r,gradeSeen:true}:r));
+    else if(navigator.onLine)await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor});
+    else localStorage.setItem(`zynth:presentation:${owner}`,JSON.stringify({questId:pending.questId,grade:true,cursor:pending.eventCursor}));
     if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed.");
     set({pendingOutcome:pending.result.events.length?{...pending,gradeSeen:true}:null});
    }
@@ -86,7 +130,10 @@ export const useZynth=create<ZynthStore>((set,get)=>({
  ackEvent:async()=>{
    const owner=get().user?.id,pending=get().pendingOutcome,epoch=authEpoch;
    if(get().mode==="trusted"&&owner&&pending){
-    await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor+1});
+    const replies=savedReplies(owner);
+    if(replies.some(r=>r.quest.id===pending.questId))saveReplies(owner,replies.map(r=>r.quest.id===pending.questId?{...r,gradeSeen:true,eventCursor:pending.eventCursor+1}:r));
+    else if(navigator.onLine)await journeyRequest(owner,"ack",{questId:pending.questId,grade:true,cursor:pending.eventCursor+1});
+    else localStorage.setItem(`zynth:presentation:${owner}`,JSON.stringify({questId:pending.questId,grade:true,cursor:pending.eventCursor+1}));
     if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed.");
     set({pendingOutcome:pending.eventCursor+1<pending.result.events.length?{...pending,eventCursor:pending.eventCursor+1}:null});
    }

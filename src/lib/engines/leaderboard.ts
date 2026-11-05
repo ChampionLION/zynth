@@ -8,12 +8,17 @@ export type LeaderboardRegion={country:string;state:string;city:string};
 export const LEADERBOARD_PAGE_SIZE=25;
 export async function getLeaderboard(profile:Profile,scope:Scope,category:Category,offset=0,signal?:AbortSignal,region?:LeaderboardRegion):Promise<LeaderboardResult>{
  if(!isLive())return {rows:[],userRank:0,userRow:null,total:0,participation:profile.leaderboard_opt_out?"opted_out":"not_joined",updatedAt:new Date().toISOString(),region:{country:"",state:"",city:""},regions:[]};
+ const cacheKey=`zynth:rankings:${profile.user_id}:${JSON.stringify([scope,category,offset,region??null])}`;
+ let saved:LeaderboardResult|null=null;
+ try{const parsed=LeaderboardResultSchema.safeParse(JSON.parse(localStorage.getItem(cacheKey)??"null"));if(parsed.success)saved=parsed.data;}catch{/* A saved snapshot is optional. */}
+ if(typeof navigator!=="undefined"&&!navigator.onLine&&saved)return saved;
  let request=supabase().rpc("get_leaderboard",{p_scope:scope,p_category:category,p_offset:offset,p_limit:LEADERBOARD_PAGE_SIZE,p_country:region?.country||null,p_state:region?.state||null,p_city:region?.city||null});
  if(signal)request=request.abortSignal(signal);
  const {data,error}=await request;
- if(error)throw new Error("We couldn’t load these rankings. Please try again.");
+ if(error){if(saved&&!signal?.aborted)return saved;throw new Error("We couldn’t load these rankings. Please try again.");}
  const parsed=LeaderboardResultSchema.safeParse(data);
  if(!parsed.success)throw new Error("We couldn’t read these rankings. Please try again.");
+ try{localStorage.setItem(cacheKey,JSON.stringify(parsed.data));}catch{/* Live rankings remain available without device storage. */}
  return parsed.data;
 }
 

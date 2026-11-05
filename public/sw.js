@@ -1,58 +1,27 @@
-/* Public app shell only. Account data, tokens, API responses and RSC payloads
- * never enter Cache Storage. Private lesson data uses an account-scoped store. */
-const CACHE = 'zynth-offline-shell-v1';
-const SHELL = '/offline';
-const cacheable = url => url.origin === self.location.origin &&
-  (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/brand/') || url.pathname === '/favicon.svg' ||
-   (url.pathname === '/_next/image' && url.searchParams.get('url')?.startsWith('/brand/')));
-async function saveAssets(html, cache) {
-  const urls = [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
-    .map(match => new URL(match[1].replaceAll('&amp;', '&'), self.location.origin))
-    .filter(cacheable);
-  for(const tag of html.matchAll(/<img\b[^>]*>/g)) for(const match of tag[0].matchAll(/srcset="([^"]+)"/gi))
-    for(const source of match[1].split(',')) {
-      const url=new URL(source.trim().split(/\s+/)[0].replaceAll('&amp;','&'),self.location.origin);
-      if(cacheable(url))urls.push(url);
-    }
-  await Promise.all([...new Set(urls.map(url => url.href))].map(async url => {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('An offline asset is unavailable');
-    await cache.put(url, response);
-  }));
+// Every connection uses the same routes and application. Only public page shells
+// and assets are cached here; account data lives in the account-scoped store.
+const CACHE='zynth-app-shell-v2';
+const ROUTES=['/','/dashboard','/quest','/grade','/events','/profile','/settings','/markmap','/leaderboard','/achievements','/chronicle','/download','/prestige','/reveal','/onboarding','/auth'];
+const pagePath=url=>ROUTES.includes(url.pathname);
+const asset=url=>url.origin===self.location.origin&&(url.pathname.startsWith('/_next/static/')||url.pathname.startsWith('/brand/')||url.pathname==='/favicon.svg'||url.pathname==='/_next/image'&&url.searchParams.get('url')?.startsWith('/brand/'));
+const pageKey=(url,rsc)=>self.location.origin+url.pathname+(rsc?'?flight=1':'');
+async function cachePage(path){
+ const response=await fetch(path,{cache:'reload'});if(!response.ok)return;
+ const cache=await caches.open(CACHE),html=await response.clone().text();
+ const urls=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m=>new URL(m[1].replaceAll('&amp;','&'),self.location.origin)).filter(asset);
+ for(const tag of html.matchAll(/<img\b[^>]*>/g))for(const match of tag[0].matchAll(/srcset="([^"]+)"/gi))for(const item of match[1].split(',')){const url=new URL(item.trim().split(/\s+/)[0].replaceAll('&amp;','&'),self.location.origin);if(asset(url))urls.push(url);}
+ await Promise.all([...new Set(urls.map(u=>u.href))].map(async url=>{const res=await fetch(url);if(res.ok)await cache.put(url,res);}));
+ await cache.put(self.location.origin+path,response);
 }
-async function warm() {
-  const response = await fetch(SHELL, {cache:'reload'});
-  if (!response.ok) throw new Error('Offline shell is unavailable');
-  const cache = await caches.open(CACHE), html = await response.clone().text();
-  await saveAssets(html, cache);
-  await cache.put(SHELL, response);
-}
-self.addEventListener('install', event => event.waitUntil(warm().then(() => self.skipWaiting())));
-self.addEventListener('activate', event => event.waitUntil((async () => {
-  for (const key of await caches.keys()) if (key.startsWith('zynth-offline-shell-') && key !== CACHE) await caches.delete(key);
-  await self.clients.claim();
-})()));
-self.addEventListener('message', event => {
-  if(event.data?.type === 'CACHE_OFFLINE') event.waitUntil(warm().then(() => event.ports[0]?.postMessage({ok:true})).catch(() => event.ports[0]?.postMessage({ok:false})));
-});
-self.addEventListener('fetch', event => {
-  const request = event.request, url = new URL(request.url);
-  if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
-  if (request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        if (response.ok) return response;
-        if(response.status < 500) return response;
-      } catch { /* Offline or unreachable host: serve the complete cached app shell. */ }
-      if(url.pathname!==SHELL) return Response.redirect(new URL(SHELL,self.location.origin).href,302);
-      return await caches.match(SHELL) || new Response('Connect once to download your lessons.', {status:503,headers:{'Content-Type':'text/plain'}});
-    })()); return;
-  }
-  if (cacheable(url)) event.respondWith((async () => {
-    const cached = await caches.match(request); if (cached) return cached;
-    const response = await fetch(request);
-    if (response.ok) {const cache=await caches.open(CACHE);await cache.put(request,response.clone());}
-    return response;
-  })());
+self.addEventListener('install',event=>event.waitUntil((async()=>{for(const path of ROUTES)await cachePage(path);await self.skipWaiting();})()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{await self.clients.claim();for(const name of await caches.keys())if((name.startsWith('zynth-offline-shell-')||name.startsWith('zynth-app-shell-'))&&name!==CACHE)await caches.delete(name);})()));
+self.addEventListener('fetch',event=>{
+ const request=event.request,url=new URL(request.url);
+ if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
+ if(request.mode==='navigate'||request.headers.get('RSC')==='1'){
+  if(!pagePath(url))return;
+  const rsc=request.headers.get('RSC')==='1',key=pageKey(url,rsc);
+  event.respondWith((async()=>{const cache=await caches.open(CACHE);try{const res=await fetch(request);if(res.ok){await cache.put(key,res.clone());return res;}if(res.status<500)return res;}catch{/* Use the same saved route. */}return await cache.match(key)||new Response('Your saved page is being prepared. Please try again.',{status:503});})());return;
+ }
+ if(asset(url))event.respondWith((async()=>{const cache=await caches.open(CACHE),saved=await cache.match(request);if(saved)return saved;const res=await fetch(request);if(res.ok)await cache.put(request,res.clone());return res;})());
 });

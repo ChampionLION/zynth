@@ -6,6 +6,7 @@ import {EditableProfileSchema,type EditableProfile} from "./appearance";
 import {readJourneyState,trustedJourney,sendJourneyAction,journeyRequest} from "./journey-client";
 import type {PendingOutcome} from "./journey-contract";
 import {clearOfflinePack} from "./offline-learning";
+import {clearJourneyCache} from "./lesson-cache";
 export { supabase };
 /** Data sync is independent of the model provider's mock/live setting. */
 export const isLive = isSupabaseConfigured;
@@ -44,6 +45,7 @@ export async function saveProfile(profile:Profile):Promise<void> {
 /** Settings patch only editable fields, preserving concurrently earned progress. */
 export async function saveEditableProfile(userId:string,input:EditableProfile):Promise<EditableProfile>{
  const clean=EditableProfileSchema.parse(input);
+ if(typeof navigator!=="undefined"&&navigator.onLine===false){localStorage.setItem(`zynth:profile-edits:${userId}`,JSON.stringify(clean));return clean;}
  if(isLive()){
    const {data,error}=await supabase().from("profiles").update({...clean,updated_at:new Date().toISOString()}).eq("user_id",userId).select("display_name,character_name,leaderboard_opt_out").single();
    if(error)throw error;if(!data)throw new Error("Your profile could not be updated.");return EditableProfileSchema.parse(data);
@@ -193,6 +195,7 @@ export async function eraseProgress(user:AccountUser):Promise<void> {
   }
   for(const key of Object.keys(localStorage))if(key.startsWith(`zynth:quest:${user.id}:`)||key===onboardingKey(user.id))localStorage.removeItem(key);
   clearOfflinePack(user.id);
+  clearJourneyCache(user.id);
   const legacy=(readLocal(LS_ACCOUNT)??readLocal(LS_USER)) as {email?:string}|null;
   if(legacy?.email?.toLowerCase()===user.email.toLowerCase())for(const key of [LS_USER,LS_ACCOUNT,LS_PROFILE,LS_QUEST])localStorage.removeItem(key);
 }

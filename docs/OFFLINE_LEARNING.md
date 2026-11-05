@@ -1,34 +1,27 @@
-# Remembered sign-in and offline learning
+# One daily lesson flow, with transparent caching
 
-Updated: 5 November 2026 (Africa/Lagos).
+Updated: 5 November 2026. This owner correction supersedes the separate study-library design.
 
-## Delivered behavior
+Daily quests **are** the lessons: one/two short teaching sections, worked examples and a small reinforcement check. Missions hold the substantial assessments. There is no additional foundation-study track, alternate dashboard or offline-mode banner. `/offline` exists only to redirect older bookmarks to Overview.
 
-The web application and Android WebView share the same remembered sign-in, offline library and synchronization flow. Sign in online once on each installation. **Remember me** is enabled by default and can be changed on the sign-in form or in Settings. It stores the Supabase session in local storage, using the normal refresh-token mechanism. Turning it off moves the session and PKCE verifier to session storage; closing that tab/session requires signing in again. Passwords are never saved by this feature. Clearing browser/app storage, signing out, or server-side session revocation can still require authentication.
+The same Overview, quest, feedback, profile, settings and map pages load online or from their saved public application shells. The service worker preserves the requested route; it never redirects a connection failure into a different experience. Private account snapshots and drafts remain account scoped, outside the public page cache. Saved leaderboard snapshots use the existing ranking UI and timestamp. Editable profile changes, energy choices and presentation receipts queue for reconnection; existing appearance synchronization remains intact.
 
-The dedicated `/offline` library saves the current issued quest, its local draft, a profile snapshot and **three upcoming foundation lessons**. Each lesson contains teaching, worked examples and a small check. It is available through Settings and the offline status banner. A service worker prepares the public offline page and its scripts, styles and brand assets. A failed full navigation redirects to that cached page. Android also tries this same-origin offline page before showing the first-launch connection fallback.
+## Daily lesson buffer
 
-The lesson buffer has three upcoming lessons after a successful online sync. Completing lessons offline consumes the saved buffer; reconnecting syncs the study journal and replaces the buffer with the next three. It cannot download new material without a connection. The current finite foundation bank repeats after its seven units per domain; this is not an infinite or complete profession curriculum.
+The authenticated `/api/journey/lessons` service prepares three upcoming **daily quest definitions**, with real quest IDs, curriculum positions and scheduled dates. It also prepares the supplied mission scenario for the current mission cycle. Definitions are durably recorded through existing server-only journey action transactions. A stable lesson-content receipt preserves the first issued definition across overlapping packs/devices.
 
-## What synchronizes
+The normal generation path activates the same prepared definition when available. A cached daily lesson opens through `/quest` when due; future dates stay locked. Mission activation additionally verifies current learning readiness and the cycle/attempt identifier. Reconnection submits saved answers against those same stored definitions through trusted completion. Client-supplied grades, XP, timestamps and replacement content are never accepted as authoritative progress.
 
-- Study replies and ordered completion cursors synchronize to the account's existing Supabase Auth metadata. Each installation writes a separate top-level journal key; cursors merge monotonically across devices. Recent answer history is bounded to three entries per journal, with a 1,000-character limit for each additional-study answer; lifetime completion cursors remain. These editable study records never grant permissions, EXP, mission credits or ranking scores.
-- Current-quest drafts remain account/quest scoped. Local drafts restore after offline reload and upload when connected.
-- A submitted issued quest is queued locally and sent through the existing trusted completion endpoint after reconnecting. Its saved quest ID preserves server replay protection. Rewards appear only after a confirmed server result. A rejection retains the answer for review; it does not block syncing/refilling the additional lesson pack.
-- The app retries on connection restoration, return to the page/app, study completion and a one-minute foreground interval. Session expiry requires online sign-in before cloud synchronization can finish. There is no claim of background sync while the browser or Android process is closed.
+Local formative checks use the saved answer key and existing progression pipeline, with deterministic local enrichment and the usual feedback screen. These local projections are reconciled to server results; they cannot write authoritative progression directly. Mission prose answers are saved for server grading rather than receiving an invented local assessment. A connection restoration, app/page return and foreground minute timer retry saved work and refill the buffer. Closed-process background synchronization is not claimed.
 
-The three buffered lessons are additional foundation study, separate from the daily quest schedule. This keeps offline learning available without inventing future server-issued quests, bypassing the daily policy or awarding unverified XP. Missions and already issued quests keep their original server definitions. Rankings, account changes, new daily generation and server grading require a connection. Voice transcription can also depend on the browser's online speech service; typing remains available offline.
+## Existing daily quests
 
-## Isolation and persistence
+Older non-mission active quests can be converted into the lesson format by the authenticated service. It keeps the quest ID and existing draft; the previous quest definition and draft are retained in the owner-scoped action receipt. Missions remain unchanged. This updates the actual daily quest instead of placing a second lesson panel above an old assessment.
 
-Offline packs, drafts and queued answers use account-scoped local-storage keys. The cached session's identity selects only its own pack; it never authorizes a server request. Sign-out locks access to the saved pack and clears in-memory account state while retaining unsynced local work for the same account's next sign-in. Reset progress explicitly clears that account's pack and submission queue. Browser storage eviction or manual data clearing removes local-only work.
+No new schema migration, service credential in the client or additional user permission is needed. Existing action transactions, ownership checks, revision protection and result replay remain in force. Original v1 study metadata/cache records remain historical and are no longer generated or presented. Remember me remains configurable in the existing account UI.
 
-Cache Storage holds only the public offline HTML, versioned application assets and brand images. It excludes tokens, Auth responses, private APIs, RSC requests and APK downloads. Study metadata updates use a captured, verified bearer token so an account change cannot redirect a previous account's in-flight write to the new account. No service-role key, database migration or new permission is required.
+## Focused verification and remaining work
 
-## Verification
+`npm run test:offline` verifies shared quest identity, account isolation, cached cold restore and renewed hydration after reconnection. `scripts/verify-unified-lessons.cjs` checks the normal Overview → quest → feedback flow, cold reload without a connection, a saved reply submitted once on reconnection, and the three-definition buffer against disposable accounts. TypeScript, lint and local production compilation passed. Broader cross-device races, long disconnects, reward/streak reconciliation across multiple dates, storage eviction and physical Android acceptance remain for the owner's dedicated testing day.
 
-`npm run test:offline` verifies persistent versus session-only storage, PKCE migration, account isolation, all five domain packs, ordered offline consumption, reload persistence, exactly-three refill, stale queue acknowledgements and real SDK authentication against an isolated fixture.
-
-`scripts/verify-offline.cjs` runs against a local production build and disposable accounts: service-worker installation, offline cold reload, saved current-quest answer, three lessons completed without network writes, reconnection, one trusted completion request, synced study history, replenishment to sequences 3/4/5, remembered browser restart, phone width, public-cache exclusions and APK response headers/hash. No hosted account or progression records are written by this check. Physical Android WebView/storage/permission acceptance remains separate.
-
-The Android package and checksum are linked from `/download`, the landing page and Settings. Distribution is an early-access, debug-signed APK; Play Store release signing and store acceptance are not complete.
+The Android package loads this same application; its normal startup route is cached too. One initial connected sign-in and application download is necessary on a new installation. Cached pages cannot manufacture unreceived account data or remote service results.
