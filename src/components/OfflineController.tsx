@@ -14,6 +14,7 @@ export function OfflineController(){
   const sync=async()=>{
    if(disposed||running.current||!navigator.onLine)return;running.current=true;
    try{
+    void import("@/lib/avatar-db").then(avatar=>{const pending=avatar.pendingAvatar(owner);if(pending)return avatar.saveAvatar(owner,pending);}).catch(()=>{/* Cosmetic retry never blocks lesson synchronization. */});
     const energy=localStorage.getItem(`zynth:energy:${owner}`);if(energy){await journeyRequest(owner,"action",JSON.parse(energy));localStorage.removeItem(`zynth:energy:${owner}`);}
     const edits=localStorage.getItem(`zynth:profile-edits:${owner}`);if(edits){await saveEditableProfile(owner,JSON.parse(edits));localStorage.removeItem(`zynth:profile-edits:${owner}`);}
     for(const reply of savedReplies(owner)){

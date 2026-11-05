@@ -10,8 +10,9 @@ import { useZynth } from "@/lib/store";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { OverviewMapBackground } from "@/components/WorldMap";
 import { BottomNav } from "@/components/BottomNav";
+import {AvatarPortrait} from "@/components/AvatarPortrait";
 import { DifficultyPips, Particles } from "@/components/effects";
-import { DOMAIN_COLORS, domainColor, display } from "@/lib/ui";
+import { display } from "@/lib/ui";
 import { resolveQuestPlan, todayStr, daysSince } from "@/lib/engines/quest";
 import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive";
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
@@ -122,7 +123,7 @@ export default function DashboardPage() {
 
   if (!hydrated || !profile) return null;
 
-  const color = DOMAIN_COLORS[profile.domain];
+
   const expPct = Math.min(100, (profile.exp / profile.exp_to_next) * 100);
   const doneToday = profile.last_quest_date === todayStr();
   const mission=missionProgress(profile,activeQuest);
@@ -289,30 +290,7 @@ export default function DashboardPage() {
         {(characterState === "peak" || characterState === "streak") && (
           <Particles count={8} color={characterState === "peak" ? "#FFD700" : "#C87D2F"} />
         )}
-        <motion.div
-          animate={{
-            scale: characterState === "peak" ? [1, 1.04, 1] : 1,
-            opacity: 1,
-          }}
-          transition={{ repeat: characterState === "peak" ? Infinity : 0, duration: 2 }}
-          className="relative flex h-32 w-32 items-center justify-center rounded-full"
-          style={{
-            background: `radial-gradient(circle, ${domainColor(profile.domain,.2)} 0%, transparent 70%)`,
-            filter:
-              characterState === "active" || characterState === "peak" || characterState === "streak"
-                ? `drop-shadow(0 0 20px ${domainColor(profile.domain,.53)})`
-                : "none",
-          }}
-        >
-          {/* silhouette */}
-          <svg viewBox="0 0 64 64" className="h-20 w-20" fill={color} opacity={0.9}>
-            <circle cx="32" cy="18" r="10" />
-            <path d="M32 30c-11 0-18 8-18 20v6h36v-6c0-12-7-20-18-20z" />
-          </svg>
-          {characterState === "streak" && (
-            <div className="absolute inset-0 rounded-full border-2 border-amber/40" />
-          )}
-        </motion.div>
+        <AvatarPortrait key={profile.user_id} owner={profile.user_id}/>
         <span className="absolute bottom-0 font-mono text-xs text-amber">
           {display(profile.behavior_signature)}
         </span>

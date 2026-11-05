@@ -6,7 +6,7 @@ Updated: 5 November 2026 (Africa/Lagos).
 
 Complete the ZYNTH EVOLUTION & CHRONICLES roadmap, ZEC-M0 through ZEC-M11, against the Complete Application Blueprint v2, retaining unchanged v1 progression rules and the owner's onboarding, landscape Overview map, voice replies and leaderboard additions.
 
-**Current tracked completion: 39% — 39 of 100 weighted acceptance points. Remaining: 61 points.**
+**Current tracked completion: 47% — 47 of 100 weighted acceptance points. Remaining: 53 points.**
 
 This is an initial planning estimate based on evidenced work packages, not elapsed time, lines of code, test coverage or production readiness. Weights reflect scope and risk; they are not promised durations. The existing account, landing, branding and leaderboard features are shipped foundations, not extra credits counted again in this expansion denominator. A plan, schema draft or passing build alone does not complete a feature.
 
@@ -15,7 +15,7 @@ The base app and leaderboard are live at the owner-approved production address. 
 ## Execution order
 
 1. **Close M1's trust boundary first.** Complete every existing gameplay mutation on the server, durable recovery and real Postgres concurrency checks before removing client progression writes. Start the M11 dependency audit/upgrade preparation alongside this work.
-2. **M2 complete.** Hosted schema and two-session names/themes/retry verification passed without changing XP. Continue with M3.
+2. **M2 complete.** Hosted schema and two-session names/themes/retry verification passed without changing XP. M3 is also complete; continue with M4.
 3. **Deliver M3 then M4.** Ship a small default avatar/editor, then ownership-backed inventory and equipment. New grants depend on M1's verified events.
 4. **Deliver M5 then M6.** Add a small versioned region package/atlas and permanent environmental changes. Reuse the landscape in Overview and Mark Map.
 5. **Finish M7, then M8.** Build deterministic chapters around the existing lore, then truthful branches and the private paginated archive.
@@ -69,12 +69,12 @@ Exit: gameplay authority is server-owned across every write path; replay is safe
 
 Exit: names and appearance work locally and across hosted sessions; no progress can be edited through settings. Existing voice replies remain intact.
 
-### M3 — Identity and avatar: 0/8 points (0%)
+### M3 — Identity and avatar: 8/8 points (100%)
 
-- [ ] M3-A — **2 points:** lightweight layered default avatar and coherent profile environment, with readable missing-asset fallback.
-- [ ] M3-B — **2 points:** optional editor with preview, save, cancel, reset and account persistence.
-- [ ] M3-C — **2 points:** equipment slots and locked-item display obey the ownership contract; appearance never alters stats or access.
-- [ ] M3-D — **2 points:** desktop profile composition, stacked phone layout, keyboard/focus and reduced-motion checks.
+- [x] M3-A — **2 points:** lightweight layered default avatar and coherent profile environment, with readable missing-asset fallback.
+- [x] M3-B — **2 points:** optional editor with preview, save, cancel, reset and account persistence.
+- [x] M3-C — **2 points:** equipment slots and locked-item display obey the ownership contract; appearance never alters stats or access.
+- [x] M3-D — **2 points:** desktop profile composition, stacked phone layout, keyboard/focus and reduced-motion checks.
 
 Dependency: M2 and M1's persistence contract. Exit: a returning account restores its saved appearance; users can use the app without customization. Only default/free items are equippable until M4 ownership checks are live.
 
@@ -170,3 +170,11 @@ Every weighted package is accepted; existing accounts retain their history; all 
 - [Development report](docs/expansion/DEVELOPMENT_REPORT.md)
 - [Leaderboard and participation](docs/LEADERBOARD.md)
 - [Voice replies](docs/VOICE_REPLIES.md)
+
+## 5 November 2026 — M3 Identity and Avatar completed
+
+**M3: 8/8 (100%). Overall roadmap: 47/100 (47%), 53 points remaining.** Added the layered Wayfarer/environment, optional skin/hair/outfit/backdrop preview editor, explicit save/cancel/reset, scoped drafts/pending saves and the shared Overview character. The profile displays actual identity and all six stats, with radar/skills in desktop columns and a stacked phone layout. Native modal keyboard/focus behavior and a touch close button are retained.
+
+Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
+
+Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.

@@ -2,11 +2,11 @@
 
 Updated: 5 November 2026 (Africa/Lagos).
 
-## Current roadmap snapshot — 39%
+## Current roadmap snapshot — 47%
 
-The full ZEC-M0–M11 roadmap has **39/100 accepted weighted points**, with 61 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
+The full ZEC-M0–M11 roadmap has **47/100 accepted weighted points**, with 53 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
 
-Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 avatar → M4 inventory → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
+Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 complete → M4 inventory → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
 
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
 ## Completed milestones
@@ -176,9 +176,9 @@ Related owner additions — locally implemented and verified: voice replies with
 
 16 October functional leaderboard addition: global/domain rankings, true counts, pagination, own rank beyond the visible page, privacy/opt-out and refresh/error states are implemented. The owner approved the read-only ranking migration; it is applied and verified on the hosted project, with no profile/reward changes. Targeted PostgreSQL and browser checks pass. Regional participation and unrestricted browsing have since shipped; rank-triggered profession/reward grants remain outside this read-only feature. See `docs/LEADERBOARD.md`.
 
-### ZEC-M3 Identity and Avatar Foundation — NOT STARTED
+### ZEC-M3 Identity and Avatar Foundation — COMPLETED (100%)
 
-Objective: prominent responsive avatar environment and optional editor. Scope/tasks: layered default, appearance preview/save/reset, keyboard/focus, room presentation, stats beside compact skills. Dependencies: M2, trusted persistence contract from M1. Acceptance: defaults, saved appearance, locked equipment, error fallback, mobile and keyboard tests. Evidence: none. References: blueprint section 8. Risk: no production avatar schema yet. Next: small coherent default and editor, not an asset explosion.
+Completed 5 November 2026: layered default avatar and environment, optional skin/hair/outfit/backdrop editor, preview/save/cancel/reset, scoped account persistence and queued retry. Profile/Overview share the character; actual identity, six attributes and compact skills use responsive layouts. Free-only equipment validation keeps unreleased accessory/aura items locked; no XP/ownership grants are introduced. Focused UI checks cover save/cancel, fresh-session restoration, reset/Escape/focus, phone width and reduced motion. Hosted persistence passed on the existing hidden zero-EXP test account, whose original avatar was restored. See docs/expansion/M3_AVATAR.md. M3 is 8/8; M4 verified inventory/grants is next.
 
 ### ZEC-M4 Cosmetic Inventory — NOT STARTED
 
@@ -274,3 +274,10 @@ M2-D remains pending until that authenticated hosted check passes. Current acces
 **M2 Profile and Appearance: 8/8 points (100%). Overall roadmap: 39/100 (39%), 61 points remaining.** The final M2-D point is now earned. Production schema/RLS inspection and the owner-approved isolated hosted check passed: display/character names and dark/reduced-motion preferences restored after sign-out and a fresh SDK sign-in; an injected failed write preserved the hosted value and retry succeeded. Numerical progress stayed unchanged and original test settings were restored. The dedicated test account remains hidden from rankings at zero XP; existing users were untouched. No migration was applied.
 
 Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A/B/C retain their prior implementation and local UI/SQL evidence; this closes only the outstanding hosted point. Earlier pending-M2 notes are historical. Next: M3 Identity and Avatar. Broader checks stay deferred to the dedicated testing day.
+## 5 November 2026 — M3 Identity and Avatar completed
+
+**M3: 8/8 (100%). Overall roadmap: 47/100 (47%), 53 points remaining.** Added the layered Wayfarer/environment, optional skin/hair/outfit/backdrop preview editor, explicit save/cancel/reset, scoped drafts/pending saves and the shared Overview character. The profile displays actual identity and all six stats, with radar/skills in desktop columns and a stacked phone layout. Native modal keyboard/focus behavior and a touch close button are retained.
+
+Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
+
+Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.

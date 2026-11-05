@@ -3,16 +3,16 @@
 Updated: 5 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
-## Current completion: 39%
+## Current completion: 47%
 
-**39 of 100 weighted acceptance points complete; 61 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
+**47 of 100 weighted acceptance points complete; 53 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
 - **M0 Architecture/documentation — 100%** (5/5 points): audit and versioned specification complete.
 - **M1 Quests/trusted progression — 100%** (22/22): trusted actions/recovery, local PostgreSQL concurrency checks and owner-approved hosted permissions/configuration activation complete.
 - **M2 Profile/appearance — 100%** (8/8): implementation, local UI/SQL evidence and authorized hosted cross-session persistence/retry complete.
-- **M3 Identity/avatar — 0%** (0/8).
+- **M3 Identity/avatar — 100%** (8/8): character/editor, account persistence, free equipment restrictions and responsive/keyboard evidence complete.
 - **M4 Cosmetic inventory — 0%** (0/8).
 - **M5 World expansion — 0%** (0/8).
 - **M6 Living Mark Map — 0%** (0/7).
@@ -22,7 +22,7 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M10 Expansion readiness — 0%** (0/5).
 - **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
 
-**Next action:** start M3 Identity and Avatar; M2 is complete. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
+**Next action:** start M4 Cosmetic Inventory; M2 and M3 are complete. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
 
 The original leaderboard UI and all four scopes are live. Global includes verified profiles by default, including zero EXP; Settings can hide entries, and regional location remains optional. Current application commit: 0bdc38da81c6758b988c803849d255156f55d672. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
 
@@ -237,3 +237,10 @@ M2-D remains pending until that authenticated hosted check passes. Current acces
 **M2 Profile and Appearance: 8/8 points (100%). Overall roadmap: 39/100 (39%), 61 points remaining.** The final M2-D point is now earned. Production schema/RLS inspection and the owner-approved isolated hosted check passed: display/character names and dark/reduced-motion preferences restored after sign-out and a fresh SDK sign-in; an injected failed write preserved the hosted value and retry succeeded. Numerical progress stayed unchanged and original test settings were restored. The dedicated test account remains hidden from rankings at zero XP; existing users were untouched. No migration was applied.
 
 Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A/B/C retain their prior implementation and local UI/SQL evidence; this closes only the outstanding hosted point. Earlier pending-M2 notes are historical. Next: M3 Identity and Avatar. Broader checks stay deferred to the dedicated testing day.
+## 5 November 2026 — M3 Identity and Avatar completed
+
+**M3: 8/8 (100%). Overall roadmap: 47/100 (47%), 53 points remaining.** Added the layered Wayfarer/environment, optional skin/hair/outfit/backdrop preview editor, explicit save/cancel/reset, scoped drafts/pending saves and the shared Overview character. The profile displays actual identity and all six stats, with radar/skills in desktop columns and a stacked phone layout. Native modal keyboard/focus behavior and a touch close button are retained.
+
+Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
+
+Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.

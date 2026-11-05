@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test:avatar": "tsc avatar.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/avatar.test.js",
     "test:offline": "tsc lesson-cache.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/lesson-cache.test.js",
     "dev": "next dev",
     "build": "next build",

@@ -66,3 +66,8 @@ The `android` project packages the hosted application with device-local daily qu
 - [Engine audit](docs/expansion/ENGINE_AUDIT.md)
 - [Chronicles Lore Bible](docs/chronicles/ZYNTH-CHRONICLES-LORE-BIBLE.md)
 - [Blueprint PDF](docs/blueprints/Zynth_Blueprint_v1.md.pdf)
+
+## Character identity
+
+M3 is complete: Profile and Overview share a layered Wayfarer avatar. The optional editor previews free skin/hair/outfit/backdrop choices, saves to the account, supports cancel/reset and restores across sessions. Equipment slots remain free-only until M4 ownership is implemented. See [M3 evidence and boundaries](docs/expansion/M3_AVATAR.md).
+

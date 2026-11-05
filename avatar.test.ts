@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import {AvatarSchema,DEFAULT_AVATAR,parseAvatar,equipAvatar} from "./src/lib/avatar";
+assert.deepEqual(parseAvatar(null),DEFAULT_AVATAR);
+assert.deepEqual(parseAvatar({version:22,outfit:"unknown-future-item"}),DEFAULT_AVATAR,"Unreadable assets/versions keep a readable default");
+assert.throws(()=>equipAvatar(DEFAULT_AVATAR,"outfit","earned-cloak"));
+assert.throws(()=>equipAvatar(DEFAULT_AVATAR,"accessory","field-jacket"),/not available/);
+assert.throws(()=>AvatarSchema.parse({...DEFAULT_AVATAR,aura:"level-100-aura"}));
+assert.throws(()=>AvatarSchema.parse({...DEFAULT_AVATAR,exp:9000}),"Appearance never accepts progression fields");
+const selected=equipAvatar(DEFAULT_AVATAR,"outfit","studio-knit");assert.equal(selected.outfit,"studio-knit");assert.equal(DEFAULT_AVATAR.outfit,"wayfarer-coat","Preview cannot mutate saved defaults");
+assert.equal(equipAvatar(selected,"aura",null).aura,null);
+console.log("Avatar boundary check passed: free equipment only, compatible slots, invalid-version fallback, immutable preview and no progression fields.");

@@ -6,6 +6,7 @@
 import { useRouter } from "next/navigation";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { BottomNav } from "@/components/BottomNav";
+import {AvatarIdentity} from "@/components/AvatarIdentity";
 import { DOMAIN_COLORS, display, formatDate } from "@/lib/ui";
 import { getSkillTier, calculateSkillExpToNext } from "@/lib/engines/progression";
 
@@ -19,34 +20,14 @@ export default function ProfilePage() {
 
   return (
     <main className="app-page collection-page">
-      {/* TOP */}
-      <div className="flex items-center gap-3">
-        <span className="rounded-full bg-purple px-3 py-1 text-xs font-bold">
-          Lv {profile.level}
-        </span>
-        <span className="text-sm text-amber">{profile.title}</span>
-        {profile.prestige > 0 && (
-          <span className="rounded-full border border-gold px-2 py-0.5 text-[10px] text-gold">
-            Prestige {profile.prestige}
-          </span>
-        )}
-      </div>
-      <h1 className="mt-2 text-2xl font-bold">{profile.profession}</h1>
-      <span
-        className="mt-1 inline-block rounded-full border px-3 py-0.5 text-xs tracking-widest"
-        style={{ borderColor: color, color }}
-      >
-        {profile.domain}
-      </span>
-      <p className="mt-2 font-mono text-sm text-amber">
-        {display(profile.behavior_signature)}
-      </p>
-
+      <AvatarIdentity key={profile.user_id} profile={profile}/>
+      <div className="profile-development"><section>
       {/* RADAR */}
       <div className="mt-6 rounded-2xl border border-edge bg-surface p-4">
         <RadarChart profile={profile} color={color} />
       </div>
 
+      </section><section>
       {/* SKILLS */}
       <h2 className="mt-6 text-sm font-semibold tracking-widest text-muted">
         SKILLS
@@ -82,6 +63,7 @@ export default function ProfilePage() {
         })}
       </div>
 
+      </section></div>
       {/* HIDDEN SKILLS */}
       <h2 className="mt-6 text-sm font-semibold tracking-widest text-muted">
         HIDDEN SKILLS
@@ -102,26 +84,6 @@ export default function ProfilePage() {
             className="flex items-center rounded-xl border border-edge bg-surface px-4 py-3"
           >
             <span className="font-mono text-sm text-dim">???</span>
-          </div>
-        ))}
-      </div>
-
-      {/* STATS GRID */}
-      <h2 className="mt-6 text-sm font-semibold tracking-widest text-muted">STATS</h2>
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        {(
-          [
-            ["Focus", profile.stats.focus],
-            ["Consistency", profile.stats.consistency],
-            ["Adaptability", profile.stats.adaptability],
-            ["Execution", profile.stats.execution],
-            [profile.stats.stat_5.name, profile.stats.stat_5.value],
-            [profile.stats.stat_6.name, profile.stats.stat_6.value],
-          ] as [string, number][]
-        ).map(([name, value]) => (
-          <div key={name} className="rounded-xl border border-edge bg-surface px-4 py-3">
-            <p className="text-[11px] text-muted">{display(name)}</p>
-            <p className="text-lg font-bold">{value}</p>
           </div>
         ))}
       </div>

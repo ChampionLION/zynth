@@ -1,6 +1,6 @@
 # Zynth Evolution and Chronicles — Development Report
 
-Latest checkpoint, 5 November 2026: **M2 complete (8/8); overall 39/100 (39%)**. Hosted names/appearance persistence and retry passed on the authorized hidden, zero-XP test account. See [M2 completion evidence](M2_COMPLETION.md). The earlier dated report below is retained as history.
+Latest checkpoint, 5 November 2026: **M2 and M3 complete (8/8 each); overall 47/100 (47%)**. Hosted names/appearance persistence and retry passed on the authorized hidden, zero-XP test account. See [M2 completion evidence](M2_COMPLETION.md). M3 adds the layered avatar/editor and free equipment restrictions; see [M3 evidence](M3_AVATAR.md). The earlier dated report below is retained as history.
 
 Updated: **15 October 2026**, Africa/Lagos. Local branch: `feature/evolution-chronicles`. This is an implementation checkpoint, not completion of the full expansion or a production release.
 
@@ -131,3 +131,11 @@ Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M
 **M2 Profile and Appearance: 8/8 points (100%). Overall roadmap: 39/100 (39%), 61 points remaining.** The final M2-D point is now earned. Production schema/RLS inspection and the owner-approved isolated hosted check passed: display/character names and dark/reduced-motion preferences restored after sign-out and a fresh SDK sign-in; an injected failed write preserved the hosted value and retry succeeded. Numerical progress stayed unchanged and original test settings were restored. The dedicated test account remains hidden from rankings at zero XP; existing users were untouched. No migration was applied.
 
 Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A/B/C retain their prior implementation and local UI/SQL evidence; this closes only the outstanding hosted point. Earlier pending-M2 notes are historical. Next: M3 Identity and Avatar. Broader checks stay deferred to the dedicated testing day.
+
+## 5 November 2026 — M3 Identity and Avatar completed
+
+**M3: 8/8 (100%). Overall roadmap: 47/100 (47%), 53 points remaining.** Added the layered Wayfarer/environment, optional skin/hair/outfit/backdrop preview editor, explicit save/cancel/reset, scoped drafts/pending saves and the shared Overview character. The profile displays actual identity and all six stats, with radar/skills in desktop columns and a stacked phone layout. Native modal keyboard/focus behavior and a touch close button are retained.
+
+Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
+
+Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.

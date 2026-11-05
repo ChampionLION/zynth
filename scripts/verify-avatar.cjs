@@ -1,0 +1,24 @@
+// Focused M3 flow against disposable accounts; no hosted writes.
+const assert=require('node:assert/strict');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const {createAccountFixture}=require('./fixtures/account-server.cjs');
+(async()=>{
+ const fixture=createAccountFixture();let browser;
+ const unchanged=JSON.stringify(fixture.state.tables.profiles[0]);
+ await new Promise(resolve=>fixture.server.listen(54339,'127.0.0.1',resolve));
+ try{
+  browser=await chromium.launch({headless:true,executablePath:process.env.BROWSER_EXECUTABLE});
+  const context=await browser.newContext({viewport:{width:1365,height:900},colorScheme:'light',reducedMotion:'reduce'});
+  const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
+  const login=async page=>{await page.goto('http://localhost:3002/auth?mode=signin');await page.getByLabel('Email address',{exact:true}).fill('preview@zynth.local');await page.getByLabel('Password',{exact:true}).fill('preview-password');await page.getByRole('button',{name:/^Sign in/}).click();await page.waitForURL(/\/(quest|dashboard)$/);await page.goto('http://localhost:3002/profile');await page.getByRole('button',{name:'Customize appearance'}).waitFor();};
+  await login(page);await page.getByRole('region',{name:'Your identity'}).waitFor();assert.equal(await page.getByRole('definition').count(),6);
+  const open=page.getByRole('button',{name:'Customize appearance'});await open.click();
+  let dialog=page.getByRole('dialog',{name:'Make your Wayfarer yours.'});await dialog.waitFor();await dialog.getByRole('radio',{name:'Studio knit',exact:true}).check();await dialog.getByRole('button',{name:'Cancel',exact:true}).click();assert.equal(fixture.account.user_metadata.zynth_avatar,undefined,'Cancel never persists the preview');
+  await open.click();await dialog.getByRole('radio',{name:'Coils',exact:true}).check();await dialog.getByRole('radio',{name:'Studio knit',exact:true}).check();await dialog.getByRole('radio',{name:'Plum',exact:true}).check();await dialog.getByRole('radio',{name:'Grove',exact:true}).check();assert.equal(await dialog.getByRole('button',{name:'Locked · Earned equipment'}).isEnabled(),false);await dialog.getByRole('button',{name:'Save appearance',exact:true}).click();await dialog.waitFor({state:'hidden'});
+  assert.equal(fixture.account.user_metadata.zynth_avatar.outfit,'studio-knit');assert.equal(fixture.account.user_metadata.zynth_avatar.background,'grove');assert.equal(JSON.stringify(fixture.state.tables.profiles[0]),unchanged,'Appearance cannot mutate profile progression');
+  await page.screenshot({path:'.review/m3-profile-desktop.png',fullPage:true});await open.click();await dialog.getByRole('button',{name:'Reset preview'}).click();assert.equal(await dialog.getByRole('radio',{name:'Wayfarer coat',exact:true}).isChecked(),true);await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});assert.ok(await open.evaluate(e=>e===document.activeElement),'Escape restores focus');
+  const second=await browser.newContext({viewport:{width:390,height:844},colorScheme:'light',reducedMotion:'reduce'});const returning=await second.newPage();await login(returning);await returning.getByRole('img',{name:/wearing a studio knit/}).waitFor();assert.ok(await returning.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Phone profile fits');await returning.screenshot({path:'.review/m3-profile-phone.png',fullPage:true});
+  await returning.getByRole('button',{name:'Customize appearance'}).click();const editor=returning.getByRole('dialog');await editor.getByRole('radio',{name:'Grove',exact:true}).waitFor();assert.equal(await editor.getByRole('radio',{name:'Grove',exact:true}).isChecked(),true);assert.ok(await editor.evaluate(e=>e.scrollWidth<=e.clientWidth),'Phone editor fits');await returning.screenshot({path:'.review/m3-editor-phone.png',fullPage:true});await editor.getByRole('button',{name:'Cancel',exact:true}).click();
+  assert.deepEqual(errors,[]);console.log('M3 browser passed: default character, cancel, free selection/save, fresh-session restoration, reset preview/Escape/focus, locked equipment, six real attributes, unchanged progression and desktop/phone reduced-motion layouts.');
+ }finally{if(browser)await browser.close();await new Promise(resolve=>fixture.server.close(resolve));}
+})().catch(error=>{console.error(error);process.exitCode=1;});
