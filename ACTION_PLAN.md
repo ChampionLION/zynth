@@ -1,21 +1,21 @@
 # Zynth milestone completion action plan
 
-Updated: 2 November 2026 (Africa/Lagos).
+Updated: 5 November 2026 (Africa/Lagos).
 
 ## Goal and current position
 
 Complete the ZYNTH EVOLUTION & CHRONICLES roadmap, ZEC-M0 through ZEC-M11, against the Complete Application Blueprint v2, retaining unchanged v1 progression rules and the owner's onboarding, landscape Overview map, voice replies and leaderboard additions.
 
-**Current tracked completion: 38% — 38 of 100 weighted acceptance points. Remaining: 62 points.**
+**Current tracked completion: 39% — 39 of 100 weighted acceptance points. Remaining: 61 points.**
 
 This is an initial planning estimate based on evidenced work packages, not elapsed time, lines of code, test coverage or production readiness. Weights reflect scope and risk; they are not promised durations. The existing account, landing, branding and leaderboard features are shipped foundations, not extra credits counted again in this expansion denominator. A plan, schema draft or passing build alone does not complete a feature.
 
-The base app and leaderboard are live at the owner-approved production address. The separately approved Global-default query returns all three verified profiles. Step 1 is activated and its restrictive production permissions/configuration are verified. Hosted preference/inbox behavior still needs dedicated verification.
+The base app and leaderboard are live at the owner-approved production address. The separately approved Global-default query returns all three verified profiles. Step 1 is activated and its restrictive production permissions/configuration are verified. Hosted preference persistence/retry is verified for M2; inbox behavior remains separate.
 
 ## Execution order
 
 1. **Close M1's trust boundary first.** Complete every existing gameplay mutation on the server, durable recovery and real Postgres concurrency checks before removing client progression writes. Start the M11 dependency audit/upgrade preparation alongside this work.
-2. **Close M2's last verification point.** Inspect actual hosted preference schema first; do not reapply an already completed migration. Verify names/themes survive sign-out, a second session and retry without changing XP.
+2. **M2 complete.** Hosted schema and two-session names/themes/retry verification passed without changing XP. Continue with M3.
 3. **Deliver M3 then M4.** Ship a small default avatar/editor, then ownership-backed inventory and equipment. New grants depend on M1's verified events.
 4. **Deliver M5 then M6.** Add a small versioned region package/atlas and permanent environmental changes. Reuse the landscape in Overview and Mark Map.
 5. **Finish M7, then M8.** Build deterministic chapters around the existing lore, then truthful branches and the private paginated archive.
@@ -60,12 +60,12 @@ Exit: the implementation has a common specification and known gaps. Audit comple
 
 Exit: gameplay authority is server-owned across every write path; replay is safe; original accounts/data and all quest types remain usable. M1-C through M1-F form one coordinated release boundary.
 
-### M2 — Profile and appearance: 7/8 points (88%)
+### M2 — Profile and appearance: 8/8 points (100%)
 
 - [x] M2-A — **3 points:** validated field-only names, save/discard/error states, account-scoped draft recovery and navigation confirmation.
 - [x] M2-B — **3 points:** shared light/dark/system themes, reduced motion, offline preference persistence/retry and all six Overview stats.
 - [x] M2-C — **1 point:** SDK/SQL and desktop/mobile browser verification of the above. Evidence: verify-m2-voice.cjs, account/expansion suites and recorded screenshots.
-- [ ] M2-D — **1 point:** verify the actual hosted preference schema and cross-session persistence/retry on an authorized test account, including unchanged numerical progress. The owner's setup confirmation is recorded; do not ask them to repeat completed setup.
+- [x] M2-D — **1 point:** actual hosted schema and two-session persistence/retry verified on the owner-approved hidden test account, 5 November 2026; numerical progress unchanged and original test settings restored. Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs.
 
 Exit: names and appearance work locally and across hosted sessions; no progress can be edited through settings. Existing voice replies remain intact.
 

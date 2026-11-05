@@ -3,15 +3,15 @@
 Updated: 5 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
-## Current completion: 38%
+## Current completion: 39%
 
-**38 of 100 weighted acceptance points complete; 62 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
+**39 of 100 weighted acceptance points complete; 61 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
 - **M0 Architecture/documentation — 100%** (5/5 points): audit and versioned specification complete.
 - **M1 Quests/trusted progression — 100%** (22/22): trusted actions/recovery, local PostgreSQL concurrency checks and owner-approved hosted permissions/configuration activation complete.
-- **M2 Profile/appearance — 88%** (7/8): implementation and local verification done; hosted cross-session proof remains.
+- **M2 Profile/appearance — 100%** (8/8): implementation, local UI/SQL evidence and authorized hosted cross-session persistence/retry complete.
 - **M3 Identity/avatar — 0%** (0/8).
 - **M4 Cosmetic inventory — 0%** (0/8).
 - **M5 World expansion — 0%** (0/8).
@@ -22,7 +22,7 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M10 Expansion readiness — 0%** (0/5).
 - **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
 
-**Next action:** verify M2 hosted cross-session appearance/persistence, then start M3 avatar work. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
+**Next action:** start M3 Identity and Avatar; M2 is complete. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
 
 The original leaderboard UI and all four scopes are live. Global includes verified profiles by default, including zero EXP; Settings can hide entries, and regional location remains optional. Current application commit: 0bdc38da81c6758b988c803849d255156f55d672. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
 
@@ -225,3 +225,15 @@ Focused acceptance: normal Overview/quest/grade pages, same lesson identity afte
 
 Unified application release 954cc9a is deployed successfully. The separate library and mode UI have been removed from production; the same quest routes now use the daily lesson cache. First-time cached lessons preserve the calibration type. Broader checks remain deferred as requested.
 
+
+## 5 November 2026 — M2 final acceptance preparation
+
+Read-only production inspection confirms public.user_preferences has user_id/theme/motion/updated_at, RLS enabled, and owner-scoped SELECT/INSERT/UPDATE/DELETE policies. Existing setup is complete; no migration is needed. The focused hosted acceptance runner is prepared in scripts/verify-m2-hosted.cjs. It requires an explicitly authorized, confirmed M2 test account, verifies names and appearance through two real Auth sessions plus interrupted-save/retry, preserves numerical progress and restores test settings.
+
+M2-D remains pending until that authenticated hosted check passes. Current access permits schema inspection but does not provide a dedicated test login or Auth administration. Dashboard sign-in is required to prepare the isolated account. No existing user was edited, no test account was created, and no extra completion point is claimed. M2 remains 7/8 and overall progress 38/100 at this checkpoint.
+
+## 5 November 2026 — M2 completed
+
+**M2 Profile and Appearance: 8/8 points (100%). Overall roadmap: 39/100 (39%), 61 points remaining.** The final M2-D point is now earned. Production schema/RLS inspection and the owner-approved isolated hosted check passed: display/character names and dark/reduced-motion preferences restored after sign-out and a fresh SDK sign-in; an injected failed write preserved the hosted value and retry succeeded. Numerical progress stayed unchanged and original test settings were restored. The dedicated test account remains hidden from rankings at zero XP; existing users were untouched. No migration was applied.
+
+Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A/B/C retain their prior implementation and local UI/SQL evidence; this closes only the outstanding hosted point. Earlier pending-M2 notes are historical. Next: M3 Identity and Avatar. Broader checks stay deferred to the dedicated testing day.

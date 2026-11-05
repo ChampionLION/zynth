@@ -42,7 +42,7 @@ The original Local, State, National and Global tabs read saved lifetime EXP dire
 
 Quest and mission replies can be recorded in browsers with speech recognition, then reviewed as editable text before grading. Final words use the normal saved draft flow; playback audio stays only on the page. Typing remains available. See [voice reply behavior and browser checks](docs/VOICE_REPLIES.md).
 
-Settings supports editable names, save/discard, light/dark/system themes, reduced motion and account preference retry. M2 is verified locally; hosted cross-session preference proof remains tracked in the roadmap. Overview shows all six core/domain stats with three desktop/two phone columns.
+Settings supports editable names, save/discard, light/dark/system themes, reduced motion and account preference retry. M2 is complete, including authorized hosted cross-session preference/retry verification; see [completion evidence](docs/expansion/M2_COMPLETION.md). Overview shows all six core/domain stats with three desktop/two phone columns.
 
 ## Remembered sign-in, offline lessons and downloads
 

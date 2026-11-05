@@ -1,12 +1,14 @@
 # Zynth Evolution and Chronicles — Development Report
 
+Latest checkpoint, 5 November 2026: **M2 complete (8/8); overall 39/100 (39%)**. Hosted names/appearance persistence and retry passed on the authorized hidden, zero-XP test account. See [M2 completion evidence](M2_COMPLETION.md). The earlier dated report below is retained as history.
+
 Updated: **15 October 2026**, Africa/Lagos. Local branch: `feature/evolution-chronicles`. This is an implementation checkpoint, not completion of the full expansion or a production release.
 
 Owner's latest instruction: finish now and defer further tests to the next prompt. The checks reported below completed before that instruction. The last defensive recording-timeout cleanup and documentation edits were not followed by another test/build run. Production deployment, hosted preference migration and real microphone/provider checks remain pending.
 
 16 October follow-up: the M2/voice/six-stat changes and email reminder were pushed and deployed. The owner confirms the earlier migration and SMTP setup are complete. A subsequent functional-leaderboard request adds global/domain live ranking reads, full-board own position, counts/pagination, privacy/opt-out and refresh/error handling. Its separate read-only migration was explicitly approved, applied and verified on Supabase; focused SQL/browser checks pass. This resolves the old aggregation/current-user lookup gap below, while regional location preferences, progression authority and profession/reward integration remain open. Current details: [leaderboard implementation](../LEADERBOARD.md).
 
-## Current planning checkpoint — 16 October 2026
+## Historical planning checkpoint — 16 October 2026
 
 **24% complete (24/100 weighted acceptance points).** The scoring source and next implementation batch are in [ACTION_PLAN.md](../../ACTION_PLAN.md). M0 is complete; M1 has 8/22 points; M2 has 7/8; M7 has 2/8; M11 has 2/11 for baseline evidence. All other milestones have no credited runtime package. This is a planning estimate, not production readiness. Hosted setup was reported complete by the owner, and the latest optional-participation leaderboard release is production-verified. Earlier checkpoints below retain their original verification scope; their pending-release/setup wording does not override the latest progress dashboard.
 
@@ -16,7 +18,7 @@ At the owner's request, the revised blueprint and this report are Markdown docum
 
 The [master directive](MASTER_DIRECTIVE.md) records the supplied request. The existing [milestone record](../../MILESTONES.md) and [progress record](../../PROGRESS.md) remain authoritative and retain earlier history. [Engine audit](ENGINE_AUDIT.md) documents all thirteen original engines, their connections, implementation gaps and source conflicts.
 
-## Current milestone position
+## Historical milestone position — October 2026
 
 - **ZEC-M0 — COMPLETED:** repository, original blueprint, installed stack, engine interfaces, schema/policies and baseline audited; v2 Markdown blueprint, conflict decisions and roadmap recorded. Completing the audit does not resolve every audited defect.
 - **ZEC-M1 — IN PROGRESS:** mission policy is integrated and locally tested. Trusted completion and atomic persistence are implemented as a disabled staged foundation. Other mutation routes, privilege cutover, client integration, durable reveal recovery and separate-connection race verification remain.
@@ -123,3 +125,9 @@ Applied the previously authorized trusted_journey_cutover migration (hosted vers
 Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
 
 Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.
+
+## 5 November 2026 — M2 completed
+
+**M2 Profile and Appearance: 8/8 points (100%). Overall roadmap: 39/100 (39%), 61 points remaining.** The final M2-D point is now earned. Production schema/RLS inspection and the owner-approved isolated hosted check passed: display/character names and dark/reduced-motion preferences restored after sign-out and a fresh SDK sign-in; an injected failed write preserved the hosted value and retry succeeded. Numerical progress stayed unchanged and original test settings were restored. The dedicated test account remains hidden from rankings at zero XP; existing users were untouched. No migration was applied.
+
+Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A/B/C retain their prior implementation and local UI/SQL evidence; this closes only the outstanding hosted point. Earlier pending-M2 notes are historical. Next: M3 Identity and Avatar. Broader checks stay deferred to the dedicated testing day.
