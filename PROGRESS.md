@@ -198,3 +198,11 @@ Remember me is available on sign-in and Settings. The web/Android shared offline
 Verification completed: engine/account/database/voice suites, learning and offline checks, trusted journey checks and local production compilation. Real-browser offline cold reload, three lesson completions, journal sync, refill to three, one queued-quest submission, remembered browser restart, phone width and APK headers/hash passed using disposable accounts; no hosted user progress was changed. Publication/smoke status is recorded with the release. Physical Android permission/alarm/WebView acceptance and store release signing remain open.
 
 Weighted ZEC completion remains **38/100 (38%)**. These owner-requested additions do not satisfy the remaining avatar, inventory, world or Chronicles packages, or the hosted M2/M11 acceptance gaps. See docs/LEARNING_QUESTS.md, docs/OFFLINE_LEARNING.md and docs/ANDROID_APP.md.
+
+
+### Production release verified — 5 November 2026
+
+Published application commit 519258e5bf823ff85198d6c3aa64311197e0c996 to GitHub feature/evolution-chronicles and master; Vercel reports deployment success. Minimal live checks confirm /download, /offline and /sw.js return 200, the APK downloads as an Android attachment with the exact verified SHA-256, and browser configuration points to the production Zynth Supabase project without local fixtures. No hosted user records were changed by verification. Physical Android/store acceptance and remaining ZEC packages stay open.
+
+Owner workflow preference from this checkpoint: focus on functional implementation and run only minimal checks needed for a change or release. Broader regression testing and debugging are deferred to a dedicated testing day.
+

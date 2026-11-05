@@ -23,7 +23,7 @@ The leaderboard participation update is pushed and production-verified at eea7ce
 - [x] Website download page, landing/Settings links, APK attachment and checksum.
 - [x] Engine/account/database/voice suites, learning and offline unit/integration checks, trusted journey checks and local production compilation passed.
 - [x] Real-browser offline restart, three completed lessons, synced history, three-lesson refill, one queued-quest submission, remembered restart and APK download/hash passed against disposable accounts.
-- [ ] Production publication/smoke verification for this checkpoint; tracked by the release containing this entry.
+- [x] GitHub publication and Vercel deployment complete; minimal live APK/offline-page/account-configuration verification passed (release evidence below).
 - [ ] Physical Android acceptance and release/store signing remain open.
 
 These additional requested deliverables do not complete the remaining ZEC avatar/world/Chronicles acceptance packages. Weighted roadmap completion remains **38/100 (38%)**. See [learning behavior](docs/LEARNING_QUESTS.md), [offline continuity](docs/OFFLINE_LEARNING.md) and [Android evidence](docs/ANDROID_APP.md).
@@ -235,3 +235,11 @@ Applied the previously authorized trusted_journey_cutover migration (hosted vers
 Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
 
 Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.
+
+
+### Production release verified — 5 November 2026
+
+Published application commit 519258e5bf823ff85198d6c3aa64311197e0c996 to GitHub feature/evolution-chronicles and master; Vercel reports deployment success. Minimal live checks confirm /download, /offline and /sw.js return 200, the APK downloads as an Android attachment with the exact verified SHA-256, and browser configuration points to the production Zynth Supabase project without local fixtures. No hosted user records were changed by verification. Physical Android/store acceptance and remaining ZEC packages stay open.
+
+Owner workflow preference from this checkpoint: focus on functional implementation and run only minimal checks needed for a change or release. Broader regression testing and debugging are deferred to a dedicated testing day.
+
