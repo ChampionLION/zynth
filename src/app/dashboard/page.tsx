@@ -212,7 +212,6 @@ export default function DashboardPage() {
       </p>
 
       {/* QUEST CARD */}
-      
       <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`Mission readiness: ${mission.progress} concepts practised successfully. Keep learning and reinforcing the ideas.`} <span>Streaks and story chapters progress separately.</span></p>
       <div className="quest-feature">
         {doneToday && !activeQuest && !mission.eligible ? (

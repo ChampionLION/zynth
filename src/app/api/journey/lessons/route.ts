@@ -32,8 +32,9 @@ export async function GET(req:NextRequest){try{
   const working=structuredClone(profile);
   // Advance curriculum position only; this projection never grants progress.
   for(let n=count(working.quest_history);n<ordinal+i;n++)working.quest_history.push({quest_id:`preview-${n}`,quest_type:"daily",grade:"Good",completed_at:new Date().toISOString(),learning_topics:[],quest_title:"Planned lesson",exp_earned:0,skills_targeted:[]});
-  const content=await journeyModels.generate(working,"daily",calculateDifficulty(profile.level));
-  const quest:Quest={...content,id:await plannedQuestId(user.id,"daily",0,ordinal+i,due),type:"daily",status:"active",date:due,created_at:new Date().toISOString()};
+  const type=ordinal+i===0?"calibration":"daily";
+  const content=await journeyModels.generate(working,type,calculateDifficulty(profile.level));
+  const quest:Quest={...content,id:await plannedQuestId(user.id,type,0,ordinal+i,due),type,status:"active",date:due,created_at:new Date().toISOString()};
   lessons.push({quest:await freezeLesson(repo,user.id,quest),ordinal:ordinal+i});
  }
  const readiness=missionProgress(profile),content=await journeyModels.generate(profile,"mission",calculateDifficulty(profile.level));
