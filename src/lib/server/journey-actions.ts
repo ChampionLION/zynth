@@ -49,7 +49,7 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
   const skips=new Set(p.memory.milestones.filter(mark=>mark.type==="quest_skipped"&&mark.date.slice(0,10)===day).map(mark=>mark.quest_id)).size;
   const attempt=planned.questType==="mission"?m.attempts:p.quest_history.filter(q=>q.completed_at.slice(0,10)===day&&q.quest_type!=="mission").length+skips;
   const questId=await plannedQuestId(owner,planned.questType,m.cycle,attempt,day);
-  plan={...planned,questId,day,cycle:m.cycle,attempt,adaptive:working.current_adaptive_state,provenance:planned.questType==="mission"&&await repo.verifiedCredits(owner)<7?"legacy":"server"};key=`generate:${questId}`;
+  plan={...planned,questId,day,cycle:m.cycle,attempt,adaptive:working.current_adaptive_state,provenance:planned.questType==="mission"&&await repo.verifiedCredits(owner)<Math.max(2,m.readyChecks)?"legacy":"server"};key=`generate:${questId}`;
  }else if(action.kind==="onboard"){
   const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(action.answers)));
   key=`onboard:${Array.from(new Uint8Array(hash),v=>v.toString(16).padStart(2,"0")).join("")}`;

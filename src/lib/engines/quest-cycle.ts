@@ -1,8 +1,9 @@
 import type {Grade,Memory,Profile,Quest,QuestHistoryEntry,QuestType} from "../types";
 
 /** Engine 2 policy. These are gameplay cycles, never narrative chapters. */
-export const MISSION_QUEST_REQUIREMENT = 7;
-export const MISSION_POLICY_VERSION = 1;
+/** Concept coverage, not a count of days or quests. */
+export const MISSION_QUEST_REQUIREMENT = 3;
+export const MISSION_POLICY_VERSION = 2;
 const eligibleTypes = new Set<QuestType>(["calibration","daily","challenge","hidden","weakness","prestige"]);
 const passingGrades = new Set<Grade>(["Basic","Good","Excellent"]);
 export function isSuccessfulChallenge(entry: Pick<QuestHistoryEntry,"grade">): boolean {
@@ -16,6 +17,7 @@ export interface MissionProgress {
   policyVersion:number; cycle:number; credits:number; progress:number; banked:number;
   completedMissions:number; attempts:number; eligible:boolean; status:MissionStatus;
   activeQuestId:string|null; lastCompletedMissionId:string|null;
+  readyChecks:number; topics:string[];
 }
 
 /** Read-only replay of legacy history; never changes XP or manufactures missions.
@@ -25,29 +27,40 @@ export interface MissionProgress {
 export function missionProgress(profile:Pick<Profile,"quest_history">&{memory?:Pick<Memory,"milestones">},activeQuest:Quest|null=null):MissionProgress {
   let credits=0, completedMissions=0, attempts=0, awaitingRetry=false;
   let lastCompletedMissionId:string|null=null;
+  let topics=new Set<string>();
+  let checks:boolean[]=[];
   const seen=new Set<string>();
   const history=[...profile.quest_history].sort((a,b)=>a.completed_at.localeCompare(b.completed_at));
   for(const entry of history){
     if(!entry.quest_id||seen.has(entry.quest_id))continue;
     seen.add(entry.quest_id);
-    if(qualifiesForMission(entry))credits++;
+    if(qualifiesForMission(entry)){
+      credits++;
+      if(entry.learning_topics?.length){
+        const understood=entry.grade==="Good"||entry.grade==="Excellent";
+        checks.push(understood);checks=checks.slice(-3);
+        if(understood)for(const topic of entry.learning_topics)topics.add(topic);
+      }
+    }else if(entry.quest_type!=="mission"&&entry.learning_topics?.length)checks.push(false);
     if(entry.quest_type!=="mission")continue;
     if(isSuccessfulChallenge(entry)){
       // A legacy streak mission may precede seven credits. No debt or lost XP.
-      credits=Math.max(0,credits-MISSION_QUEST_REQUIREMENT);
+      credits=0;topics=new Set();checks=[];
       completedMissions++;attempts=0;awaitingRetry=false;lastCompletedMissionId=entry.quest_id;
     }else{attempts++;awaitingRetry=true;}
   }
   const skipped=new Set((profile.memory?.milestones??[]).filter(m=>m.type==="mission_skipped"&&m.cycle===completedMissions+1&&typeof m.quest_id==="string").map(m=>m.quest_id));
   if(skipped.size){attempts+=skipped.size;awaitingRetry=true;}
   const active=activeQuest?.type==="mission"&&activeQuest.status==="active"&&!seen.has(activeQuest.id)?activeQuest:null;
-  const eligible=credits>=MISSION_QUEST_REQUIREMENT||awaitingRetry||!!active;
+  const readyChecks=checks.slice(-3).filter(Boolean).length;
+  const ready=topics.size>=MISSION_QUEST_REQUIREMENT&&readyChecks>=2&&checks.at(-1)===true;
+  const eligible=ready||awaitingRetry||!!active;
   let status:MissionStatus=eligible?(awaitingRetry?"awaiting_retry":"eligible"):credits?"progressing":lastCompletedMissionId?"completed":"not_eligible";
   if(active){
     const draft=active.draft;
     status=draft&&(draft.response.trim()||draft.step_responses.some(r=>r.trim())||draft.current_step>0)?"in_progress":"available";
   }
-  return {policyVersion:MISSION_POLICY_VERSION,cycle:completedMissions+1,credits,progress:Math.min(7,credits),banked:Math.max(0,credits-7),completedMissions,attempts,eligible,status,activeQuestId:active?.id??null,lastCompletedMissionId};
+  return {policyVersion:MISSION_POLICY_VERSION,cycle:completedMissions+1,credits,progress:Math.min(MISSION_QUEST_REQUIREMENT,topics.size),banked:0,completedMissions,attempts,eligible,status,activeQuestId:active?.id??null,lastCompletedMissionId,readyChecks,topics:[...topics]};
 }
 
 /** Stable UUID for the same user/cycle/attempt. Use insert-if-absent persistence. */

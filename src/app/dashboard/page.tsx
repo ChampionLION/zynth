@@ -17,6 +17,7 @@ import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
 import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
+import {OverviewLessons} from "@/components/OverviewLessons";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -211,7 +212,8 @@ export default function DashboardPage() {
       </p>
 
       {/* QUEST CARD */}
-      <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`${mission.progress} of 7 qualifying quests toward your next mission.`} <span>Streaks and story chapters progress separately.</span></p>
+      <OverviewLessons owner={profile.user_id} quest={activeQuest}/>
+      <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`Mission readiness: ${mission.progress} concepts practised successfully. Keep learning and reinforcing the ideas.`} <span>Streaks and story chapters progress separately.</span></p>
       <div className="quest-feature">
         {doneToday && !activeQuest && !mission.eligible ? (
           <div className="py-6 text-center">
@@ -258,7 +260,7 @@ export default function DashboardPage() {
               onClick={() => router.push("/quest")}
               className="mt-4 w-full rounded-lg bg-amber py-3 font-semibold text-black"
             >
-              Begin Quest →
+              {activeQuest.learning?"Begin lesson →":activeQuest.type==="mission"?"Begin mission →":"Continue saved quest →"}
             </button>
           </>
         )}

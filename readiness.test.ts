@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import {missionProgress} from "./src/lib/engines/quest-cycle";
+import type {QuestHistoryEntry} from "./src/lib/types";
+const entry=(id:string,topics:string[],grade="Good",date="2026-11-05")=>({quest_id:id,quest_type:"daily",grade,learning_topics:topics,completed_at:date+"T12:00:00Z"} as QuestHistoryEntry);
+const state=(quest_history:QuestHistoryEntry[])=>missionProgress({quest_history});
+assert.equal(state(Array.from({length:7},(_,i)=>entry(String(i),["Repeated concept"],"Basic"))).eligible,false);
+const learned=[entry("one",["Inputs"],"Good","2026-01-01"),entry("two",["Rules","Outputs"],"Good","2026-11-05")];
+assert.equal(state(learned).eligible,true,"Readiness depends on coverage and checks, not elapsed days or seven tasks");
+assert.equal(state([learned[0],learned[0]]).eligible,false,"Duplicate history adds no evidence");
+assert.equal(state([...learned,entry("review",["Outputs"],"Basic")]).eligible,false,"A latest correction calls for more reinforcement");
+assert.equal(state([...learned,{...entry("mission",[]),quest_type:"mission"}]).eligible,false,"A completed mission starts a new learning cycle");
+console.log("Mission readiness checks passed: concept coverage, recent understanding, date independence, duplicates and cycle reset.");

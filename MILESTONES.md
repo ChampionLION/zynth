@@ -243,3 +243,11 @@ Published application commit 519258e5bf823ff85198d6c3aa64311197e0c996 to GitHub 
 
 Owner workflow preference from this checkpoint: focus on functional implementation and run only minimal checks needed for a change or release. Broader regression testing and debugging are deferred to a dedicated testing day.
 
+
+## 5 November 2026 — Lesson visibility and readiness correction
+
+Supersedes the earlier seven-completion policy: mission eligibility now uses successful practice across at least three distinct taught concepts, at least two understood checks among the last three recorded learning checks, and an understood latest check. This is concept coverage/readiness, not seven days or seven quests. Existing active missions/retries and earned progress remain valid; a completed mission starts the next learning cycle. Editable offline additional-study metadata does not grant mission eligibility. No database migration is required: the trusted server derives readiness from stored history.
+
+Overview now shows actual teaching and a worked example above the quest card, with a direct Continue this lesson action. New learning quests are labelled as lessons; older unfinished tasks are labelled Continue saved quest. Saved drafts are retained. Learning is also directly accessible while an older task remains unfinished.
+
+Focused readiness checks and TypeScript passed; broader regression fixtures for the superseded seven-credit policy are deferred to the dedicated testing day. Weighted roadmap remains 38/100. Publication follows the existing authorized release workflow.

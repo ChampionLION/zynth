@@ -17,7 +17,7 @@ export default function OfflinePage(){
  const [selected,setSelected]=useState("quest"),[feedback,setFeedback]=useState("");
  useEffect(()=>{
   const update=()=>{const owner=cachedSessionUser()?.id;setPack(owner?readOfflinePack(owner):null);setReady(true);setOnline(navigator.onLine);};
-  update();window.addEventListener("online",update);window.addEventListener("offline",update);window.addEventListener("zynth-offline-updated",update);
+  update();if(new URLSearchParams(location.search).get("lesson")==="next"){const owner=cachedSessionUser()?.id,initial=owner?readOfflinePack(owner):null;const next=initial?.lessons.find(l=>l.sequence>=(initial.journal.cursors[l.domain]??0));if(next)setSelected(next.id);}window.addEventListener("online",update);window.addEventListener("offline",update);window.addEventListener("zynth-offline-updated",update);
   return()=>{window.removeEventListener("online",update);window.removeEventListener("offline",update);window.removeEventListener("zynth-offline-updated",update);};
  },[]);
  if(!ready)return <main className="account-state"><p>Opening saved lessons…</p></main>;

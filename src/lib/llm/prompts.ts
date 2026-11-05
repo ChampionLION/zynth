@@ -95,7 +95,7 @@ ADAPTIVE GUIDANCE: ${args.promptInjection||"(none)"}
 The learning-first rules below take precedence over adaptive wording about challenge or stakes.
 
 LEARNING AND ASSESSMENT RULES:
-${mission?`This is the main assessment, unlocked by seven qualifying completed quests. Give two or three linked solution steps.
+${mission?`This is the main assessment, unlocked by demonstrated learning readiness. Give two or three linked solution steps.
 Use recent_learning topics in the supplied profile to choose what to assess. Do not demand unintroduced knowledge. When recent learning history is absent, provide a short reference with the case and do not pretend the user has already been taught a topic.
 Supply the actual problem in scenario: concrete facts or sample data, constraints, and the test inputs or outcomes to check. Every step must refer to this same case.
 The user diagnoses, solves and checks the GIVEN problem. Never ask them to invent a problem, choose an issue from their own life, invent missing evidence, create their own test scenario, or invent a solution to an invented problem.

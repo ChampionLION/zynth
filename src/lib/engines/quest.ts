@@ -19,7 +19,7 @@ export function resolveQuestType(profile: Profile): QuestType {
   // First quest ever → calibration
   if (!quest_history || quest_history.length === 0) return "calibration";
 
-  // A playable mission follows seven qualifying completions, independent of days.
+  // A mission follows concept coverage and recent successful learning checks.
   if (missionProgress(profile).eligible) return "mission";
 
   // Three consecutive Fails → weakness quest
