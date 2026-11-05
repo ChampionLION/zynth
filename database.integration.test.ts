@@ -61,7 +61,8 @@ async function main(){
  await db.exec("RESET ROLE; SET ROLE anon;");
  await assert.rejects(()=>commit(q2,1),/permission denied/);
  await db.exec("RESET ROLE; SET ROLE service_role;");
- const quest={...mockGenerateQuest(profile,"daily",1),id:q2,created_at:new Date(Date.now()-180000).toISOString(),date:new Date().toISOString().slice(0,10),status:"active" as const};
+ // Existing free-response quests retain their original completion/recovery path.
+ const quest={...mockGenerateQuest(profile,"daily",1),learning:undefined,id:q2,created_at:new Date(Date.now()-180000).toISOString(),date:new Date().toISOString().slice(0,10),status:"active" as const};
  await db.query("UPDATE public.quests SET quest_data=$1 WHERE id=$2",[JSON.stringify(quest),q2]);
  const repo:CompletionRepository={
    profile:async owner=>(await db.query<{value:Profile}>("SELECT to_jsonb(p) AS value FROM public.profiles p WHERE user_id=$1",[owner])).rows[0]?.value??null,

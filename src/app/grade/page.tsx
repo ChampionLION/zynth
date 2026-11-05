@@ -11,7 +11,7 @@ import { CountUp } from "@/components/effects";
 
 export default function GradeRevealPage() {
   const router = useRouter();
-  const { gradeReveal, eventQueue, ackGrade, profile } = useZynth();
+  const { gradeReveal, eventQueue, ackGrade, profile,pendingOutcome } = useZynth();
   const [t, setT] = useState(0);
   const [busy,setBusy]=useState(false),[error,setError]=useState("");
 
@@ -28,6 +28,8 @@ export default function GradeRevealPage() {
   }
 
   const { gradeResult, expEarned, streakMultiplier, changedStats } = gradeReveal;
+  const completed=pendingOutcome?profile.quest_history.find(q=>q.quest_id===pendingOutcome.questId):profile.quest_history.at(-1);
+  const practice=!!completed?.learning_topics?.length;
   const colors = GRADE_COLORS[gradeResult.grade];
 
   const cont = async () => {
@@ -52,10 +54,10 @@ export default function GradeRevealPage() {
           }`}
           style={{ color: colors.text }}
         >
-          {gradeResult.grade}
+          {practice?"Practice complete":gradeResult.grade}
         </p>
 
-        {t >= 1 && (
+        {(practice||t >= 1) && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -65,7 +67,7 @@ export default function GradeRevealPage() {
           </motion.p>
         )}
 
-        {t >= 2 && (
+        {(practice||t >= 2) && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -75,7 +77,7 @@ export default function GradeRevealPage() {
           </motion.p>
         )}
 
-        {t >= 3 && (
+        {(practice||t >= 3) && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +97,7 @@ export default function GradeRevealPage() {
           </motion.div>
         )}
 
-        {t >= 4 && changedStats.length > 0 && (
+        {(practice||t >= 4) && changedStats.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -110,7 +112,7 @@ export default function GradeRevealPage() {
           </motion.div>
         )}
 
-        {t >= 5 && gradeResult.strengths.length > 0 && (
+        {(practice||t >= 5) && gradeResult.strengths.length > 0 && (
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             {gradeResult.strengths.map((s, i) => (
               <motion.span
@@ -126,7 +128,7 @@ export default function GradeRevealPage() {
           </div>
         )}
 
-        {t >= 6 && gradeResult.improvements.length > 0 && (
+        {(practice||t >= 6) && gradeResult.improvements.length > 0 && (
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             {gradeResult.improvements.map((s, i) => (
               <motion.span
@@ -143,7 +145,7 @@ export default function GradeRevealPage() {
         )}
       </motion.div>
 
-      {t >= 7 && (
+      {(practice||t >= 7) && (
         <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

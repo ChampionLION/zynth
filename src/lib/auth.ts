@@ -1,5 +1,7 @@
 import { isSupabaseConfigured, supabase } from "./supabase";
 import type { AccountUser } from "./account-flow";
+import {authStorageKey} from "./supabase";
+import {setRememberSession} from "./remember-session";
 
 export { isSupabaseConfigured };
 export function accountUser(user: { id:string; email?:string; user_metadata?:Record<string,unknown> }): AccountUser {
@@ -21,7 +23,8 @@ export async function signUp(email:string, password:string, name:string) {
   if (error) throw error;
   return { needsConfirmation: !data.session };
 }
-export async function signIn(email:string,password:string) {
+export async function signIn(email:string,password:string,remember=true) {
+  setRememberSession(remember,authStorageKey());
   const {error} = await supabase().auth.signInWithPassword({email:email.trim().toLowerCase(),password});
   if (error) throw error;
 }

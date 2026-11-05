@@ -89,6 +89,7 @@ export interface BehaviorLogEntry {
 }
 
 export interface QuestHistoryEntry {
+  learning_topics?: string[];
   quest_id: string;
   quest_title: string;
   quest_type: QuestType;
@@ -219,7 +220,28 @@ export interface QuestStep {
   success_criteria: string;
 }
 
+export interface QuestLesson {
+  title: string;
+  explanation: string;
+  example: string;
+}
+
+export interface QuestLearning {
+  version: 1;
+  objective: string;
+  lessons: QuestLesson[];
+  check: {
+    question: string;
+    options: {key: string; label: string}[];
+    correct_option: string;
+    explanation: string;
+  };
+}
+
 export interface Quest {
+  learning?: QuestLearning;
+  scenario?: string;
+  assessment_topics?: string[];
   draft?: import("./account-flow").QuestDraft | null;
   id: string;
   quest_title: string;

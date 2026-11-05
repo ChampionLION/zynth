@@ -2,6 +2,8 @@
 
 Reviewed against `docs/blueprints/blueprint_extracted.txt` on 13 October 2026. This is an implementation status record, not a claim that every blueprint feature is complete.
 
+Latest additions, 5 November 2026: the production trusted progression activation remains in place. New quest generation teaches one/two lessons before a small check; missions supply scenarios and use recorded taught topics. Stored check grading is deterministic and server-owned; existing prose grading remains in practice mode unless configured otherwise. Offline additional-study history is editable metadata and cannot award EXP, mission credits or ranking score. An issued-quest answer queued offline enters the same authenticated, replay-safe completion route after reconnecting. See [learning checks](docs/LEARNING_QUESTS.md) and [offline continuity](docs/OFFLINE_LEARNING.md). The historical baseline below is retained; later dated rollout records supersede its client-authority limitations.
+
 ## Verified local connections
 
 1. **Onboarding:** answers → classification → schema validation (live responses) → application-owned initial skill values → profile persistence → reveal. Starting-stat validation now enforces uniqueness, range, and total.

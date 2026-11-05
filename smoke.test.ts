@@ -51,7 +51,8 @@ const plan = resolveQuestPlan(profile);
 check("first quest is calibration", plan.questType === "calibration");
 const questData = mockGenerateQuest(profile, plan.questType, plan.difficulty);
 check("quest has title + criteria", !!questData.quest_title && !!questData.success_criteria);
-const quest = { ...questData, id: "q1", status: "active" as const, created_at: new Date().toISOString(), date: todayStr() };
+// Preserve free-response grading coverage for quests issued before lesson content.
+const quest = { ...questData, learning:undefined, id: "q1", status: "active" as const, created_at: new Date().toISOString(), date: todayStr() };
 
 console.log("4. Exploit checks");
 const fast = runExploitCheck({ profile, response: "short", responseTimeSeconds: 10 });
@@ -114,7 +115,7 @@ for (let d = 1; d <= 6; d++) {
 }
 p7.streak = 6;
 p7.last_quest_date = new Date(Date.now() - 86400_000).toISOString().slice(0, 10);
-const q7 = { ...mockGenerateQuest(p7, "daily", 1), id: "q7", status: "active" as const, created_at: new Date().toISOString(), date: todayStr() };
+const q7 = { ...mockGenerateQuest(p7, "daily", 1), learning:undefined, id: "q7", status: "active" as const, created_at: new Date().toISOString(), date: todayStr() };
 const g7 = mockGradeResponse({ quest: q7, response: goodResponse, profile: p7, responseTimeSeconds: 200 });
 const r7 = await runPostGradePipeline({
   profile: p7, quest: q7, gradeResult: g7,
@@ -174,7 +175,7 @@ check("changing destination does not invent a different work style",differentGoa
 const customProfile=buildProfile("custom-user","Custom User",customResult,customAnswers.Q1[0]);
 check("written direction persisted",customProfile.aspiration==="a documentary filmmaker");
 check("aspiration reaches quest context",buildCompressedContext(customProfile,"quest_generation").aspiration==="a documentary filmmaker");
-check("calibration acknowledges direction",mockGenerateQuest(customProfile,"calibration",1).description.includes("documentary filmmaker"));
+check("calibration teaching acknowledges direction",!!mockGenerateQuest(customProfile,"calibration",1).learning?.objective.includes("documentary filmmaker"));
 check("exactly five onboarding steps",ONBOARDING_QUESTIONS.length===5 && ONBOARDING_QUESTIONS[0].kind==="aspiration");
 check("live prompt uses the actual new questions",onboardingPrompt(JSON.stringify(customAnswers)).includes(ONBOARDING_QUESTIONS[1].prompt) && !onboardingPrompt("{}").includes("$10,000"));
 let invalidRejected=false;try{validateOnboardingAnswers({...customAnswers,Q1:["  "]});}catch{invalidRejected=true;}

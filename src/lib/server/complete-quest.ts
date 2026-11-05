@@ -5,6 +5,8 @@ import {runPostGradePipeline} from "../engines/pipeline";
 import {mockBehaviorSummary,mockDiscoveryMessage,mockEvolveSkillName} from "../llm/mock";
 import {GradeResultSchema} from "../llm/schemas";
 import {missionProgress} from "../engines/quest-cycle";
+import {gradeLearningCheck,selectedLearningOption} from "../learning";
+import {QuestLearningSchema} from "../llm/schemas";
 
 export const CompletionInput=z.object({questId:z.string().uuid(),responseText:z.string().trim().min(1).max(24000)}).strict();
 export interface CommittedResult {
@@ -40,6 +42,10 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
  let quest=await repo.quest(owner,questId);
  if(!quest||quest.id!==questId||quest.status!=="active")throw new JourneyError("This challenge is not available.",404);
  if(!["calibration","daily","mission","challenge","hidden","weakness","prestige"].includes(quest.type)||!Number.isInteger(quest.difficulty)||quest.difficulty<1||quest.difficulty>5||quest.steps.length>3)throw new JourneyError("This saved challenge needs to be reviewed before submission.",409);
+ if(quest.learning){
+   if(!QuestLearningSchema.safeParse(quest.learning).success||quest.steps.length||quest.type==="mission")throw new JourneyError("This saved lesson needs to be reviewed before submission.",409);
+   if(!selectedLearningOption(quest,responseText))throw new JourneyError("Choose an option, or start your reply with Option A, Option B or Option C.",400);
+ }
  if(quest.steps.length>0){
    const prefixes=quest.steps.map((step,i)=>`[Step ${i+1}: ${step.title}]`);
    const positions=prefixes.map(prefix=>responseText.indexOf(prefix));
@@ -56,7 +62,7 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
      const age=(Date.now()-Date.parse(quest.created_at))/1000;
      if(!Number.isFinite(age)||age<0)throw new JourneyError("The challenge timing could not be verified.",409);
      const responseTimeSeconds=Math.floor(age);
-     const exploit=runExploitCheck({profile,response:responseText,responseTimeSeconds});
+     const exploit=runExploitCheck({profile,quest,response:responseText,responseTimeSeconds});
      if(exploit.rejected){
        if(repo.reject){
         const flagged=structuredClone(profile);recordExploitFlag(flagged,exploit);
@@ -65,7 +71,7 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
        }
        throw new JourneyError("That response needs a fresh angle. Your draft is still here.",422);
      }
-     gradeResult??=GradeResultSchema.parse(await grade({profile,quest,response:responseText,responseTimeSeconds,strict:exploit.strictGrader})) as GradeResult;
+     gradeResult??=GradeResultSchema.parse(gradeLearningCheck(quest,responseText)??await grade({profile,quest,response:responseText,responseTimeSeconds,strict:exploit.strictGrader})) as GradeResult;
      const working=structuredClone(profile);recordExploitFlag(working,exploit);
      const result=await runPostGradePipeline({profile:working,quest,gradeResult,responseText,responseTimeSeconds,exploit,swiftModeUsed:false,enrichment:{
        skillName:async(oldName,_profile,tier)=>mockEvolveSkillName(oldName,tier),
@@ -77,7 +83,7 @@ export async function completeStoredQuest(owner:string,input:unknown,repo:Comple
        if(!(error instanceof RevisionConflict)||attempt===2)throw error;
        const latest=await repo.profile(owner);if(!latest||latest.user_id!==owner)throw new JourneyError("Your profile changed. Reopen your journey.",409);profile=latest;
        const latestQuest=await repo.quest(owner,questId);if(!latestQuest||latestQuest.status!=="active")throw new JourneyError("This challenge has already been resolved.",409);
-       if(latestQuest.difficulty!==quest.difficulty||latestQuest.description!==quest.description||latestQuest.success_criteria!==quest.success_criteria||JSON.stringify(latestQuest.steps)!==JSON.stringify(quest.steps))gradeResult=null;
+       if(latestQuest.difficulty!==quest.difficulty||latestQuest.description!==quest.description||latestQuest.success_criteria!==quest.success_criteria||JSON.stringify(latestQuest.steps)!==JSON.stringify(quest.steps)||JSON.stringify(latestQuest.learning)!==JSON.stringify(quest.learning)||latestQuest.scenario!==quest.scenario)gradeResult=null;
        quest=latestQuest;
      }
    }

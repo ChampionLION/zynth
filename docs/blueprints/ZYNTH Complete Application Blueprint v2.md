@@ -1,6 +1,6 @@
 # Zynth Complete Application Blueprint v2
 
-Version 2.0. Revision date 15 October 2026. Initiative ZEC, Evolution and Chronicles. Format: Markdown, explicitly requested by the owner. Historical predecessor: `ZYNTH Complete Application Blueprint v1.docx`, retained byte-for-byte alongside its text extraction and historical PDF. This revision governs the expansion; unchanged numerical rules and catalogs in v1 remain applicable. The implementation appendix distinguishes specification from shipped behavior.
+Version 2.0. Revision date 5 November 2026. Initiative ZEC, Evolution and Chronicles. Format: Markdown, explicitly requested by the owner. Historical predecessor: `ZYNTH Complete Application Blueprint v1.docx`, retained byte-for-byte alongside its text extraction and historical PDF. This revision governs the expansion; unchanged numerical rules and catalogs in v1 remain applicable. The implementation appendix distinguishes specification from shipped behavior.
 
 ## Contents
 
@@ -17,6 +17,8 @@ The expansion supersedes v1's seven-day mission trigger, fixed mission-looking c
 There is no final region, chapter or mandatory end. Extensible means stable versioned definitions and controlled releases, not infinite AI generation. Add regions, landmarks, story branches, titles and cosmetic definitions without rewriting every player record. Unknown future identifiers retain safe fallbacks. The initial release should contain a small, coherent world, not hundreds of fake chapters.
 
 ## 3 Quest and mission relationship
+
+Owner revision, 3 November 2026: **learning first, assessment mainly in missions**. Daily and other non-mission quests teach one or two short lessons with worked examples, followed by one small reinforcement check. Lessons require no answer at each stage. Missions supply a concrete problem or scenario with facts, constraints and test inputs; the user works out a solution to that given problem. Do not ask the learner to invent both a problem and its solution. Record delivered topics for future generation and assess introduced material. New prestige content follows advanced teaching plus a small check; older stored multi-step prestige quests remain valid. This supersedes v1's single-prompt daily format and its exclusion of learning as a product purpose for quest delivery. See [learning delivery, grading and verification](../LEARNING_QUESTS.md).
 
 Seven unique qualifying completed quests unlock one playable mission. Quest eligibility is an explicit versioned policy: calibration, daily, challenge, hidden, weakness and prestige; Basic, Good and Excellent grades. Bad/Fail, missions, skips, abandoned/rejected attempts, Swift Mode and retests are excluded from new mission credit. Existing EXP and streak formulas remain independent; this rule does not retroactively remove their rewards. New quest types default to excluded until reviewed.
 
@@ -151,3 +153,7 @@ Engines 14–18 remain specifications, with the Lore Bible authored but no runti
 The dependency audit reports 16 vulnerable package entries (1 critical, 13 high, 2 moderate). These include the existing Next.js and styling/lint toolchain. Dependency hardening is a release blocker, separate from the passing local functional checks; no forced major upgrades have been performed.
 
 Historical full specifications, formulas, prompts, catalogs, screens, first-run flows and future-system notes remain retrievable in v1. Where this revision explicitly supersedes a rule, this revision takes precedence; other v1 rules remain the reference rather than being silently rewritten.
+
+## Owner continuity addition — 5 November 2026
+
+Remembered sign-in is configurable. Save the issued quest/draft and three upcoming foundation lessons per device/account. Reconnection syncs study progress and the queued issued-quest answer, then refills three upcoming lessons. Additional offline study cannot claim server rewards; daily progression and mission policy remain authoritative. Provide the early-access Android package from the web application. See [offline specification and evidence](../OFFLINE_LEARNING.md).

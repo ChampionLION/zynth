@@ -5,6 +5,7 @@ import { isSupabaseConfigured, supabase } from "./supabase";
 import {EditableProfileSchema,type EditableProfile} from "./appearance";
 import {readJourneyState,trustedJourney,sendJourneyAction,journeyRequest} from "./journey-client";
 import type {PendingOutcome} from "./journey-contract";
+import {clearOfflinePack} from "./offline-learning";
 export { supabase };
 /** Data sync is independent of the model provider's mock/live setting. */
 export const isLive = isSupabaseConfigured;
@@ -191,6 +192,7 @@ export async function eraseProgress(user:AccountUser):Promise<void> {
   }
   }
   for(const key of Object.keys(localStorage))if(key.startsWith(`zynth:quest:${user.id}:`)||key===onboardingKey(user.id))localStorage.removeItem(key);
+  clearOfflinePack(user.id);
   const legacy=(readLocal(LS_ACCOUNT)??readLocal(LS_USER)) as {email?:string}|null;
   if(legacy?.email?.toLowerCase()===user.email.toLowerCase())for(const key of [LS_USER,LS_ACCOUNT,LS_PROFILE,LS_QUEST])localStorage.removeItem(key);
 }

@@ -241,6 +241,7 @@ export async function runPostGradePipeline(args: {
 
   // Quest history entry (needed before achievements)
   profile.quest_history.push({
+      ...(quest.learning?{learning_topics:quest.learning.lessons.map(lesson=>lesson.title)}:{}),
     quest_id: quest.id,
     quest_title: quest.quest_title,
     quest_type: quest.type,

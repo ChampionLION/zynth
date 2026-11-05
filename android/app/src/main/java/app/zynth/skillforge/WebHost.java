@@ -31,7 +31,12 @@ final class WebHost {
             @Override public void onReceivedSslError(WebView web, android.webkit.SslErrorHandler handler, android.net.http.SslError error) { handler.cancel(); }
             @Override public void onReceivedError(WebView web, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame()) {
-                    // No bridge is exposed to this opaque-origin offline page.
+                    // The service worker serves a cached, same-origin lesson library.
+                    // Try it once before showing a connection message on a first-ever launch.
+                    if (trusted(request.getUrl()) && !"/offline".equals(request.getUrl().getPath())) {
+                        web.loadUrl(BuildConfig.APP_ORIGIN + "/offline"); return;
+                    }
+                    // No bridge is exposed to this opaque-origin first-launch fallback.
                     web.loadData("<html><meta name='viewport' content='width=device-width'><body style='background:#f7f5ef;font:18px sans-serif;padding:36px'><h1>Your journey is still yours.</h1><p>Connect to the internet, then reopen Zynth. Your saved progress stays with your account.</p><a href='" + BuildConfig.APP_ORIGIN + "/quest'>Try again</a></body></html>", "text/html", "UTF-8");
                 }
             }

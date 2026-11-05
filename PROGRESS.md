@@ -1,11 +1,11 @@
 # Progress update
 
-Updated: 3 November 2026 (Africa/Lagos).
+Updated: 5 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
 ## Current completion: 38%
 
-**38 of 100 weighted acceptance points complete; 62 points remaining.** Updated: 2 November 2026 (Africa/Lagos).
+**38 of 100 weighted acceptance points complete; 62 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
@@ -188,3 +188,13 @@ Applied the previously authorized trusted_journey_cutover migration (hosted vers
 Public pages/assets and anonymous API rejection checks pass. Local engine, account, voice, SQL, separate-connection and browser recovery evidence remains recorded from the implementation checkpoint. A real hosted signed-in quest/recovery and inbox walkthrough remains under M11; cross-session appearance verification remains M2. This activation does not complete those separate checks.
 
 Weighted progress is now **38/100 (38%)**, with M1 **22/22 (100%)**. The final M1-F2 activation point is credited; the denominator and other milestone points are unchanged. Next: M2's hosted cross-session appearance/persistence proof, then M3 avatar work. Existing dependency hardening and future expansion engines remain open.
+
+## 5 November 2026 — Learning and offline continuity checkpoint
+
+Implemented learning-first daily quests with actual teaching and worked examples, one small reinforcement check, and supplied mission scenarios with facts/constraints. Added saved taught-topic context, deterministic concise-answer feedback and compatibility for historical quests/drafts. The owner-supplied icon is packaged unchanged in Android 0.1.2 with a themed layer; the corrected APK was built, signature-verified and delivered before the remaining checks. Android lint has zero errors.
+
+Remember me is available on sign-in and Settings. The web/Android shared offline library saves the issued quest/draft, profile snapshot and three upcoming foundation lessons. Offline study and quest answers survive reload. Reconnection syncs study history and drafts, submits queued issued quests through the existing trusted endpoint and refills three upcoming lessons. Study metadata never grants XP or ranking credit. The website download page exposes the signed early-access APK and checksum from landing/Settings links.
+
+Verification completed: engine/account/database/voice suites, learning and offline checks, trusted journey checks and local production compilation. Real-browser offline cold reload, three lesson completions, journal sync, refill to three, one queued-quest submission, remembered browser restart, phone width and APK headers/hash passed using disposable accounts; no hosted user progress was changed. Publication/smoke status is recorded with the release. Physical Android permission/alarm/WebView acceptance and store release signing remain open.
+
+Weighted ZEC completion remains **38/100 (38%)**. These owner-requested additions do not satisfy the remaining avatar, inventory, world or Chronicles packages, or the hosted M2/M11 acceptance gaps. See docs/LEARNING_QUESTS.md, docs/OFFLINE_LEARNING.md and docs/ANDROID_APP.md.

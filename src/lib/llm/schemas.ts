@@ -68,7 +68,21 @@ export const QuestStepSchema = z.object({
   success_criteria: z.string(),
 });
 
+export const QuestLearningSchema = z.object({
+  version: z.literal(1),
+  objective: z.string().trim().min(10).max(400),
+  lessons: z.array(z.object({title:z.string().trim().min(3).max(120),explanation:z.string().trim().min(50).max(1200),example:z.string().trim().min(20).max(800)})).min(1).max(2),
+  check: z.object({
+    question:z.string().trim().min(20).max(1000),
+    options:z.array(z.object({key:z.enum(["A","B","C"]),label:z.string().trim().min(1).max(400)})).min(2).max(3),
+    correct_option:z.enum(["A","B","C"]),explanation:z.string().trim().min(20).max(800),
+  }).refine(check=>new Set(check.options.map(o=>o.key)).size===check.options.length&&new Set(check.options.map(o=>o.label.toLowerCase())).size===check.options.length&&check.options.some(o=>o.key===check.correct_option),"Provide distinct options and a matching answer key"),
+}).refine(content=>new Set(content.lessons.map(lesson=>lesson.title.toLowerCase())).size===content.lessons.length,"Teach distinct lessons");
+
 export const QuestResultSchema = z.object({
+  learning: QuestLearningSchema.optional(),
+  scenario: z.string().trim().min(80).max(3000).optional(),
+  assessment_topics: z.array(z.string().trim().min(2).max(120)).max(14).optional(),
   quest_title: z.string().min(2),
   description: z.string().min(10),
   type: z.string(),

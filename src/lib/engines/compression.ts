@@ -63,6 +63,7 @@ export function buildCompressedContext(
         .filter((s) => s.discovered)
         .map((s) => s.name),
       recent_performance: profile.quest_history.slice(-5).map((q) => q.grade),
+      recent_learning:profile.quest_history.filter(q=>q.quest_type!=="mission"&&["Basic","Good","Excellent"].includes(q.grade)).slice(-7).map(q=>({title:q.quest_title,topics:q.learning_topics??[],skills:q.skills_targeted})),
       behavior_summary: profile.behavior_summary_cache,
       memory_context: profile.level >= 20 ? buildMemoryContext(profile) : null,
       continuous_profile_insights: buildProfileInsights(profile),

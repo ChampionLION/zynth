@@ -9,6 +9,8 @@ import type {PipelineResult} from "./engines/pipeline";
 import {sendJourneyAction,sendCompletion,journeyRequest} from "./journey-client";
 import {outcomePresentation,type JourneyAction,type JourneyActionResult,type PendingOutcome} from "./journey-contract";
 import {notifyNativeQuestCompleted} from "./native-focus";
+import {cachedSessionUser} from "./supabase";
+import {readOfflinePack} from "./offline-learning";
 interface GradeRevealData {gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[]}
 interface ZynthStore {
  user:AccountUser|null;profile:Profile|null;activeQuest:Quest|null;onboardingDraft:OnboardingDraft|null;
@@ -31,9 +33,14 @@ export const useZynth=create<ZynthStore>((set,get)=>({
  hydrate:()=>{
    if(pending?.epoch===authEpoch)return pending.promise;
    const epoch=authEpoch;
-   set({loading:true,hydrationError:null});
+   // Background sync must not tear down an open quest or its microphone session.
+   set({loading:!get().hydrated,hydrationError:null});
    const promise=(async()=>{
      try {
+       if(typeof navigator!=="undefined"&&navigator.onLine===false){
+         const owner=cachedSessionUser()?.id,cache=owner?readOfflinePack(owner):null;
+         if(cache){set({...empty,user:cache.user,profile:cache.profile,activeQuest:cache.quest,mode:cache.mode,hydrated:true,loading:false});return;}
+       }
        const user=await getCurrentUser();
        if(epoch!==authEpoch)return;
        if(!user){set({...empty,hydrated:true});return;}

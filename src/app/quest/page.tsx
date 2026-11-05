@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion,useReducedMotion } from "framer-motion";
 import { useZynth } from "@/lib/store";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { DifficultyPips } from "@/components/effects";
@@ -21,9 +21,15 @@ import {writeMilestone} from "@/lib/engines/memory";
 import {VoiceReply} from "@/components/VoiceReply";
 import {Dialog} from "@/components/Dialog";
 import {JourneyRequestError} from "@/lib/journey-client";
+import {QuestLearning} from "@/components/QuestLearning";
+import {learningChoiceResponse,selectedLearningOption} from "@/lib/learning";
+import {useAppearance} from "@/components/AppearanceProvider";
+import {queueQuest} from "@/lib/offline-learning";
 
 export default function QuestPage() {
   const router = useRouter();
+  const reducedMotion=useReducedMotion(),{appearance}=useAppearance();
+  const quietMotion=reducedMotion||appearance.motion==="reduced";
   const { profile, hydrated } = useRequireProfile();
   const { user, activeQuest, retireActiveQuest, setProfile, applyPipelineResult,mode,journeyAction,completeQuest } = useZynth();
 
@@ -93,6 +99,7 @@ export default function QuestPage() {
 
   const submit = async () => {
     if (!response.trim() || submissionLock.current || voiceBusy) return;
+    if(activeQuest.learning&&!selectedLearningOption(activeQuest,response)){setSubmitError("Choose an option, or start your reply with Option A, Option B or Option C.");return;}
     submissionLock.current = true;
     setSubmitError(null);
     setEvaluating(true);
@@ -105,6 +112,7 @@ export default function QuestPage() {
       : response;
 
     if(mode==="trusted"){
+      if(!navigator.onLine&&user){queueQuest(user.id,activeQuest.id,fullResponse);router.replace("/offline");return;}
       await completeQuest(activeQuest.id,fullResponse);
       router.replace("/grade");return;
     }
@@ -112,6 +120,7 @@ export default function QuestPage() {
     // Engine 7 — anti-exploit
     const exploit = runExploitCheck({
       profile,
+      quest:activeQuest,
       response: fullResponse,
       responseTimeSeconds,
     });
@@ -193,9 +202,9 @@ export default function QuestPage() {
 
   return (
     <motion.main
-      initial={{ y: "100%" }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
+      initial={quietMotion?false:{y:16,opacity:0}}
+      animate={{ y: 0,opacity:1 }}
+      transition={{ duration:quietMotion?0:0.2, ease: "easeInOut" }}
       className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 pb-6 pt-6"
     >
       {/* TOP BAR */}
@@ -221,7 +230,7 @@ export default function QuestPage() {
       <div className="mt-3">
         <div className="flex items-center gap-3">
           <span className="rounded-full border border-edge px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-            {activeQuest.type}
+            {activeQuest.learning?"Learn & practise":activeQuest.type}
           </span>
           <DifficultyPips difficulty={activeQuest.difficulty} />
         </div>
@@ -232,6 +241,8 @@ export default function QuestPage() {
 
         {isMultiStep ? (
           <>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{activeQuest.description}</p>
+            {activeQuest.scenario&&<section className="quest-case" aria-label="Provided mission scenario"><p className="eyebrow">YOUR CASE</p><h2>The problem to solve</h2><p>{activeQuest.scenario}</p>{!!activeQuest.assessment_topics?.length&&<p className="quest-case-topics">Bring together: {activeQuest.assessment_topics.join(" · ")}</p>}</section>}
             <div className="mt-3 flex items-center gap-2">
               <span className="text-xs text-muted">
                 Step {currentStep + 1} of {activeQuest.steps.length}
@@ -262,7 +273,7 @@ export default function QuestPage() {
             {step && (
               <>
                 <h2 className="mt-4 font-semibold">{step.title}</h2>
-                <p className="mt-1 text-sm text-muted">{step.prompt}</p>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{step.prompt}</p>
               </>
             )}
           </>
@@ -282,13 +293,15 @@ export default function QuestPage() {
             </span>
           ))}
         </div>
-        <div className="mt-3 rounded-lg bg-bg p-3 text-xs text-muted">
+        {!activeQuest.learning&&<div className="mt-3 rounded-lg bg-bg p-3 text-xs text-muted">
           <span className="text-dim">Success criteria — </span>
           {step ? step.success_criteria : activeQuest.success_criteria}
-        </div>
+        </div>}
       </div>
 
       {/* INPUT */}
+      <QuestLearning quest={activeQuest} response={response} disabled={voiceBusy} onSelect={key=>{setResponse(learningChoiceResponse(activeQuest,response,key));setSubmitError(null);}}/>
+      {activeQuest.learning&&<p className="mt-5 text-xs text-muted">You can add a short explanation below, or say “Option B” using voice input. You do not need to write an essay.</p>}
       <VoiceReply key={`${user?.id}:${activeQuest.id}:${currentStep}`} value={response} onChange={setResponse} onBusyChange={setVoiceBusy}/>
       <label htmlFor="quest-response" className="mt-5 text-xs font-medium text-muted">Your reply / editable transcript</label>
       <textarea
@@ -297,14 +310,14 @@ export default function QuestPage() {
         maxLength={24000}
         value={response}
         onChange={(e) => setResponse(e.target.value)}
-        placeholder="Type your answer, or record it above and review the transcript here…"
+        placeholder={activeQuest.learning?"Choose an option above, then add your reasoning here if you like…":"Type your answer, or record it above and review the transcript here…"}
         className="mt-2 min-h-[200px] flex-1 resize-none rounded-xl border border-edge bg-surface p-4 text-sm leading-relaxed text-primary placeholder:text-dim disabled:opacity-70"
       />
       <p className="mt-2 text-xs text-muted" role="status">{syncStatus}</p>
 
       {submitError && <p role="alert" className="mt-3 text-sm text-amber">{submitError}</p>}
       {/* ACTION ROW */}
-      <div className="mt-3 flex items-center gap-3">
+      <div className="quest-actions mt-3">
         <button
           onClick={() => setHintOpen(true)}
           className="rounded-lg border border-edge px-4 py-3 text-sm text-muted"
@@ -322,15 +335,15 @@ export default function QuestPage() {
           <button
             onClick={submit}
             disabled={!response.trim()||voiceBusy}
-            className="flex-1 rounded-lg bg-amber py-3 font-semibold text-black transition-opacity disabled:opacity-30"
+            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30"
           >
-            {isMultiStep ? "Complete Mission →" : "Submit →"}
+            {activeQuest.learning?"Check understanding →":isMultiStep ? "Complete Mission →" : "Submit →"}
           </button>
         ) : (
           <button
             onClick={nextStep}
             disabled={!response.trim()||voiceBusy}
-            className="flex-1 rounded-lg bg-amber py-3 font-semibold text-black transition-opacity disabled:opacity-30"
+            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30"
           >
             Next Step →
           </button>

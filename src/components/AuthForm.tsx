@@ -7,6 +7,7 @@ import {isSupabaseConfigured,signIn,signUp,sendPasswordReset,friendlyAuthError} 
 import {useZynth} from "@/lib/store";
 import {resumePath} from "@/lib/account-flow";
 import {BRAND_SLOGAN} from "@/lib/brand";
+import {remembersSession} from "@/lib/remember-session";
 export function AuthForm(){
  const router=useRouter(),params=useSearchParams();
  const mode=params.get("mode")==="signup"?"signup":"signin";
@@ -14,6 +15,8 @@ export function AuthForm(){
  const [name,setName]=useState(""),[email,setEmail]=useState(""),[password,setPassword]=useState("");
  const [showPassword,setShowPassword]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState<string|null>(null),[notice,setNotice]=useState<string|null>(null);
  const [resetting,setResetting]=useState(false);
+ const [remember,setRemember]=useState(true);
+ useEffect(()=>setRemember(remembersSession()),[]);
  const lock=useRef(false);
  const configured=isSupabaseConfigured();
  useEffect(()=>{setError(null);setNotice(null);setPassword("");setResetting(false);},[mode]);
@@ -34,7 +37,7 @@ export function AuthForm(){
        const result=await signUp(email,password,name);
        if(result.needsConfirmation)setNotice("Check your inbox to confirm your email. If you don’t see the confirmation email, check your Spam or Trash folder. Then sign in to begin your journey.");
        else await resume();
-     }else{await signIn(email,password);await resume();}
+     }else{await signIn(email,password,remember);await resume();}
    }catch(e){setError(friendlyAuthError(e));}finally{lock.current=false;setBusy(false);}
  };
  return <main className="account-page"><header className="site-header"><Link href="/" className="site-wordmark"><BrandLogo priority/></Link><Link href="/" className="site-text-link">← Back to Zynth</Link></header>
@@ -45,6 +48,7 @@ export function AuthForm(){
    {mode==="signup"&&!resetting&&<div className="account-field"><label htmlFor="account-name">Your name</label><input id="account-name" name="name" autoComplete="name" required maxLength={80} value={name} onChange={e=>setName(e.target.value)} placeholder="What should we call you?"/></div>}
    <div className="account-field"><label htmlFor="account-email">Email address</label><input id="account-email" name="email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></div>
    {!resetting&&<div className="account-field"><div className="account-label-row"><label htmlFor="account-password">Password</label>{mode==="signin"&&<button type="button" onClick={()=>{setResetting(true);setError(null);setNotice(null);}}>Forgot password?</button>}</div><div className="account-password"><input id="account-password" name="password" type={showPassword?"text":"password"} autoComplete={mode==="signup"?"new-password":"current-password"} required minLength={mode==="signup"?8:1} maxLength={128} value={password} onChange={e=>setPassword(e.target.value)} placeholder={mode==="signup"?"At least 8 characters":"Your password"}/><button type="button" aria-label={showPassword?"Hide password":"Show password"} aria-pressed={showPassword} onClick={()=>setShowPassword(!showPassword)}>{showPassword?"Hide":"Show"}</button></div></div>}
+   {mode==="signin"&&!resetting&&<label className="remember-session"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)}/><span>Remember me <small>Stay signed in on this device.</small></span></label>}
    {error&&<p className="account-error" role="alert">{error}</p>}{notice&&<p className="account-notice" role="status">{notice}</p>}
    <button className="site-button account-submit" type="submit" disabled={busy||!configured||!hydrated}>{busy?"Just a moment…":resetting?"Send reset link":mode==="signup"?"Create account":"Sign in"}<span>→</span></button>
    {resetting&&<button type="button" className="account-back-link" onClick={()=>{setResetting(false);setNotice(null);setError(null);}}>← Back to sign in</button>}

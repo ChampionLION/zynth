@@ -1,5 +1,15 @@
 # Changelog
 
+## 5 November 2026 — Learning and offline continuity
+
+- Teach through one/two short lessons and worked examples before a small formative check; supply the actual problem and constraints in mission assessments.
+- Save taught-topic context, correct concise-answer grading and preserve existing issued quests/drafts and trusted reward rules.
+- Package the supplied Zynth icon unchanged, add themed monochrome support, build/signature-verify Android 0.1.2 and publish an APK/checksum download page linked from the site and Settings.
+- Add remembered refreshable sign-in, session-only choice, account-scoped offline quest/drafts and a three-lesson study buffer.
+- Sync saved study history and queued issued-quest answers on reconnect, then refill three upcoming lessons. Preserve unsynced local work across sign-out; reset clears that account's pack.
+- Verify engines, accounts, SQL, voice, learning and trusted journey behavior; test actual service-worker offline restart, synchronization, refill, remembered restart and APK download against disposable accounts. Keep physical Android and store-release acceptance open.
+- Update progress/milestone records; weighted ZEC completion remains 38/100.
+
 ## 16 October — trusted progression release preparation
 
 - Added gated server-owned onboarding, persisted quest plans and current gameplay actions, with private legacy archives and durable grade/event recovery.

@@ -66,7 +66,7 @@ export function detectUserState(profile: Profile): {
 export const STATE_PROMPT_INJECTIONS: Record<AdaptiveState, string> = {
   optimal: "",
   bored:
-    "This user is showing boredom signals — too many easy Excellents. Generate a quest that genuinely challenges them. Push the difficulty. Make them think harder than usual.",
+    "Offer a useful new concept or deeper worked example. Increase conceptual depth without turning a learning day into a surprise exam. Missions assess the taught material.",
   burned_out:
     "This user is showing burnout signals — recent failures, reduced engagement. Generate a shorter, more achievable quest. Tone: supportive. Goal is to rebuild momentum, not challenge further.",
   stagnant:
@@ -76,5 +76,5 @@ export const STATE_PROMPT_INJECTIONS: Record<AdaptiveState, string> = {
   returning:
     "This user is returning after an absence. Generate a re-entry quest that feels like a warm welcome back. Make them feel like the system remembers them. Keep it short.",
   peaking:
-    "This user is on a peak run — excellent grades, strong streak. Match their energy. Raise the stakes slightly. Make this feel like a chapter boss fight.",
+    "Offer a more advanced idea with a worked example and a bounded application. Keep the full assessment for a mission; learning quests still teach first.",
 };

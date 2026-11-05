@@ -7,7 +7,6 @@ import { validateOnboardingAnswers } from "../engines/onboarding";
 import {supabase} from "../supabase";
 import {
   OnboardingResultSchema,
-  QuestResultSchema,
   GradeResultSchema,
   DailyQuestionSchema,
 } from "./schemas";
@@ -30,6 +29,7 @@ import {
   mockBehaviorSummary,
 } from "./mock";
 import { buildCompressedContext } from "../engines/compression";
+import {generatedQuest,gradeLearningCheck,lessonCount} from "../learning";
 import type {
   GradeResult,
   LLMProfileResult,
@@ -116,17 +116,11 @@ export async function generateQuest(
           difficulty,
           adaptiveState: profile.current_adaptive_state,
           promptInjection,
+          lessonCount:lessonCount(profile,questType),
         }),
         "quest_generation"
       );
-      const parsed = QuestResultSchema.parse(parseJson(raw));
-      if((questType==="mission"||questType==="prestige")&&(parsed.steps.length<2||parsed.steps.length>3))throw new Error("A mission needs two or three linked steps");
-      return {
-        ...parsed,
-        type: questType,
-        difficulty,
-        steps: questType === "mission" || questType === "prestige" ? parsed.steps : [],
-      } as Omit<Quest, "id" | "status" | "created_at" | "date">;
+      return generatedQuest(parseJson(raw),profile,questType,difficulty);
     } catch {
       // Fallback quest library — user always gets a quest
       return mockGenerateQuest(profile, questType, difficulty);
@@ -143,6 +137,8 @@ export async function gradeResponse(args: {
   responseTimeSeconds: number;
   strict?: boolean;
 }): Promise<GradeResult> {
+  const reinforcement=gradeLearningCheck(args.quest,args.response);
+  if(reinforcement)return reinforcement;
   if (isLiveMode()) {
     try {
       const raw = await callApi(
@@ -153,6 +149,7 @@ export async function gradeResponse(args: {
             type: args.quest.type,
             success_criteria: args.quest.success_criteria,
             skills_targeted: args.quest.skills_targeted,
+            scenario:args.quest.scenario,steps:args.quest.steps,
           }),
           userResponse: args.response.slice(0, 6000),
           compressedProfile: JSON.stringify(

@@ -6,7 +6,7 @@ import {publicSupabaseConfig} from "@/lib/supabase";
 // Token budgets per call type (Engine 8)
 const MAX_TOKENS: Record<string, number> = {
   onboarding: 1024,
-  quest_generation: 1024,
+  quest_generation: 2600,
   grading: 800,
   hidden_skill_message: 200,
   skill_evolution_naming: 60,

@@ -15,6 +15,9 @@ process.env.NEXT_PUBLIC_SUPABASE_URL="https://account-test.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sb_publishable_test_fixture";
 process.env.NEXT_PUBLIC_ZYNTH_MODE="mock";
 const storage=new Map<string,string>();
+// Clearing journey caches must preserve the separately persisted Auth session.
+// Clearing all browser storage intentionally signs a remembered user out.
+function clearJourneyCache(){for(const key of storage.keys())if(!key.startsWith("sb-"))storage.delete(key);}
 Object.defineProperty(globalThis,"window",{value:{location:{origin:"http://localhost:3001"}},configurable:true});
 Object.defineProperty(globalThis,"localStorage",{value:{getItem:(k:string)=>storage.get(k)??null,setItem:(k:string,v:string)=>storage.set(k,v),removeItem:(k:string)=>storage.delete(k)},configurable:true});
 const accounts=["a","b"].map((name,i)=>({id:`00000000-0000-4000-8000-00000000000${i+1}`,email:`${name}@local.test`,aud:"authenticated",role:"authenticated",user_metadata:{full_name:`Explorer ${name}`},created_at:new Date().toISOString()}));
@@ -85,7 +88,7 @@ async function main(){
  assert.equal(resumePath(useZynth.getState().profile,null),"/onboarding");
  const onboarding={version:2 as const,goal:"Animator",answers:{Q2:["B"]},step:2,updated_at:now};
  await saveOnboardingDraft(accounts[0].id,onboarding);
- storage.clear();useZynth.getState().reset();await useZynth.getState().hydrate();
+ clearJourneyCache();useZynth.getState().reset();await useZynth.getState().hydrate();
  assert.equal(useZynth.getState().onboardingDraft?.goal,"Animator","Onboarding restores from cloud without browser cache");
  assert.equal(parseOnboardingDraft({...onboarding,step:9}),null);
  assert.equal(parseOnboardingDraft({...onboarding,answers:{Q2:["Z"]}}),null);
@@ -107,7 +110,7 @@ async function main(){
  assert.equal(useZynth.getState().profile?.display_name,"Updated Explorer","Failed field saves preserve committed global state");
  cacheAppearance(accounts[0].id,{theme:"dark",motion:"reduced"});
  assert.deepEqual(cachedAppearance(accounts[1].id),{theme:"system",motion:"system"},"Appearance caches are account-scoped");
- await saveAppearance(accounts[0].id,{theme:"light",motion:"reduced"});storage.clear();
+ await saveAppearance(accounts[0].id,{theme:"light",motion:"reduced"});clearJourneyCache();
  assert.deepEqual(await loadAppearance(accounts[0].id),{theme:"light",motion:"reduced"},"Appearance restores from account without browser cache");
  queueAppearance(accounts[0].id,{theme:"dark",motion:"system"});
  failWrites=true;await assert.rejects(()=>saveAppearance(accounts[0].id,pendingAppearance(accounts[0].id)!));failWrites=false;
@@ -137,7 +140,7 @@ async function main(){
  assert.equal(useZynth.getState().profile?.user_id,accounts[1].id,"A matching legacy journey binds to the verified auth identity");
  assert.equal(useZynth.getState().profile?.level,4,"Matching local progress imports once");
  await signOut();useZynth.getState().reset();
- storage.clear();
+ clearJourneyCache();
  storage.set("zynth_account",JSON.stringify({id:"legacy-a",email:accounts[0].email}));
  storage.set("zynth_profile",JSON.stringify({...profile,user_id:"legacy-a",level:99}));
  await signIn("a@local.test","test-password");await useZynth.getState().hydrate();

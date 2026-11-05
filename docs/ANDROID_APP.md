@@ -1,10 +1,10 @@
 # Zynth for Android
 
-Updated: 3 November 2026 (Africa/Lagos).
+Updated: 5 November 2026 (Africa/Lagos).
 
 ## What this adds
 
-An Android application (`app.zynth.skillforge`, Android 8.0 and later) opens the existing secure Zynth website in a native WebView. Existing accounts, onboarding, saved progress and quest drafts continue to use the hosted application. Internet access is required. This is a native Android shell with a native alarm/overlay service; it is not an offline copy of the Next.js backend.
+An Android application (`app.zynth.skillforge`, Android 8.0 and later) opens the existing secure Zynth website in a native WebView. Existing accounts, onboarding, saved progress and quest drafts continue to use the hosted application. Connect and sign in once to save the current quest and three upcoming foundation lessons for offline study. Reconnection syncs saved work and refills the next three. This is a native Android shell with a native alarm/overlay service; server grading, rankings and account changes require a connection. See [offline behavior and boundaries](OFFLINE_LEARNING.md).
 
 After signing in with a completed profile, a first-use explanation asks for **Display over other apps** permission. The user explicitly chooses whether to open Android's permission screen or use notifications instead. Settings repeats this request prominently whenever overlay access is unavailable. Declining access leaves ordinary account and quest use available.
 
@@ -37,6 +37,12 @@ Account changes disable the saved alarm and stop any overlay/repeat series. A re
 Use a current Android System WebView. Where browser speech recognition is unavailable inside WebView, the existing editable reply and keyboard dictation remain usable. Native audio capture/transcription is not included in this build.
 
 ## Build and installation
+
+Latest package: **0.1.2 / version code 3**, `public/downloads/zynth-0.1.2.apk`, also copied to the parent workspace's `mobile-builds/Zynth-0.1.2-android-debug.apk`. Website installation is available at `/download`, linked from the landing page and Settings. SHA-256: `835904c04ff41d0b7f44bcff6d648eca0f935626fde57d548aec2c5cac6601d1`.
+
+The launcher uses the owner's exact supplied PNG (SHA-256 `791f019364a7e2d8cacacbbf95fbe210eee371bd8994e82481b4143ffd443b3e`), including the Z and wordmark, against white. Adaptive icons preserve the artwork's aspect ratio; a separate existing Z silhouette supports themed monochrome icons and notifications. The source artwork is not redrawn or AI regenerated. Version 0.1.1 was delivered first as requested; subsequent themed-icon/phone-button checks prompted the corrected 0.1.2 build. `assembleDebug` and package signature verification passed; current Android lint reports **0 errors, 1 resource-folder advisory**. The verified resource compiler remains unchanged.
+
+Web changes load from the hosted site. Remember me and the offline library use that shared application, rather than embedding server credentials or copying its backend into the APK. The native connection fallback attempts the cached same-origin `/offline` page first. A first-ever launch without a connection still needs an initial online visit.
 
 The generated APK is a **debug-signed installation build**, not a Play Store release. Copy it to an Android device and open it to install, allowing installation from that source if Android asks. Sign in, grant the permissions you choose, save a daily time, then use **Try focus now** to check the overlay.
 

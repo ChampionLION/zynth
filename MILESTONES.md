@@ -1,6 +1,6 @@
 # Project milestones
 
-Updated: 3 November 2026 (Africa/Lagos).
+Updated: 5 November 2026 (Africa/Lagos).
 
 ## Current roadmap snapshot — 38%
 
@@ -10,6 +10,23 @@ Execution order: M1 trusted mutations/recovery/cutover → M2 hosted proof → M
 
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
 ## Completed milestones
+
+### 5 November 2026 — Learning, Android identity and offline continuity
+
+- [x] Learning-first generation: one or two actual short lessons, worked examples and one reinforcement check; mission assessments supply their problem, evidence and constraints.
+- [x] Saved learning-topic history, concise corrective grading and supplied-case visibility across mission steps; legacy quests/drafts remain readable.
+- [x] Supplied Zynth artwork packaged unchanged as the Android launcher icon, with a separate themed monochrome layer.
+- [x] Android 0.1.2 APK compiled, signed-package verification passed, Android lint reported zero errors; corrected APK delivered before subsequent web checks.
+- [x] Remember me on sign-in and Settings, persistent refreshable sessions by default and session-only sign-in when disabled.
+- [x] Current quest/draft and exactly three upcoming foundation lessons saved per account; offline lesson/check completion and cold reload supported.
+- [x] Reconnection syncs study history/drafts, submits the queued issued quest through trusted completion, and refills the next three lessons.
+- [x] Website download page, landing/Settings links, APK attachment and checksum.
+- [x] Engine/account/database/voice suites, learning and offline unit/integration checks, trusted journey checks and local production compilation passed.
+- [x] Real-browser offline restart, three completed lessons, synced history, three-lesson refill, one queued-quest submission, remembered restart and APK download/hash passed against disposable accounts.
+- [ ] Production publication/smoke verification for this checkpoint; tracked by the release containing this entry.
+- [ ] Physical Android acceptance and release/store signing remain open.
+
+These additional requested deliverables do not complete the remaining ZEC avatar/world/Chronicles acceptance packages. Weighted roadmap completion remains **38/100 (38%)**. See [learning behavior](docs/LEARNING_QUESTS.md), [offline continuity](docs/OFFLINE_LEARNING.md) and [Android evidence](docs/ANDROID_APP.md).
 
 ### 3 November 2026 — Android quest focus implementation
 

@@ -49,7 +49,8 @@ export async function runJourneyChecks(db:TestDatabase){
  const user={id:fixtureOwners[0],name:"Mira Cole",email:"fixture@local.test"};const {repo,completion,value}=sqlRepositories(db);
  const answers={Q1:["Designer"],Q2:["A"],Q3:["B"],Q4:["C"],Q5:["D"]};
  let generated=0,classified=0;
- const models:JourneyModels={classify:async a=>{classified++;return mockClassifyOnboarding(a);},generate:async(p,t,d)=>{generated++;return mockGenerateQuest(p,t,d);},question:async p=>mockDailyQuestion(p)};
+ // Existing issued free-response quests continue through the original model boundary.
+ const models:JourneyModels={classify:async a=>{classified++;return mockClassifyOnboarding(a);},generate:async(p,t,d)=>{generated++;return {...mockGenerateQuest(p,t,d),learning:undefined};},question:async p=>mockDailyQuestion(p)};
  await db.exec("SET ROLE service_role;");
  const action=(input:unknown)=>runJourneyAction(user,input,repo,models);
  await assert.rejects(()=>action({kind:"onboard",answers,profile:{level:999}}),/not valid/);
@@ -146,7 +147,18 @@ export async function runJourneyChecks(db:TestDatabase){
  const resetId=crypto.randomUUID();await db.query("SELECT public.reset_journey($1,$2)",[user.id,resetId]);assert.equal(await repo.profile(user.id),null);
  await action({kind:"onboard",answers});const fresh=await repo.profile(user.id);
  await db.query("SELECT public.reset_journey($1,$2)",[user.id,resetId]);assert.equal((await repo.profile(user.id))?.created_at,fresh?.created_at,"Retrying an old reset cannot erase a newly started journey");
- console.log("Trusted journey checks passed: authoritative onboarding, stored generation, daily inputs, completion replay/recovery, token debit, prestige, conservative legacy archive, budgets and column/RLS isolation.");
+ // New lessons are saved and assessed through the same authoritative transaction.
+ const taught=await runJourneyAction(user,{kind:"generate"},repo,{...models,generate:async(p,t,d)=>mockGenerateQuest(p,t,d)});
+ const lesson=taught.quest!;assert.ok(lesson.learning);
+ const doNotGrade=async()=>{throw Error("A formative option check must not call the prose grader");};
+ await assert.rejects(()=>completeStoredQuest(user.id,{questId:lesson.id,responseText:"A made-up answer without an option"},completion,doNotGrade),/Choose an option/);
+ const chosen=lesson.learning!.check.options.find(o=>o.key!==lesson.learning!.check.correct_option)!;
+ const checked=await completeStoredQuest(user.id,{questId:lesson.id,responseText:`Choice ${chosen.key}: ${chosen.label}`},completion,doNotGrade);
+ assert.equal(checked.result.gradeResult.grade,"Basic");assert.ok(checked.result.gradeResult.feedback.includes(lesson.learning!.check.explanation));
+ assert.deepEqual(checked.profile.quest_history.at(-1)?.learning_topics,lesson.learning!.lessons.map(l=>l.title));
+ const checkedAgain=await completeStoredQuest(user.id,{questId:lesson.id,responseText:`Option ${lesson.learning!.check.correct_option}`},completion,doNotGrade);
+ assert.equal(checkedAgain.replayed,true);assert.equal(checkedAgain.profile.cumulative_exp,checked.profile.cumulative_exp);
+ console.log("Trusted journey checks passed: authoritative onboarding, stored generation, daily inputs, completion replay/recovery, token debit, prestige, conservative legacy archive, budgets, column/RLS isolation and saved formative feedback/topic history.");
 }
 async function main(){const db=new PGlite();try{await setupJourneyDatabase(db);await runJourneyChecks(db);}finally{await db.close();}}
 if(require.main===module)main().catch(error=>{console.error(error);process.exitCode=1;});
