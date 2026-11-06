@@ -290,3 +290,8 @@ Added a male/female selector, distinct character silhouettes and bob/long hair f
 ## 6 November 2026 - M4 Cosmetic Inventory completed
 
 M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion. [Evidence](docs/expansion/M4_INVENTORY.md).
+
+
+### 6 November 2026 - Inventory placement
+
+Moved inventory into Customize appearance, alongside the appearance controls. Removed the standalone inventory from the identity page. Ownership, equipment and synchronization behavior are retained. Roadmap completion remains **55%**.

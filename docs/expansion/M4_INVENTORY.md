@@ -6,7 +6,7 @@ Implementation and focused acceptance: 6 November 2026 (Africa/Lagos). **M4: 8/8
 
 The version-1 catalog contains three free outfits (Wayfarer coat, Studio knit, Field jacket), Trail scarf, Mission satchel, Scholar coat, Sharp pin and Focus halo. Each item has a stable ID, category/slot, description, rarity and visible earning requirement. Inline SVG previews work without downloaded assets. Outfits, accessories and auras render on both male and female characters in Profile and Overview. Unknown visual IDs fall back safely rather than creating an ownership claim.
 
-Profile includes category and All/Owned/Locked/Equipped filters. Locked items can be tried on without changing the saved character. Equip/remove uses the signed-in account and checks ownership plus slot compatibility on the server. An equipped inventory outfit takes precedence over the free base outfit; the editor explains how to remove it before changing the base outfit. Hair, colors, backdrops and gender remain independently editable.
+Customize appearance contains Appearance and Inventory sections; inventory is no longer displayed as a standalone section of the identity page. Inventory includes category and All/Owned/Locked/Equipped filters. Locked items can be tried on without changing the saved character. Equip/remove uses the signed-in account and checks ownership plus slot compatibility on the server. An equipped inventory outfit takes precedence over the free base outfit; the editor explains how to remove it before changing the base outfit. Hair, colors, backdrops and gender remain independently editable.
 
 ## Grant authority
 
