@@ -8,6 +8,7 @@ import type {
   Quest,
   ZynthEvent,
 } from "../types";
+import {streakGapCovered} from "./streak";
 import {
   calculateFinalEXP,
   calculateStreakMultiplier,
@@ -93,7 +94,7 @@ export async function runPostGradePipeline(args: {
       const gap = Math.floor(
         (new Date(today).getTime() - new Date(profile.last_quest_date).getTime()) / 86400_000
       );
-      if (gap > 1) {
+      if (gap > 1 && !streakGapCovered(profile,profile.last_quest_date,today)) {
         if (profile.streak > profile.memory.personal_bests.highest_streak) {
           profile.memory.personal_bests.highest_streak = profile.streak;
         }

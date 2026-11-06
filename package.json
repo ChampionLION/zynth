@@ -16,7 +16,8 @@
     "test:journey": "tsc journey.integration.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/journey.integration.test.js",
     "test:journey:postgres": "tsc journey.integration.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node scripts/verify-journey-postgres.cjs",
     "test:inventory": "tsc inventory.integration.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/inventory.integration.test.js",
-    "test:avatar-leaderboard": "tsc avatar-leaderboard.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/avatar-leaderboard.test.js"
+    "test:avatar-leaderboard": "tsc avatar-leaderboard.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/avatar-leaderboard.test.js",
+    "test:streak": "tsc streak.test.ts --outDir .test-build --module commonjs --moduleResolution node --target es2022 --esModuleInterop --skipLibCheck && node .test-build/streak.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",

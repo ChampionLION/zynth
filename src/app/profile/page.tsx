@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { BottomNav } from "@/components/BottomNav";
 import {AvatarIdentity} from "@/components/AvatarIdentity";
+import {StreakRecovery} from "@/components/StreakRecovery";
 import { DOMAIN_COLORS, display, formatDate } from "@/lib/ui";
 import { getSkillTier, calculateSkillExpToNext } from "@/lib/engines/progression";
 
@@ -96,6 +97,7 @@ export default function ProfilePage() {
         <Stat label="Member since" value={formatDate(profile.created_at)} />
       </div>
 
+      <StreakRecovery key={profile.user_id} profile={profile}/>
       {/* ECONOMY */}
       <div className="mt-4 flex gap-2">
         <div className="flex-1 rounded-xl border border-edge bg-surface px-4 py-3 text-center">

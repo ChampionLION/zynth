@@ -9,6 +9,7 @@ export const JourneyActionInput=z.discriminatedUnion("kind",[
  z.object({kind:z.literal("daily_question")}).strict(),
  z.object({kind:z.literal("answer_daily"),answer:z.string().max(8).nullable()}).strict(),
  z.object({kind:z.literal("skip"),questId:z.string().uuid()}).strict(),
+ z.object({kind:z.literal("restore_streak"),gap:z.string().regex(/^\d{4}-\d{2}-\d{2}:\d{4}-\d{2}-\d{2}$/)}).strict(),
  z.object({kind:z.literal("prestige"),requestId:z.string().uuid()}).strict(),
  z.object({kind:z.literal("profession"),requestId:z.string().uuid()}).strict(),
  z.object({kind:z.literal("economy"),questId:z.string().uuid(),effect:z.enum(["reduce_difficulty","hint_upgrade"])}).strict(),

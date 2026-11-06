@@ -11,6 +11,7 @@ import { useRequireProfile } from "@/components/useRequireProfile";
 import { OverviewMapBackground } from "@/components/WorldMap";
 import { BottomNav } from "@/components/BottomNav";
 import {AvatarPortrait} from "@/components/AvatarPortrait";
+import {StreakRecovery} from "@/components/StreakRecovery";
 import { DifficultyPips, Particles } from "@/components/effects";
 import { display } from "@/lib/ui";
 import { resolveQuestPlan, todayStr, daysSince } from "@/lib/engines/quest";
@@ -161,6 +162,7 @@ export default function DashboardPage() {
 <header className="workspace-header"><span>YOUR PERSONAL EVOLUTION</span><span>{new Date().toLocaleDateString(undefined, {weekday:"long",month:"short",day:"numeric"})}</span></header>
 <div className="dashboard-heading"><div><p className="eyebrow">THE NEXT VERSION OF YOU</p><h1>Keep becoming.</h1><p>Welcome back, {profile.display_name.split(" ")[0]}. Make today a turning point.</p></div><button className="quiet-link" onClick={()=>router.push("/profile")}>Your identity ↗</button></div>
 <div className="overview-strip"><div><span>Current level</span><strong>{profile.level}<small>{profile.title}</small></strong></div><div><span>Day streak</span><strong>{profile.streak}<small>days of momentum</small></strong></div><div><span>Quests completed</span><strong>{profile.quest_history.length}<small>marks made</small></strong></div><div><span>Total experience</span><strong>{profile.cumulative_exp.toLocaleString()}<small>EXP earned</small></strong></div></div>
+<StreakRecovery key={profile.user_id} profile={profile}/>
 <div className="dashboard-grid"><section><div className="section-label"><h2>Your next move</h2><span>ONE QUEST. REAL PROGRESS.</span></div>
       {/* TOP BAR */}
       <div className="flex items-center justify-between">

@@ -8,6 +8,7 @@ import {detectUserState} from "../engines/adaptive";
 import {spendToken,spendXPCards,XP_CARD_COSTS} from "../engines/economy";
 import {applyPrestige} from "../engines/progression";
 import {writeMilestone} from "../engines/memory";
+import {restoreStreak} from "../engines/streak";
 import {checkProfessionEvolution} from "../engines/leaderboard";
 import {JourneyError,RevisionConflict} from "./complete-quest";
 export interface ActionClaim {status:"claimed"|"busy"|"complete";plan:Record<string,unknown>;result?:JourneyActionResult}
@@ -54,6 +55,7 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
   const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(action.answers)));
   key=`onboard:${Array.from(new Uint8Array(hash),v=>v.toString(16).padStart(2,"0")).join("")}`;
  }else if(action.kind==="skip")key=`skip:${action.questId}`;
+ else if(action.kind==="restore_streak")key=`restore_streak:${action.gap}`;
  else if(action.kind==="economy")key=`economy:${action.questId}:${action.effect}`;
  else if(action.kind==="prestige"||action.kind==="profession")key=`${action.kind}:${action.requestId}`;
  else if(["energy","daily_question","answer_daily"].includes(action.kind))key=`${action.kind}:${day}`;
@@ -105,6 +107,8 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
     if(!spendToken(p))throw new JourneyError("You need a Skip Token to skip this challenge.",422);
     p.last_quest_date=day;p.last_active=new Date().toISOString();writeMilestone(p,"quest_skipped",{quest_id:q.id});
     if(q.type==="mission")writeMilestone(p,"mission_skipped",{quest_id:q.id,cycle:missionProgress(p).cycle});
+   }else if(action.kind==="restore_streak"){
+    try{restoreStreak(p,action.gap,day);}catch(error){throw new JourneyError(error instanceof Error?error.message:"Reopen streak recovery.",422);}
    }else if(action.kind==="prestige"){
     if(p.level<100)throw new JourneyError("Prestige unlocks at level 100.",422);
     Object.assign(p,applyPrestige(p));

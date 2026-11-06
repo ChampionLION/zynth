@@ -305,3 +305,10 @@ The saved avatar now supplies profile pictures in navigation, Settings and leade
 ### 6 November 2026 - Concise interface and Android download
 
 Removed repetitive explanatory copy from Overview, Mark Map, Chronicle, profile customization, leaderboards, account and reminder settings. Sample responses are labeled Examples. Added a permanent Android download action to the home page and a dismissible browser alert; the installed Android app does not show the alert, and dismissal is remembered. Essential permission choices and actionable errors remain. TypeScript, focused lint and the browser download/dismissal check passed. Roadmap completion remains **55%**.
+
+## 6 November 2026 — Skip Token streak recovery
+
+- Added Restore streak to Overview and Profile. Confirmation shows the restored streak and the exact Skip Token cost: one token per uncovered missed day, within the existing five-token balance cap.
+- Supports recovery before the next lesson and after a new streak has started. Only successful learning days count; recovery adds no completed lessons or XP. Previously covered days are never charged again.
+- Trusted server actions calculate eligibility/cost from saved history, spend tokens atomically with the profile revision, and replay repeated requests without another debit. Existing private action storage is reused; no database migration is required.
+- Focused recovery/SQL replay checks, TypeScript and changed-component lint passed. Broader testing remains deferred as requested. Roadmap completion remains 55%.
