@@ -9,6 +9,7 @@ import {BrandLogo} from "@/components/BrandLogo";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { BottomNav } from "@/components/BottomNav";
 import {LeaderboardJoin} from "@/components/LeaderboardJoin";
+import {ProfilePicture} from "@/components/ProfilePicture";
 import type {LeaderboardRegion} from "@/lib/engines/leaderboard";
 import { DOMAIN_COLORS, domainColor } from "@/lib/ui";
 import {
@@ -144,12 +145,7 @@ export default function LeaderboardPage() {
                     isFirst ? "pb-8" : "pb-4"
                   } ${r.is_user ? "border-amber" : ""}`}
                 >
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
-                    style={{ background: domainColor(r.domain,.27), color: DOMAIN_COLORS[r.domain] }}
-                  >
-                    {r.display_name[0]}
-                  </div>
+                  <ProfilePicture owner={r.is_user?profile.user_id:undefined} appearance={r.appearance} name={r.display_name}/>
                   <p className={`mt-1 text-lg font-black ${isFirst ? "text-gold" : "text-muted"}`}>
                     {r.rank}
                   </p>
@@ -176,6 +172,7 @@ export default function LeaderboardPage() {
                 }`}
               >
                 <span className="w-8 text-sm font-bold text-muted">{r.rank}</span>
+                <ProfilePicture owner={r.is_user?profile.user_id:undefined} appearance={r.appearance} name={r.display_name}/>
                 <span className="flex-1 truncate text-sm">
                   {r.display_name}
                   {r.is_user && <span className="ml-1 text-[10px] text-amber">you</span>}
@@ -202,6 +199,7 @@ export default function LeaderboardPage() {
             <div role="region" aria-label="Your position" className="leaderboard-position fixed bottom-16 left-0 right-0 z-30 mx-auto max-w-lg px-4">
               <div className="flex items-center gap-3 rounded-xl border border-amber bg-surface px-4 py-3 shadow-lg">
                 <span className="w-10 text-sm font-bold text-amber">#{userRank}</span>
+                <ProfilePicture owner={profile.user_id} name={profile.display_name}/>
                 <span className="flex-1 text-sm">You</span>
                 <span className="text-xs text-dim">of {total.toLocaleString()}</span>
                 <span className="text-xs font-semibold text-amber">

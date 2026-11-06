@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { profile, hydrated } = useRequireProfile();
   const { activeQuest, createPlannedQuest, setProfile, eventQueue,gradeReveal,mode,journeyAction } = useZynth();
-  const generationLock = useRef(false);
+  const generationLock = useRef(false), dailyLock=useRef(false);
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(false);
   const [dailyChecked, setDailyChecked] = useState(false);
@@ -129,44 +129,30 @@ export default function DashboardPage() {
   const mission=missionProgress(profile,activeQuest);
 
   const answerEnergy = async (level: "high" | "mid" | "low") => {
-    if(dailyBusy)return;
-    if(mode==="trusted"){
-      setDailyBusy(true);setDailyError("");
-      try{await journeyAction({kind:"energy",energy:level});const q=await dailyQuestion(profile);if(q){setDailyQ(q);setPopupStage("question");}else setPopupStage("done");}
-      catch{setDailyError("We couldn’t save this check-in. Please try again, or choose Not now.");}finally{setDailyBusy(false);}
-      return;
-    }
-    const p = structuredClone(profile);
-    p.energy_today = level;
-    p.energy_date = todayStr();
-    await setProfile(p);
-    const q = await getDailyQuestion(p);
-    if (q) {
-      setDailyQ(q);
-      setPopupStage("question");
-    } else setPopupStage("done");
+    if(dailyLock.current)return;dailyLock.current=true;setDailyBusy(true);setDailyError("");
+    try{
+      let next=profile;
+      if(mode==="trusted")await journeyAction({kind:"energy",energy:level});
+      else{next={...structuredClone(profile),energy_today:level,energy_date:todayStr()};await setProfile(next);}
+      const q=await dailyQuestion(next);
+      if(q){setDailyQ(q);setPopupStage("question");}else setPopupStage("done");
+    }catch{setDailyError("We couldn't save this check-in. Please try again, or choose Not now.");}
+    finally{dailyLock.current=false;setDailyBusy(false);}
   };
 
   const answerDaily = async (key: string | null) => {
-    if (!dailyQ) return setPopupStage("done");
-    if(mode==="trusted"){
-      if(dailyBusy)return;setDailyBusy(true);setDailyError("");
-      try{await journeyAction({kind:"answer_daily",answer:key});setPopupStage("done");}catch{setDailyError("We couldn’t save this answer. Please try again.");}finally{setDailyBusy(false);}
-      return;
-    }
-    const p = structuredClone(profile);
-    p.continuous_profile_answers.push({
-      question: dailyQ.question,
-      category: dailyQ.category,
-      answer_key: key,
-      answer_label: key
-        ? dailyQ.options.find((o) => o.key === key)?.label ?? null
-        : null,
-      signals_mined: dailyQ.signals_mined,
-      answered_at: new Date().toISOString(),
-    });
-    await setProfile(p);
-    setPopupStage("done");
+    if(dailyLock.current)return;if(!dailyQ)return setPopupStage("done");
+    dailyLock.current=true;setDailyBusy(true);setDailyError("");
+    try{
+      if(mode==="trusted")await journeyAction({kind:"answer_daily",answer:key});
+      else{
+        const p=structuredClone(profile);
+        p.continuous_profile_answers.push({question:dailyQ.question,category:dailyQ.category,answer_key:key,answer_label:key?dailyQ.options.find(o=>o.key===key)?.label??null:null,signals_mined:dailyQ.signals_mined,answered_at:new Date().toISOString()});
+        await setProfile(p);
+      }
+      setPopupStage("done");
+    }catch{setDailyError("We couldn't save this answer. Please try again.");}
+    finally{dailyLock.current=false;setDailyBusy(false);}
   };
 
   return (
@@ -315,9 +301,9 @@ export default function DashboardPage() {
               {popupStage === "energy" ? (
                 <>
                   <button disabled={dailyBusy} onClick={()=>{setDailyError("");setPopupStage("done");}} className="mb-4 block ml-auto text-xs text-muted">Not now ×</button><p className="text-center text-sm text-muted">
-                    Before anything — how&apos;s the engine today?
+                    Before anything — how&apos;s your energy today?
                   </p>
-                  <div className="mt-5 flex justify-center gap-3">
+                  {!dailyBusy&&<div className="mt-5 flex justify-center gap-3">
                     {(
                       [
                         ["high", "⚡", "HIGH"],
@@ -335,7 +321,7 @@ export default function DashboardPage() {
                         <span className="text-xs text-muted">{label}</span>
                       </button>
                     ))}
-                  </div>
+                  </div>}
                 </>
               ) : dailyQ ? (
                 <>
@@ -345,7 +331,7 @@ export default function DashboardPage() {
                   <p className="mt-2 text-center text-sm font-medium">
                     {dailyQ.question}
                   </p>
-                  <div className="mt-4 space-y-2">
+                  {!dailyBusy&&<><div className="mt-4 space-y-2">
                     {dailyQ.options.map((o) => (
                       <button
                         key={o.key}
@@ -363,9 +349,10 @@ export default function DashboardPage() {
                     className="mt-3 w-full text-center text-xs text-dim"
                   >
                     skip
-                  </button>
+                  </button></>}
                 </>
               ) : null}
+              {dailyBusy&&<p role="status" className="mt-5 text-center text-sm text-muted">{popupStage==="energy"?"Preparing your question...":"Saving your answer..."}</p>}
               {dailyError&&<p role="alert" className="mt-3 text-xs text-amber">{dailyError}</p>}
             </motion.div>
           </motion.div>

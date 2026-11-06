@@ -39,3 +39,9 @@ Broader device coverage, long-disconnect/concurrent-tab stress, real Android acc
 Added male/female selection with distinct face and clothing silhouettes, independent of hairstyle, skin tone and clothing choices. Added bob and long hair to both options. Existing version-1 saved avatars without a gender retain the original male rendering and all their saved selections; no account or progression migration is needed. The shared renderer covers Profile and Overview in the web application and hosted Android shell. Gender saves through the existing account-scoped appearance workflow, including cached and pending saves.
 
 Focused avatar boundary checks and TypeScript passed, including legacy records and round trips for both genders with every hairstyle. Extended the reusable browser flow to select and restore a female avatar; broad browser/device regression remains for the dedicated testing day. This requested addition does not change the weighted milestone score (47/100).
+
+## 6 November 2026 - Shared profile pictures
+
+The saved avatar is also the account picture in navigation, Settings and leaderboard podium/list/current-position entries. A head-and-shoulders view reuses the same character layers and equipment; it is not a separate uploaded image. Own pictures follow cached appearance/equipment changes immediately, and other participants' pictures arrive in the normal ranking snapshot.
+
+The separately approved avatar-ranking migration returns only permitted avatar choices and actual owned equipment for eligible ranking participants. It excludes private account metadata and account IDs, retains all regional/category/opt-out rules and preserves the exact older RPC row contract for cached clients. Focused SQL, hosted read-only projection and phone-interface checks passed. Inventory is accessed inside Customize appearance alongside Appearance. Current roadmap progress remains 55% after M4 completion.

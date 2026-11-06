@@ -314,6 +314,7 @@ export interface DailyQuestion {
 }
 
 export interface LeaderboardRow {
+  appearance?: import("./leaderboard-result").PublicAppearance;
   rank: number;
   display_name: string;
   domain: Domain;

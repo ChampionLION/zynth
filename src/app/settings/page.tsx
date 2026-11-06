@@ -13,6 +13,7 @@ import {signOut as signOutAccount} from "@/lib/auth";
 import {journeyRequest} from "@/lib/journey-client";
 import {FocusSettings} from "@/components/FocusSettings";
 import {OfflineSettings} from "@/components/OfflineSettings";
+import {ProfilePicture} from "@/components/ProfilePicture";
 export default function SettingsPage(){
  const {profile,hydrated}=useRequireProfile();
  if(!hydrated||!profile)return null;
@@ -82,7 +83,7 @@ function SettingsForm({profile}:{profile:Profile}){
  };
  return <main className="app-page collection-page settings-page">
    <header className="workspace-header"><span>MAKE IT YOURS</span><span>ACCOUNT & APPEARANCE</span></header>
-   <div className="settings-heading"><p className="eyebrow">YOUR SPACE</p><h1>Settings</h1><p>Adjust how you appear and how your world feels.</p></div>
+   <div className="settings-heading"><div className="settings-profile-picture"><ProfilePicture owner={profile.user_id} name={profile.character_name||profile.display_name}/></div><p className="eyebrow">YOUR SPACE</p><h1>Settings</h1><p>Adjust how you appear and how your world feels.</p></div>
    <div className="settings-grid"><section className="settings-panel"><p className="eyebrow">01 / IDENTITY</p><h2>A name that feels like you.</h2><p>Your display name appears throughout your journey.</p>
    <form onSubmit={save}>
      <label htmlFor="display-name">Display name</label><input id="display-name" autoComplete="nickname" required maxLength={60} value={fields.display_name} disabled={busy} onChange={e=>{setFields({...fields,display_name:e.target.value});setNotice("");}}/>

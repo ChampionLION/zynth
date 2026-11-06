@@ -258,3 +258,8 @@ M4 completed: versioned eight-item catalog, verified server-owned grants, privat
 ### 6 November 2026 - Inventory placement
 
 Moved inventory into Customize appearance, alongside the appearance controls. Removed the standalone inventory from the identity page. Ownership, equipment and synchronization behavior are retained. Roadmap completion remains **55%**.
+
+
+### 6 November 2026 - Shared avatar portraits and daily check-in
+
+The saved avatar now supplies profile pictures in navigation, Settings and leaderboard podium/list/current-position entries. The separately approved leaderboard read update projects only whitelisted appearance choices and owned equipment, retains opt-out/ranking rules and preserves old-client responses. The daily prompt now asks about energy; answer controls disappear immediately during save and return on failure for retry. Inventory remains inside Customize appearance. Focused avatar-ranking privacy/compatibility and TypeScript/lint checks passed. Weighted completion stays **55%**.

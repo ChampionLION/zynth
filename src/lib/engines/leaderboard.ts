@@ -12,7 +12,7 @@ export async function getLeaderboard(profile:Profile,scope:Scope,category:Catego
  let saved:LeaderboardResult|null=null;
  try{const parsed=LeaderboardResultSchema.safeParse(JSON.parse(localStorage.getItem(cacheKey)??"null"));if(parsed.success)saved=parsed.data;}catch{/* A saved snapshot is optional. */}
  if(typeof navigator!=="undefined"&&!navigator.onLine&&saved)return saved;
- let request=supabase().rpc("get_leaderboard",{p_scope:scope,p_category:category,p_offset:offset,p_limit:LEADERBOARD_PAGE_SIZE,p_country:region?.country||null,p_state:region?.state||null,p_city:region?.city||null});
+ let request=supabase().rpc("get_avatar_leaderboard",{p_scope:scope,p_category:category,p_offset:offset,p_limit:LEADERBOARD_PAGE_SIZE,p_country:region?.country||null,p_state:region?.state||null,p_city:region?.city||null});
  if(signal)request=request.abortSignal(signal);
  const {data,error}=await request;
  if(error){if(saved&&!signal?.aborted)return saved;throw new Error("We couldn’t load these rankings. Please try again.");}

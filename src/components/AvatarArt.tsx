@@ -2,12 +2,12 @@ import {parseAvatar,SKIN_COLORS,HAIR_COLORS,OUTFIT_COLORS,type Avatar} from "@/l
 import type {Equipment} from "@/lib/inventory";
 /** Inline SVG layers have no remote asset dependency. Invalid versions/IDs fall
  * back to the free default; no visual layer makes an ownership/XP claim. */
-export function AvatarArt({value,equipment={},name="Your Wayfarer"}:{value:Avatar;equipment?:Equipment;name?:string}){
+export function AvatarArt({value,equipment={},name="Your Wayfarer",portrait=false}:{value:Avatar;equipment?:Equipment;name?:string;portrait?:boolean}){
  const base=parseAvatar(value),scholar=equipment.outfit==="scholar-coat";
  const avatar={...base,outfit:scholar?"wayfarer-coat":["wayfarer-coat","studio-knit","field-jacket"].includes(equipment.outfit??"")?equipment.outfit!:base.outfit},skin=SKIN_COLORS[base.skin],hair=HAIR_COLORS[base.hairColor],cloth=OUTFIT_COLORS[base.palette],female=base.gender==="female";
  const outfitName=scholar?"scholar coat":avatar.outfit.replaceAll("-"," "),accessoryName=["trail-scarf","mission-satchel","sharp-pin"].includes(equipment.accessory??"")?`, with ${equipment.accessory!.replaceAll("-"," ")}`:"";
  return <div className={`avatar-art scene-${avatar.background}`} role="img" aria-label={`${name}, ${avatar.gender} avatar, wearing a ${outfitName}${accessoryName}${equipment.aura==="focus-halo"?", with focus halo":""}`}>
- <svg viewBox="0 0 480 480" aria-hidden="true" focusable="false">
+ <svg viewBox={portrait?"145 55 190 190":"0 0 480 480"} aria-hidden="true" focusable="false">
   <circle cx="240" cy="178" r="138" className="avatar-halo"/>
   {equipment.aura==="focus-halo"&&<g fill="none" stroke="#c2a35e" strokeWidth="2"><ellipse cx="240" cy="173" rx="116" ry="142"/><path d="M240 24v19M240 303v19M114 173h18M348 173h18"/><circle cx="240" cy="32" r="5" fill="#c2a35e"/></g>}
   {avatar.background==="atrium"?<g className="avatar-architecture"><path d="M107 382V195a133 133 0 0 1 266 0v187M130 382V195a110 110 0 0 1 220 0v187"/><path d="M86 382h308M67 400h346M47 420h386"/></g>:avatar.background==="grove"?<g className="avatar-architecture"><path d="M66 381Q130 230 96 101M395 381Q338 220 380 92M95 221q-68-35-53-81 59 4 53 81M98 170q67-29 66-74-60-5-66 74M376 182q-67-40-60-78 60 0 60 78M379 244q62-28 62-68-54-9-62 68"/><path d="M59 401q180-51 364 0"/></g>:<g className="avatar-architecture"><path d="M66 130h348M66 143h348M96 143v245M385 143v245M67 319h110M324 319h90M87 339v62M394 339v62"/><rect x="117" y="82" width="46" height="48" rx="5"/><rect x="177" y="96" width="22" height="34" rx="3"/><circle cx="352" cy="100" r="29"/></g>}
