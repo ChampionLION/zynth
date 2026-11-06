@@ -1,6 +1,6 @@
 // Every connection uses the same routes and application. Only public page shells
 // and assets are cached here; account data lives in the account-scoped store.
-const CACHE='zynth-app-shell-v7';
+const CACHE='zynth-app-shell-v8';
 const ROUTES=['/','/dashboard','/quest','/grade','/events','/profile','/settings','/markmap','/leaderboard','/achievements','/chronicle','/download','/prestige','/reveal','/onboarding','/auth'];
 const pagePath=url=>ROUTES.includes(url.pathname);
 const asset=url=>url.origin===self.location.origin&&(url.pathname.startsWith('/_next/static/')||url.pathname.startsWith('/brand/')||url.pathname==='/favicon.svg'||url.pathname==='/_next/image'&&url.searchParams.get('url')?.startsWith('/brand/'));

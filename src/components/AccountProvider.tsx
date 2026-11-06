@@ -7,6 +7,7 @@ import {isSupabaseConfigured,supabase} from "@/lib/supabase";
 import {NativeFocusController} from "./NativeFocusController";
 import {nativeFocusRequest} from "@/lib/native-focus";
 import {OfflineController} from "./OfflineController";
+import {AppDownloadAlert} from "./AppDownloadAlert";
 const protectedRoutes=["/dashboard","/quest","/markmap","/chronicle","/leaderboard","/profile","/settings","/onboarding","/reveal","/grade","/events","/achievements","/prestige"];
 export function AccountProvider({children}:{children:React.ReactNode}) {
  const router=useRouter(),pathname=usePathname();
@@ -41,5 +42,5 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
    ?<main className="account-state"><ZynthMark className="account-brand-mark"/><p role="status">Opening your journey…</p></main>:null;
  // The synchronizer must remain mounted while it refreshes account state.
  // Unmounting it for `loading` would restart the refresh on every mount.
- return <><OfflineController/>{blocked??<><NativeFocusController/>{children}</>}</>;
+ return <><OfflineController/>{blocked??<><NativeFocusController/>{children}</>}<AppDownloadAlert/></>;
 }

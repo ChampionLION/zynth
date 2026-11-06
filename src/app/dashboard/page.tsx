@@ -199,7 +199,6 @@ export default function DashboardPage() {
       </p>
 
       {/* QUEST CARD */}
-      <p className="mission-progress" role="status">{mission.activeQuestId?"Your mission is ready to continue.":mission.eligible?"Your next mission is unlocked.":`Mission readiness: ${mission.progress} concepts practised successfully. Keep learning and reinforcing the ideas.`} <span>Streaks and story chapters progress separately.</span></p>
       <div className="quest-feature">
         {doneToday && !activeQuest && !mission.eligible ? (
           <div className="py-6 text-center">
@@ -282,7 +281,7 @@ export default function DashboardPage() {
         </span>
       </div>
 
-<p className="eyebrow mt-6">{profile.domain} DOMAIN</p><h2 className="mt-2 text-xl font-semibold">{profile.profession}</h2><p className="mt-3 text-sm leading-relaxed text-muted">Your identity evolves with every challenge you take on.</p></section><section className="resource-card"><p className="eyebrow">READY WHEN YOU ARE</p><div><span>Skip tokens</span><strong>◈ {profile.tokens}</strong></div><div><span>XP cards</span><strong>▱ {profile.xp_cards}</strong></div><button className="quiet-link" onClick={()=>router.push("/achievements")}>View achievements ↗</button></section><p className="aside-quote">“You don’t consume Zynth.<br/>You perform in it.”</p></aside></div>
+<p className="eyebrow mt-6">{profile.domain} DOMAIN</p><h2 className="mt-2 text-xl font-semibold">{profile.profession}</h2></section><section className="resource-card"><p className="eyebrow">READY WHEN YOU ARE</p><div><span>Skip tokens</span><strong>◈ {profile.tokens}</strong></div><div><span>XP cards</span><strong>▱ {profile.xp_cards}</strong></div><button className="quiet-link" onClick={()=>router.push("/achievements")}>View achievements ↗</button></section></aside></div>
       {/* DAILY POP-UP */}
       <AnimatePresence>
         {popupStage !== "done" && (

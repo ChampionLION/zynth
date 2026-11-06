@@ -88,20 +88,20 @@ function SettingsForm({profile}:{profile:Profile}){
    <form onSubmit={save}>
      <label htmlFor="display-name">Display name</label><input id="display-name" autoComplete="nickname" required maxLength={60} value={fields.display_name} disabled={busy} onChange={e=>{setFields({...fields,display_name:e.target.value});setNotice("");}}/>
      <label htmlFor="character-name">Character name <span>optional</span></label><input id="character-name" maxLength={60} value={fields.character_name??""} disabled={busy} placeholder="Your Wayfarer’s name" onChange={e=>{setFields({...fields,character_name:e.target.value});setNotice("");}}/>
-     <label className="settings-check"><input type="checkbox" checked={!fields.leaderboard_opt_out} disabled={busy} onChange={e=>setFields({...fields,leaderboard_opt_out:!e.target.checked})}/><span>Show me on the leaderboard<small>Global is on by default for verified accounts. Turn this off to hide your entry. Only your first name and last initial are displayed; regional participation is optional.</small></span></label>
+     <label className="settings-check"><input type="checkbox" checked={!fields.leaderboard_opt_out} disabled={busy} onChange={e=>setFields({...fields,leaderboard_opt_out:!e.target.checked})}/><span>Show me on the leaderboard</span></label>
      <div className="settings-actions"><button type="submit" disabled={busy||!dirty} className="settings-save">{busy?"Saving…":"Save changes"}</button><button type="button" disabled={busy||!dirty} onClick={()=>{setFields(saved);setError(null);setNotice("Edits discarded.");}}>Discard</button></div>
      {mode==="trusted"&&<button type="button" disabled={busy} className="mt-4 text-xs text-amber" onClick={()=>void downloadEarlier()}>Download earlier journey</button>}
      {dirty&&<p className="settings-status">You have unsaved changes.</p>}{notice&&<p role="status" className="settings-status">{notice}</p>}
    </form></section>
-   <section className="settings-panel"><p className="eyebrow">02 / APPEARANCE</p><h2>Set the atmosphere.</h2><p>A quieter canvas, your way. Appearance never changes your progress.</p>
+   <section className="settings-panel"><p className="eyebrow">02 / APPEARANCE</p><h2>Set the atmosphere.</h2>
      <fieldset disabled={appearanceBusy}><legend>Theme</legend><div className="theme-options">{(["light","dark","system"] as const).map(theme=><label key={theme} className={`theme-choice theme-${theme}`}><input type="radio" name="theme" value={theme} checked={appearance.theme===theme} onChange={()=>void saveAppearance({...appearance,theme})}/><span className="theme-swatch" aria-hidden="true"><i/><i/></span><span>{theme==="system"?"Use device setting":`${theme[0].toUpperCase()}${theme.slice(1)}`}</span></label>)}</div></fieldset>
-     <label className="settings-check"><input type="checkbox" disabled={appearanceBusy} checked={appearance.motion==="reduced"} onChange={e=>void saveAppearance({...appearance,motion:e.target.checked?"reduced":"system"})}/><span>Reduce motion<small>Your device’s reduced-motion preference is always respected.</small></span></label>
+     <label className="settings-check"><input type="checkbox" disabled={appearanceBusy} checked={appearance.motion==="reduced"} onChange={e=>void saveAppearance({...appearance,motion:e.target.checked?"reduced":"system"})}/><span>Reduce motion</span></label>
      {syncStatus&&<p role="status" className="settings-status">{syncStatus}</p>}
      {syncStatus.includes("unavailable")&&<button className="settings-retry" type="button" disabled={appearanceBusy} onClick={retry}>Retry account sync</button>}
    </section>
    <FocusSettings owner={profile.user_id}/>
    <OfflineSettings owner={profile.user_id}/>
-   <section className="settings-panel settings-account"><div><p className="eyebrow">04 / YOUR ACCOUNT</p><h2>{user?.email}</h2><p>Your saved journey stays with your account.</p></div><button disabled={busy} onClick={()=>void signOut()}>Sign out ↗</button></section>
+   <section className="settings-panel settings-account"><div><p className="eyebrow">04 / YOUR ACCOUNT</p><h2>{user?.email}</h2></div><button disabled={busy} onClick={()=>void signOut()}>Sign out ↗</button></section>
    <details className="settings-danger"><summary>Reset progress</summary><p>This permanently removes your current profile and quests.</p><button disabled={busy} onClick={()=>setConfirmReset(true)}>Reset my progress</button></details></div>
    {error&&<p role="alert" className="settings-error">{error}</p>}
    {pendingLeave&&<Dialog title="Leave your unsaved edits?" onClose={()=>setPendingLeave(null)}><p>Your saved profile stays as it is. These edits will be discarded.</p><div className="settings-actions"><button autoFocus onClick={()=>setPendingLeave(null)}>Keep editing</button><button disabled={busy} onClick={()=>void leave(pendingLeave)}>Discard and leave</button></div></Dialog>}

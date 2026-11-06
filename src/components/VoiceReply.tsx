@@ -37,7 +37,7 @@ export function VoiceReply({value,onChange,onBusyChange}:{value:string;onChange:
   };
   return <section className="voice-reply" aria-label="Voice reply">
     <div className="voice-heading"><div><p className="eyebrow">SPEAK YOUR MIND</p><h2>Say it in your own words.</h2></div><span className="voice-badge">VOICE REPLY</span></div>
-    <p className="voice-description">Record a reply, then review and edit the transcript below. The same grading applies to spoken and typed answers.</p>
+    <p className="voice-description">Record your answer or type below.</p>
     {supported===false?<p className="voice-note" role="status">Voice transcription isn’t available in this browser. Use a browser with speech recognition, your keyboard’s dictation, or type below.</p>:<>
       <div className="voice-controls"><button type="button" className={busy?"voice-stop":"voice-record"} disabled={supported===null||phase==="finishing"||(!busy&&value.length>=REPLY_LIMIT)} onClick={()=>busy?session.current?.stop():start()}><span aria-hidden="true">{busy?"■":"●"}</span> {phase==="requesting"?"Cancel microphone request":phase==="finishing"?"Finishing transcript…":phase==="recording"?"Stop recording":audio?"Record more":"Record reply"}</button>
       <label>Language<select aria-label="Recording language" disabled={busy} value={language} onChange={event=>setLanguage(event.target.value)}>{[["en-US","English (US)"],["en-GB","English (UK)"],["en-NG","English (Nigeria)"],["es-ES","Español"],["fr-FR","Français"],["de-DE","Deutsch"],["pt-BR","Português"],["hi-IN","हिन्दी"]].map(([code,label])=><option key={code} value={code}>{label}</option>)}</select></label>
@@ -47,6 +47,6 @@ export function VoiceReply({value,onChange,onBusyChange}:{value:string;onChange:
     {interim&&<p className="voice-interim" aria-label="Words being recognized">{interim}</p>}
     {audio&&<div className="voice-playback"><audio controls src={audio} aria-label="Listen to your latest recording"/><button type="button" disabled={busy} onClick={clearAudio}>Remove audio</button><span>Your transcript is kept.</span></div>}
     {error&&<p role="alert" className="voice-error">{error}</p>}
-    {!busy&&audio&&<p role="status" className="voice-note">Review your transcript before continuing. Nothing is submitted automatically.</p>}
+    {!busy&&audio&&<p role="status" className="voice-note">Review your transcript before continuing.</p>}
   </section>;
 }

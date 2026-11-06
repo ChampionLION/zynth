@@ -263,3 +263,8 @@ Moved inventory into Customize appearance, alongside the appearance controls. Re
 ### 6 November 2026 - Shared avatar portraits and daily check-in
 
 The saved avatar now supplies profile pictures in navigation, Settings and leaderboard podium/list/current-position entries. The separately approved leaderboard read update projects only whitelisted appearance choices and owned equipment, retains opt-out/ranking rules and preserves old-client responses. The daily prompt now asks about energy; answer controls disappear immediately during save and return on failure for retry. Inventory remains inside Customize appearance. Focused avatar-ranking privacy/compatibility and TypeScript/lint checks passed. Weighted completion stays **55%**.
+
+
+### 6 November 2026 - Concise interface and Android download
+
+Removed repetitive explanatory copy from Overview, Mark Map, Chronicle, profile customization, leaderboards, account and reminder settings. Sample responses are labeled Examples. Added a permanent Android download action to the home page and a dismissible browser alert; the installed Android app does not show the alert, and dismissal is remembered. Essential permission choices and actionable errors remain. TypeScript, focused lint and the browser download/dismissal check passed. Roadmap completion remains **55%**.

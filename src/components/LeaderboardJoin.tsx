@@ -28,17 +28,17 @@ export function LeaderboardJoin({owner,onChange}:{owner:string;onChange:(value:L
   finally{lock.current=false;setBusy(false);}
  };
  return <>
-  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted"><span>Global is on by default. <Link className="text-amber" href="/settings">Visibility settings</Link></span><button disabled={loading} className="text-amber" onClick={()=>{setError("");setOpen(true);}}>{loading?"Loading…":member?.choice==="regional"?"Manage regions":"Optional regional rankings"}</button></div>
+  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted"><Link className="text-amber" href="/settings">Settings</Link><button disabled={loading} className="text-amber" onClick={()=>{setError("");setOpen(true);}}>{loading?"Loading…":member?.choice==="regional"?"Manage regions":"Regions"}</button></div>
   {!open&&error&&<p role="alert" className="mt-2 text-xs text-muted">{error} <button className="text-amber" onClick={()=>setRetry(value=>value+1)}>Try again</button></p>}
   {open&&<Dialog title="Regional rankings" onClose={()=>{if(!busy)setOpen(false);}}>
-    <p>Verified accounts appear in Global automatically. Local, State and National participation is optional. You can browse every list either way.</p>
+
     <fieldset disabled={busy} className="leaderboard-join-options"><legend className="sr-only">Participation</legend>
       <label><input type="radio" name="participation" checked={choice==="global"} onChange={()=>setChoice("global")}/><span>Global only<small>Keep your location private.</small></span></label>
       <label><input type="radio" name="participation" checked={choice==="regional"} onChange={()=>setChoice("regional")}/><span>Join regional rankings<small>Share an approximate area for Local, State and National.</small></span></label>
     </fieldset>
-    {choice==="regional"&&<div className="leaderboard-area-fields"><p>A general area is enough. No street address, GPS or exact position is collected.</p>{(["country","state","city"] as const).map(field=><label key={field}>{field==="state"?"State / province":field==="city"?"City / general area":"Country"}<input disabled={busy} maxLength={80} autoComplete="off" value={area[field]} onChange={event=>setArea({...area,[field]:event.target.value})}/></label>)}</div>}
+    {choice==="regional"&&<div className="leaderboard-area-fields">{(["country","state","city"] as const).map(field=><label key={field}>{field==="state"?"State / province":field==="city"?"City / general area":"Country"}<input disabled={busy} maxLength={80} autoComplete="off" value={area[field]} onChange={event=>setArea({...area,[field]:event.target.value})}/></label>)}</div>}
     {error&&<p role="alert" className="text-sm text-fail">{error}</p>}
-    <p>You can turn leaderboard visibility off in <Link className="text-amber" href="/settings">Settings</Link>.</p>
+
     <div className="settings-actions"><button disabled={busy} autoFocus onClick={()=>setOpen(false)}>Decide later</button><button className="settings-save" disabled={busy} onClick={()=>void save()}>{busy?"Saving…":choice==="global"?"Keep Global only":"Save regional choice"}</button></div>
   </Dialog>}
  </>;

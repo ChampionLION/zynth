@@ -103,7 +103,7 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
-      {scope!=="global"&&<details className="mt-3 text-xs text-muted"><summary className="cursor-pointer text-amber">{[viewing.country,scope!=="national"?viewing.state:"",scope==="local"?viewing.city:""].filter(Boolean).join(" / ")||"Browse a region"}</summary><form className="leaderboard-area-fields" onSubmit={event=>{event.preventDefault();browseDirty.current=false;setRegion(browse);setOffset(0);event.currentTarget.closest("details")?.removeAttribute("open");}}><p>Explore any area. This changes the list you view, not your shared location.</p>{(["country",...(scope!=="national"?["state"]:[]),...(scope==="local"?["city"]:[])] as (keyof LeaderboardRegion)[]).map(field=><label key={field}>{field==="state"?"State / province":field==="city"?"City / general area":"Country"}<input required maxLength={80} list={`browse-${field}`} value={browse[field]} onChange={event=>{browseDirty.current=true;setBrowse({...browse,[field]:event.target.value});}}/><datalist id={`browse-${field}`}>{Array.from(new Set(regions.filter(value=>field==="country"||!browse.country||value.country===browse.country.toLowerCase()).map(value=>value[field]))).map(value=><option value={value} key={value}/>)}</datalist></label>)}<button className="mt-3 text-amber" type="submit">View rankings →</button></form></details>}
+      {scope!=="global"&&<details className="mt-3 text-xs text-muted"><summary className="cursor-pointer text-amber">{[viewing.country,scope!=="national"?viewing.state:"",scope==="local"?viewing.city:""].filter(Boolean).join(" / ")||"Browse a region"}</summary><form className="leaderboard-area-fields" onSubmit={event=>{event.preventDefault();browseDirty.current=false;setRegion(browse);setOffset(0);event.currentTarget.closest("details")?.removeAttribute("open");}}>{(["country",...(scope!=="national"?["state"]:[]),...(scope==="local"?["city"]:[])] as (keyof LeaderboardRegion)[]).map(field=><label key={field}>{field==="state"?"State / province":field==="city"?"City / general area":"Country"}<input required maxLength={80} list={`browse-${field}`} value={browse[field]} onChange={event=>{browseDirty.current=true;setBrowse({...browse,[field]:event.target.value});}}/><datalist id={`browse-${field}`}>{Array.from(new Set(regions.filter(value=>field==="country"||!browse.country||value.country===browse.country.toLowerCase()).map(value=>value[field]))).map(value=><option value={value} key={value}/>)}</datalist></label>)}<button className="mt-3 text-amber" type="submit">View rankings →</button></form></details>}
 
       {/* CATEGORY PILLS */}
       <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
@@ -208,11 +208,7 @@ export default function LeaderboardPage() {
               </div>
             </div>
           )}
-          {userRank === 0 && (
-            <p className="mt-6 text-center text-xs text-dim">
-              {participation==="not_verified"?"Confirm your account to appear in the rankings.":participation==="global_only"?"You’re participating in Global. You can still browse every regional list.":participation==="opted_out"?"You’re browsing privately. You can change leaderboard visibility in Settings.":participation==="outside_region"?"You can browse this area too. Your regional entry follows the area you shared.":participation==="other_category"?`Your rank appears in All Skills and ${profile.domain.toLowerCase()}.`:"Your account’s rankings will appear here."}
-            </p>
-          )}
+          {userRank===0&&participation==="not_verified"&&<p className="mt-6 text-center text-xs text-dim">Confirm your email to join the rankings.</p>}
         </>
       )}
       {!loading&&!error&&total>0&&<div role="navigation" aria-label="Leaderboard pages" className="mt-5 mb-4 flex items-center justify-between gap-3 text-xs text-muted"><span>{offset+1}–{offset+rows.length} of {total.toLocaleString()}</span><div className="flex gap-4"><button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-25))}>← Previous</button><button disabled={offset+rows.length>=total} onClick={()=>setOffset(value=>value+25)}>Next →</button></div></div>}

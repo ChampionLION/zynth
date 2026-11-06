@@ -53,13 +53,12 @@ export default function ChroniclePage() {
   return (
     <main className="app-page collection-page">
       <h1 className="text-xl font-bold">Chronicle</h1>
-      {tab === "community" && <p className="mt-3 text-xs text-muted">Illustrative responses · curated examples, not live community posts.</p>}
 
       <div className="mt-4 flex gap-2">
         {(
           [
             ["mine", "My Chronicle"],
-            ["community", "Community"],
+            ["community", "Examples"],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -158,9 +157,6 @@ export default function ChroniclePage() {
               )
             )}
           </div>
-          <p className="mt-4 text-[11px] text-dim">
-            Top responses this week — anonymized. Inspiration, not comparison.
-          </p>
           <div className="mt-3 space-y-3">
             {community.map((c, i) => (
               <div

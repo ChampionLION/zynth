@@ -53,7 +53,6 @@ export function AuthForm(){
    <button className="site-button account-submit" type="submit" disabled={busy||!configured||!hydrated}>{busy?"Just a moment…":resetting?"Send reset link":mode==="signup"?"Create account":"Sign in"}<span>→</span></button>
    {resetting&&<button type="button" className="account-back-link" onClick={()=>{setResetting(false);setNotice(null);setError(null);}}>← Back to sign in</button>}
   </form>
-  <p className="account-footnote">{mode==="signup"?"Already started on this browser? Create an account with the same email to keep your saved local journey.":"Your progress stays with your account when you sign out."}</p>
   </section></div><footer className="account-footer">{BRAND_SLOGAN}</footer>
  </main>;
 }
