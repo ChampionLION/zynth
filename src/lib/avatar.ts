@@ -1,12 +1,12 @@
 import {z} from "zod";
 export const AvatarSchema=z.object({
- version:z.literal(1),skin:z.enum(["porcelain","sand","copper","umber","ebony"]),
- hair:z.enum(["crop","waves","coils","shaved"]),hairColor:z.enum(["ink","chestnut","silver","auburn"]),
+ version:z.literal(1),gender:z.enum(["male","female"]).default("male"),skin:z.enum(["porcelain","sand","copper","umber","ebony"]),
+ hair:z.enum(["crop","waves","coils","shaved","bob","long"]),hairColor:z.enum(["ink","chestnut","silver","auburn"]),
  outfit:z.enum(["wayfarer-coat","studio-knit","field-jacket"]),palette:z.enum(["moss","ochre","slate","plum"]),
  background:z.enum(["atrium","grove","workshop"]),accessory:z.null(),aura:z.null(),
 }).strict();
 export type Avatar=z.infer<typeof AvatarSchema>;
-export const DEFAULT_AVATAR:Avatar={version:1,skin:"copper",hair:"waves",hairColor:"ink",outfit:"wayfarer-coat",palette:"moss",background:"atrium",accessory:null,aura:null};
+export const DEFAULT_AVATAR:Avatar={version:1,gender:"male",skin:"copper",hair:"waves",hairColor:"ink",outfit:"wayfarer-coat",palette:"moss",background:"atrium",accessory:null,aura:null};
 export const SKIN_COLORS={porcelain:"#e8c5ac",sand:"#d4a17c",copper:"#b97850",umber:"#845338",ebony:"#4e342b"};
 export const HAIR_COLORS={ink:"#292c29",chestnut:"#694735",silver:"#d0cec2",auburn:"#955138"};
 export const OUTFIT_COLORS={moss:"#52654d",ochre:"#ae7843",slate:"#526579",plum:"#795768"};

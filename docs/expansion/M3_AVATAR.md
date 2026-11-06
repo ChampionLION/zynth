@@ -6,7 +6,7 @@ Completed implementation: **5 November 2026**, Africa/Lagos. M3 is **8/8 (100%)*
 
 The profile has a prominent layered Wayfarer scene, the actual display/character name, profession, aspiration, title, level and six existing attributes. Radar and compact skills sit beside each other on desktop and stack on phones. Overview renders the same saved character. No identity layer derives traits from appearance, changes attributes or deteriorates after an absence.
 
-The optional editor previews five skin tones, four hair styles, four hair colors, three free outfits, four outfit palettes and three backdrops. Save commits the chosen appearance; Cancel/Escape discards the preview and restores focus. Reset preview selects the free default and still requires Save. The close button keeps cancellation reachable on touch screens. Account-scoped drafts recover an interrupted editor session.
+The optional editor previews male and female avatars, five skin tones, six hair styles (including bob and long hair), four hair colors, three free outfits, four outfit palettes and three backdrops. Both genders can use every hairstyle, outfit and color. Save commits the chosen appearance; Cancel/Escape discards the preview and restores focus. Reset preview selects the free default and still requires Save. The close button keeps cancellation reachable on touch screens. Account-scoped drafts recover an interrupted editor session.
 
 Inline SVG layers have no downloaded image dependency, looping animation or asset-loading requirement. Invalid/unknown versions and item IDs resolve to a readable free default. The editor uses native radio controls, fieldsets, visible focus and a modal dialog; reduced-motion operation does not depend on an animation completing.
 
@@ -33,3 +33,9 @@ Focused checks, respecting the owner's minimal-check workflow:
 4. TypeScript, lint and local production compilation passed. The final compatible release uses the normal GitHub/Vercel workflow and refreshes the public page-shell cache.
 
 Broader device coverage, long-disconnect/concurrent-tab stress, real Android acceptance and the full regression suite remain for the dedicated testing day/M11. M4 is next: versioned cosmetic inventory and server-owned grants/equipment.
+
+## 6 November 2026 — Avatar gender options
+
+Added male/female selection with distinct face and clothing silhouettes, independent of hairstyle, skin tone and clothing choices. Added bob and long hair to both options. Existing version-1 saved avatars without a gender retain the original male rendering and all their saved selections; no account or progression migration is needed. The shared renderer covers Profile and Overview in the web application and hosted Android shell. Gender saves through the existing account-scoped appearance workflow, including cached and pending saves.
+
+Focused avatar boundary checks and TypeScript passed, including legacy records and round trips for both genders with every hairstyle. Extended the reusable browser flow to select and restore a female avatar; broad browser/device regression remains for the dedicated testing day. This requested addition does not change the weighted milestone score (47/100).

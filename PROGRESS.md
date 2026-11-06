@@ -1,6 +1,6 @@
 # Progress update
 
-Updated: 5 November 2026 (Africa/Lagos).
+Updated: 6 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
 ## Current completion: 47%
@@ -244,3 +244,7 @@ Evidence: docs/expansion/M2_COMPLETION.md and scripts/verify-m2-hosted.cjs. M2-A
 Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
 
 Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.
+
+### 6 November 2026 ? Male and female avatar options
+
+Added a male/female selector, distinct character silhouettes and bob/long hair for both options. Existing saved appearances remain compatible; Profile and Overview share the selection on web and Android. Focused avatar and TypeScript checks passed. No database migration or progression changes. Weighted completion remains **47/100 (47%)**; M4 inventory remains next. [Implementation notes](docs/expansion/M3_AVATAR.md).
