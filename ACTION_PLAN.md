@@ -87,20 +87,20 @@ Dependency: M2 and M1's persistence contract. Exit: a returning account restores
 
 Dependencies: M1 and M3. Exit: a client cannot grant an item or equip an unowned item, and replay cannot duplicate ownership.
 
-### M5 — World expansion: 0/8 points (0%)
+### M5 — World expansion: 8/8 points (100%)
 
-- [ ] M5-A — **3 points:** a small coherent package of stable region, connection and landmark definitions with versions and availability rules.
-- [ ] M5-B — **2 points:** account-owned discovery and selected-region state derived from verified events.
-- [ ] M5-C — **2 points:** atlas navigation, selected-region loading and reachable cross-region routes using existing landscape geometry.
-- [ ] M5-D — **1 point:** locked/available/unknown-region, account isolation and old-player/new-package compatibility checks.
+- [x] M5-A — **3 points:** a small coherent package of stable region, connection and landmark definitions with versions and availability rules.
+- [x] M5-B — **2 points:** account-owned discovery and selected-region state derived from verified events.
+- [x] M5-C — **2 points:** atlas navigation, selected-region loading and reachable cross-region routes using existing landscape geometry.
+- [x] M5-D — **1 point:** locked/available/unknown-region, account isolation and old-player/new-package compatibility checks.
 
 Dependency: M1 events. Exit: region discovery persists without fetching/rendering the full world or rewriting old accounts.
 
-### M6 — Living Mark Map: 0/7 points (0%)
+### M6 — Living Mark Map: 7/7 points (100%)
 
-- [ ] M6-A — **3 points:** reusable environmental layers and durable per-region restoration from real mission/discovery events; chapter-driven changes connect in M9.
-- [ ] M6-B — **2 points:** the same world state appears in foreground Mark Map and the landscape background of Overview, with textual change summaries.
-- [ ] M6-C — **2 points:** idempotent replay, independent regions, reload/return, animation failure, skipping and reduced-motion verification; no inactivity decay.
+- [x] M6-A — **3 points:** reusable environmental layers and durable per-region restoration from real mission/discovery events; chapter-driven changes connect in M9.
+- [x] M6-B — **2 points:** the same world state appears in foreground Mark Map and the landscape background of Overview, with textual change summaries.
+- [x] M6-C — **2 points:** idempotent replay, independent regions, reload/return, animation failure, skipping and reduced-motion verification; no inactivity decay.
 
 Dependency: M5. Exit: state commits before presentation; revisiting or skipping an animation cannot lose restoration or replay rewards.
 
@@ -182,3 +182,14 @@ Focused avatar-boundary and browser checks passed, including fresh-session resto
 ## 6 November 2026 - M4 accepted
 
 M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion. Evidence: docs/expansion/M4_INVENTORY.md. Weights are unchanged.
+
+
+## 6 November 2026 — M5/M6 world expansion
+
+Implemented a versioned four-region package (Foothills, Glasswood, Crossing, Zenith Ridge), connected atlas travel and landmark definitions. Verified mission completions discover the next regions; a new completion restores only the previously selected region. Account-owned state and source references persist through the trusted revision/receipt path and cached journey, without changing XP or requiring a migration. Previously earned terrain survives inactivity, missing evidence and prestige.
+
+Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atlas provides authored textual restoration summaries. Static SVG layers require no animation, remote art, or motion to convey their final state. Locked regions remain unavailable; unknown selected IDs fall back to Foothills. Existing checkpoints and history remain intact.
+
+Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
+
+M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.

@@ -2,9 +2,9 @@
 
 Updated: 6 November 2026 (Africa/Lagos).
 
-## Current roadmap snapshot — 55%
+## Current roadmap snapshot — 70%
 
-The full ZEC-M0–M11 roadmap has **55/100 accepted weighted points**, with 45 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
+The full ZEC-M0–M11 roadmap has **70/100 accepted weighted points**, with 30 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
 
 Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 complete → M4 complete → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
 
@@ -312,3 +312,14 @@ Removed repetitive explanatory copy from Overview, Mark Map, Chronicle, profile 
 - Supports recovery before the next lesson and after a new streak has started. Only successful learning days count; recovery adds no completed lessons or XP. Previously covered days are never charged again.
 - Trusted server actions calculate eligibility/cost from saved history, spend tokens atomically with the profile revision, and replay repeated requests without another debit. Existing private action storage is reused; no database migration is required.
 - Focused recovery/SQL replay checks, TypeScript and changed-component lint passed. Broader testing remains deferred as requested. Roadmap completion remains 55%.
+
+
+## 6 November 2026 — M5/M6 world expansion
+
+Implemented a versioned four-region package (Foothills, Glasswood, Crossing, Zenith Ridge), connected atlas travel and landmark definitions. Verified mission completions discover the next regions; a new completion restores only the previously selected region. Account-owned state and source references persist through the trusted revision/receipt path and cached journey, without changing XP or requiring a migration. Previously earned terrain survives inactivity, missing evidence and prestige.
+
+Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atlas provides authored textual restoration summaries. Static SVG layers require no animation, remote art, or motion to convey their final state. Locked regions remain unavailable; unknown selected IDs fall back to Foothills. Existing checkpoints and history remain intact.
+
+Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
+
+M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.

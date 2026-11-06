@@ -17,6 +17,11 @@ export function journeyRepository(client:SupabaseClient):JourneyRepository{
   commit:async(owner,key,lease,revision,profile,quest,extra)=>await rpc("commit_journey_action",{p_user_id:owner,p_key:key,p_lease:lease,p_revision:revision,p_profile:profile,p_quest:quest,p_extra:extra,p_mission:profile?missionProgress(profile,quest):null}) as JourneyActionResult,
   rank:async owner=>await rpc("trusted_profession_rank",{p_user_id:owner}) as {rank:number;total:number},
   verifiedCredits:async owner=>await rpc("verified_mission_credits",{p_user_id:owner}) as number,
+  worldMissions:async owner=>{
+   const {data,count,error}=await client.from("progression_events").select("source_quest_id,payload",{count:"exact"}).eq("user_id",owner).eq("kind","mission_completed").eq("payload->>provenance","server").in("payload->>grade",["Basic","Good","Excellent"]).order("created_at",{ascending:false}).order("id").limit(4);
+   if(error)throw error;
+   return {ids:[...new Set((data??[]).map(e=>e.source_quest_id as string))],total:count??0};
+  },
  };
 }
 export async function pendingOutcome(client:SupabaseClient,owner:string):Promise<PendingOutcome|null>{

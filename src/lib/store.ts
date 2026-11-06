@@ -89,6 +89,7 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed. Please sign in again.");
    if(result.profile&&result.profile.user_id!==owner)throw new Error("Please sign in again.");
    set(state=>({profile:result.profile,onboardingDraft:result.profile?null:state.onboardingDraft,activeQuest:input.kind==="skip"?null:result.quest?{...result.quest,draft:result.quest.id===state.activeQuest?.id?state.activeQuest.draft:result.quest.draft}:state.activeQuest}));
+   const journeyCache=readJourneyCache(owner);if(journeyCache&&result.profile)saveJourneyCache({...journeyCache,profile:result.profile,activeQuest:get().activeQuest});
    return result;
  },
  completeQuest:async(questId,responseText)=>{

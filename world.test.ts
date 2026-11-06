@@ -1,0 +1,37 @@
+import assert from "node:assert/strict";
+import {initialWorld,reconcileWorld,REGIONS} from "./src/lib/world";
+import {PGlite} from "@electric-sql/pglite";
+import {setupJourneyDatabase,sqlRepositories,fixtureOwners} from "./journey.integration.test";
+import {runJourneyAction,type JourneyModels} from "./src/lib/server/journey-actions";
+import {mockClassifyOnboarding,mockGenerateQuest,mockDailyQuestion} from "./src/lib/llm/mock";
+const start=initialWorld();assert.equal(start.selected,"foothills");
+assert.throws(()=>reconcileWorld(start,[],"unknown"));assert.throws(()=>reconcileWorld(start,[],"glasswood"));
+const first=reconcileWorld(start,["mission-1"],undefined,1);
+assert.deepEqual(first.restored,["foothills"]);assert.ok(first.discovered.includes("glasswood"));
+assert.deepEqual(reconcileWorld(first,["mission-1"],undefined,1),first,"Replay does not restore another region");
+const travel=reconcileWorld(first,["mission-1"],"glasswood",1);assert.deepEqual(travel.restored,["foothills"]);
+const second=reconcileWorld(travel,["mission-2","mission-1"],undefined,2);assert.deepEqual(second.restored,["foothills","glasswood"]);
+assert.ok(!second.restored.includes("crossing"),"A mission only restores its selected region");
+assert.deepEqual(reconcileWorld(second,[],undefined,0).restored,second.restored,"Missing evidence or inactivity never removes earned terrain");
+assert.deepEqual(initialWorld().restored,[],"Fresh accounts share no restoration state");
+assert.equal(JSON.parse(JSON.stringify(second)).selected,"glasswood","Reload preserves the selected region");
+for(const r of REGIONS)for(const id of r.connections)assert.ok(REGIONS.some(other=>other.id===id));
+assert.deepEqual(reconcileWorld({...second,selected:"retired-region"},[],undefined,2).selected,"foothills");
+console.log("World checks passed: discovery, locks, navigation, replay, independent restoration, reload and compatibility.");
+async function persisted(){const db=new PGlite();try{
+ await setupJourneyDatabase(db);await db.exec("SET ROLE service_role");const {repo}=sqlRepositories(db);
+ const answers={Q1:["Designer"],Q2:["A"],Q3:["B"],Q4:["C"],Q5:["D"]};
+ const models:JourneyModels={classify:async()=>mockClassifyOnboarding(answers),generate:async(p,t,d)=>mockGenerateQuest(p,t,d),question:async p=>mockDailyQuestion(p)};
+ const user={id:fixtureOwners[0],name:"Mira",email:"fixture@local.test"};
+ await runJourneyAction(user,{kind:"onboard",answers},repo,models);
+ repo.worldMissions=async()=>({ids:["verified-mission"],total:1});
+ const request={kind:"world",requestId:crypto.randomUUID(),region:"glasswood"};
+ const result=await runJourneyAction(user,request,repo,models);assert.equal(result.profile?.memory.milestones.find(m=>m.type==="world_state")?.state!==undefined,true);
+ const replay=await runJourneyAction(user,request,repo,models);assert.equal(replay.replayed,true);
+ assert.equal(replay.profile?.memory.milestones.filter(m=>m.type==="world_state").length,1);
+ assert.equal(replay.profile?.cumulative_exp,0);
+ await assert.rejects(()=>runJourneyAction({...user,id:fixtureOwners[1]},request,repo,models),/starting profile/);
+ await assert.rejects(()=>runJourneyAction(user,{...request,restored:["zenith-ridge"]},repo,models),/not valid/);
+ console.log("World SQL checks passed: persisted account state, replay, owner isolation and strict inputs.");
+}finally{await db.close();}}
+persisted().catch(e=>{console.error(e);process.exitCode=1;});

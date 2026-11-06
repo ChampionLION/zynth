@@ -5,6 +5,7 @@ const answers=z.object({Q1:z.array(z.string().max(120)).length(1),Q2:z.array(z.s
 export const JourneyActionInput=z.discriminatedUnion("kind",[
  z.object({kind:z.literal("onboard"),answers}).strict(),
  z.object({kind:z.literal("generate")}).strict(),
+ z.object({kind:z.literal("world"),requestId:z.string().uuid(),region:z.enum(["foothills","glasswood","crossing","zenith-ridge"]).optional()}).strict(),
  z.object({kind:z.literal("energy"),energy:z.enum(["high","mid","low"])}).strict(),
  z.object({kind:z.literal("daily_question")}).strict(),
  z.object({kind:z.literal("answer_daily"),answer:z.string().max(8).nullable()}).strict(),

@@ -3,9 +3,9 @@
 Updated: 6 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
-## Current completion: 55%
+## Current completion: 70%
 
-**55 of 100 weighted acceptance points complete; 45 points remaining.** Roadmap weights unchanged; status reviewed 6 November 2026 (Africa/Lagos).
+**70 of 100 weighted acceptance points complete; 30 points remaining.** Roadmap weights unchanged; status reviewed 6 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
@@ -14,15 +14,15 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M2 Profile/appearance — 100%** (8/8): implementation, local UI/SQL evidence and authorized hosted cross-session persistence/retry complete.
 - **M3 Identity/avatar — 100%** (8/8): character/editor, account persistence, free equipment restrictions and responsive/keyboard evidence complete.
 - **M4 Cosmetic inventory — 100%** (8/8): catalog, verified grants, ownership/equipment and focused acceptance complete.
-- **M5 World expansion — 0%** (0/8).
-- **M6 Living Mark Map — 0%** (0/7).
+- **M5 World expansion — 100%** (8/8).
+- **M6 Living Mark Map — 100%** (7/7).
 - **M7 Chronicles foundation — 25%** (2/8): Lore Bible done; chapter runtime/first arc remain.
 - **M8 Personalization/archive — 0%** (0/5).
 - **M9 Chapter/world integration — 0%** (0/5).
 - **M10 Expansion readiness — 0%** (0/5).
 - **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
 
-**Next action:** M5 World Expansion. M2, M3 and M4 are complete.
+**Next action:** M7 Chronicles runtime. M2 through M6 are complete.
 
 The original leaderboard UI and all four scopes are live. Global includes verified profiles by default, including zero EXP; Settings can hide entries, and regional location remains optional. Current application commit: 0bdc38da81c6758b988c803849d255156f55d672. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
 
@@ -275,3 +275,14 @@ Removed repetitive explanatory copy from Overview, Mark Map, Chronicle, profile 
 - Supports recovery before the next lesson and after a new streak has started. Only successful learning days count; recovery adds no completed lessons or XP. Previously covered days are never charged again.
 - Trusted server actions calculate eligibility/cost from saved history, spend tokens atomically with the profile revision, and replay repeated requests without another debit. Existing private action storage is reused; no database migration is required.
 - Focused recovery/SQL replay checks, TypeScript and changed-component lint passed. Broader testing remains deferred as requested. Roadmap completion remains 55%.
+
+
+## 6 November 2026 — M5/M6 world expansion
+
+Implemented a versioned four-region package (Foothills, Glasswood, Crossing, Zenith Ridge), connected atlas travel and landmark definitions. Verified mission completions discover the next regions; a new completion restores only the previously selected region. Account-owned state and source references persist through the trusted revision/receipt path and cached journey, without changing XP or requiring a migration. Previously earned terrain survives inactivity, missing evidence and prestige.
+
+Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atlas provides authored textual restoration summaries. Static SVG layers require no animation, remote art, or motion to convey their final state. Locked regions remain unavailable; unknown selected IDs fall back to Foothills. Existing checkpoints and history remain intact.
+
+Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
+
+M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.

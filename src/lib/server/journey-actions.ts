@@ -9,6 +9,7 @@ import {spendToken,spendXPCards,XP_CARD_COSTS} from "../engines/economy";
 import {applyPrestige} from "../engines/progression";
 import {writeMilestone} from "../engines/memory";
 import {restoreStreak} from "../engines/streak";
+import {savedWorld,reconcileWorld} from "../world";
 import {checkProfessionEvolution} from "../engines/leaderboard";
 import {JourneyError,RevisionConflict} from "./complete-quest";
 export interface ActionClaim {status:"claimed"|"busy"|"complete";plan:Record<string,unknown>;result?:JourneyActionResult}
@@ -22,6 +23,7 @@ export interface JourneyRepository {
  commit:(owner:string,key:string,lease:string,revision:number,profile:Profile|null,quest:Quest|null,extra:Record<string,unknown>)=>Promise<JourneyActionResult>;
  rank:(owner:string)=>Promise<{rank:number;total:number}>;
  verifiedCredits:(owner:string)=>Promise<number>;
+ worldMissions?:(owner:string)=>Promise<{ids:string[];total:number}>;
 }
 export interface JourneyModels {
  classify:(answers:Extract<JourneyAction,{kind:"onboard"}>["answers"])=>Promise<LLMProfileResult>;
@@ -57,7 +59,7 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
  }else if(action.kind==="skip")key=`skip:${action.questId}`;
  else if(action.kind==="restore_streak")key=`restore_streak:${action.gap}`;
  else if(action.kind==="economy")key=`economy:${action.questId}:${action.effect}`;
- else if(action.kind==="prestige"||action.kind==="profession")key=`${action.kind}:${action.requestId}`;
+ else if(action.kind==="prestige"||action.kind==="profession"||action.kind==="world")key=`${action.kind}:${action.requestId}`;
  else if(["energy","daily_question","answer_daily"].includes(action.kind))key=`${action.kind}:${day}`;
  const lease=crypto.randomUUID();
  const claim=await repo.claim(owner,key,action.kind,action,plan,lease);
@@ -107,6 +109,14 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
     if(!spendToken(p))throw new JourneyError("You need a Skip Token to skip this challenge.",422);
     p.last_quest_date=day;p.last_active=new Date().toISOString();writeMilestone(p,"quest_skipped",{quest_id:q.id});
     if(q.type==="mission")writeMilestone(p,"mission_skipped",{quest_id:q.id,cycle:missionProgress(p).cycle});
+   }else if(action.kind==="world"){
+    if(!repo.worldMissions)throw new JourneyError("The atlas is unavailable. Please try again.",503);
+    const missions=await repo.worldMissions(owner);
+    try{
+     const state=reconcileWorld(savedWorld(p),missions.ids,action.region,missions.total);
+     p.memory.milestones=p.memory.milestones.filter(m=>m.type!=="world_state");
+     writeMilestone(p,"world_state",{state});
+    }catch(error){throw new JourneyError(error instanceof Error?error.message:"Choose an available region.",422);}
    }else if(action.kind==="restore_streak"){
     try{restoreStreak(p,action.gap,day);}catch(error){throw new JourneyError(error instanceof Error?error.message:"Reopen streak recovery.",422);}
    }else if(action.kind==="prestige"){

@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import {REGIONS,savedWorld,type WorldState} from "@/lib/world";
 import type { Profile } from "@/lib/types";
 import { activeWorldChapter, buildWorldMarks, worldRouteSegment, type WorldMark } from "@/lib/engines/markmap";
 
@@ -16,7 +17,7 @@ const CONTOURS = [
 ];
 
 /** Shared terrain and checkpoint geometry for the active map and Overview backdrop. */
-export function WorldMapArt({ marks, decorative = false }: { marks: WorldMark[]; decorative?: boolean }) {
+export function WorldMapArt({ marks, decorative = false,world }: { marks: WorldMark[]; decorative?: boolean;world?:WorldState }) {
   const id = useId().replace(/:/g, "");
   return <svg viewBox="0 0 1200 680" className="world-map-art" preserveAspectRatio={decorative ? "xMidYMid slice" : "xMidYMid meet"} aria-hidden="true" focusable="false">
     <defs><pattern id={`${id}-grid`} width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#253a3d" strokeWidth=".6"/></pattern><pattern id={`${id}-sea`} width="35" height="30" patternUnits="userSpaceOnUse"><path d="M6 18q6-4 12 0" fill="none" stroke="#395257" strokeWidth=".7"/></pattern></defs>
@@ -37,11 +38,12 @@ export function WorldMapArt({ marks, decorative = false }: { marks: WorldMark[];
     <g className="map-landmarks" fill="none" stroke="#a9aa88" strokeWidth="1.5" opacity=".6"><path d="M585 245v-27h20v27M590 218v-10h10v10M588 228h4m6 0h4M835 575v-25h-14v25m14-25h15v25m-21-34v-9m14 9v-9M809 575h52"/><path d="M690 315l22-16m-18 21 22-16m-22-6 5 21m6-29 5 22"/></g>
     <g transform="translate(1090 80)" className="map-compass"><circle r="31" fill="none"/><path d="M0-26l6 26-6 26-6-26zM-26 0l26-6 26 6-26 6z"/><text y="-41" textAnchor="middle">N</text></g>
     {decorative && <g>{marks.map(mark=><g key={mark.number} transform={`translate(${mark.x} ${mark.y})`} className={`art-mark art-mark-${mark.state}`}>{mark.isMission?<path d="M0 -21 L18 -11 L18 11 L0 21 L-18 11 L-18 -11 Z"/>:<circle r="16"/>}<text textAnchor="middle" y="5">{mark.state==="completed"?"✓":mark.number}</text></g>)}</g>}
+    {world&&<g className="world-restoration">{REGIONS.filter(r=>world.discovered.includes(r.id)).map(r=><g key={r.id} transform={`translate(${r.x} ${r.y})`} opacity={world.selected===r.id?1:.55}><circle r="56" fill={world.restored.includes(r.id)?"#5caa86":"#79949a"} opacity=".15"/><path d="M-22 18H22M-14 18V-10L0-28 14-10V18M0-28V-43" fill="none" stroke={world.restored.includes(r.id)?"#b6e7a4":"#809399"} strokeWidth="3"/>{world.restored.includes(r.id)&&<><circle cy="-43" r="7" fill="#f6d687"/><path d="M-45 26Q0-5 45 26" stroke="#84b98c" strokeWidth="5" fill="none"/></>}</g>)}</g>}
     <text x="65" y="625" className="map-coordinate-label">ZYNTH ATLAS / AN UNFINISHED WORLD</text><text x="1135" y="625" textAnchor="end" className="map-coordinate-label">01° N · 14° E</text>
   </svg>;
 }
 
 export function OverviewMapBackground({ profile }: { profile: Profile }) {
   const chapter = activeWorldChapter(profile);
-  return <div className="overview-world-background" aria-hidden="true"><WorldMapArt marks={buildWorldMarks(profile,chapter)} decorative /></div>;
+  return <div className="overview-world-background" aria-hidden="true"><WorldMapArt marks={buildWorldMarks(profile,chapter)} world={savedWorld(profile)} decorative /></div>;
 }

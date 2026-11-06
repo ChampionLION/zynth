@@ -9,6 +9,8 @@ import { WorldMapArt } from "@/components/WorldMap";
 import { activeWorldChapter, buildWorldMarks, completedMarks, MARKS_PER_CHAPTER } from "@/lib/engines/markmap";
 import { GRADE_COLORS, formatDate } from "@/lib/ui";
 import { useZynth } from "@/lib/store";
+import {WorldAtlas} from "@/components/WorldAtlas";
+import {savedWorld} from "@/lib/world";
 
 export default function MarkMapPage() {
   const router = useRouter();
@@ -44,7 +46,7 @@ export default function MarkMapPage() {
     <section className="world-map-frame" aria-label={`World map segment ${visibleChapter+1}`}>
       <div className="world-map-scroll" ref={mapScroll} tabIndex={0} aria-label="Scrollable world map; use arrow keys to explore">
         <div className="world-map-stage">
-          <WorldMapArt marks={marks} />
+          <WorldMapArt marks={marks} world={savedWorld(profile)} />
           {marks.map(mark=><button key={mark.number} className={`world-checkpoint checkpoint-${mark.state} ${mark.isMission?"checkpoint-mission":""} ${selected?.number===mark.number?"checkpoint-selected":""}`} style={{left:`${mark.x/12}%`,top:`${mark.y/6.8}%`}} aria-label={`${mark.isMission?"Mission":"Mark"} ${mark.number}, ${mark.state==="tomorrow"?"available tomorrow":mark.state==="future"?"locked":mark.state}${mark.entry?`, ${mark.entry.quest_title}, ${mark.entry.grade}`:""}`} aria-pressed={selected?.number===mark.number} onClick={()=>{ if(mark.state==="current") router.push(readyQuest?"/quest":"/dashboard"); else setSelectedNumber(mark.number); }}><span className="checkpoint-disc">{mark.state==="completed"?"✓":mark.isMission?"◇":mark.number}</span><span className="checkpoint-caption">{mark.state==="current"?"YOU ARE HERE":mark.isMission?`MISSION ${mark.number}`:`MARK ${mark.number}`}</span>{mark.state==="current"&&<span className="checkpoint-beacon"/>}</button>)}
         </div>
       </div>
@@ -55,7 +57,7 @@ export default function MarkMapPage() {
       <div className="world-detail-copy"><p className="eyebrow">{selected?.isMission?"MISSION LANDMARK":"CHECKPOINT"} / MARK {selected?.number}</p><h2>{selected?.entry?.quest_title ?? (isSelectedActive ? readyQuest?activeQuest!.quest_title:"Your next mark starts here." : selected?.state==="tomorrow"?"Today's journey is complete.":"Uncharted territory.")}</h2>{selected?.entry ? <><p><span style={{color:GRADE_COLORS[selected.entry.grade].text}}>{selected.entry.grade}</span> · {formatDate(selected.entry.completed_at)} · +{selected.exp} EXP</p>{selected.entry.feedback&&<p className="world-detail-feedback">{selected.entry.feedback}</p>}</> : <p>{isSelectedActive?readyQuest?`${activeQuest!.estimated_time} · ${activeQuest!.type}${activeQuest!.steps.length?` · ${activeQuest!.steps.length} steps`:""}`:"Your daily check-in and quest are waiting in Overview.":selected?.state==="tomorrow"?"Your next checkpoint opens tomorrow. Your progress is saved.":selected?.isMission?"A mission landmark ahead. Keep making marks to reach it.":"This checkpoint opens as your journey advances."}</p>}</div>
       {isSelectedActive && <button className="world-detail-action" onClick={()=>router.push(readyQuest?"/quest":"/dashboard")}>{readyQuest?"Begin quest":"Prepare my quest"} →</button>}
     </section>
-    <p className="world-map-note">Map segments organize your checkpoints. Story chapters follow their own narrative conditions.</p>
+    <WorldAtlas key={profile.user_id} profile={profile}/>
     <BottomNav />
   </motion.main>;
 }
