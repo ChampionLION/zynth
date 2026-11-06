@@ -27,6 +27,7 @@ export function OfflineController(){
     if(savedReplies(owner).length)return;
     const receipt=localStorage.getItem(`zynth:presentation:${owner}`);if(receipt){await journeyRequest(owner,"ack",JSON.parse(receipt));localStorage.removeItem(`zynth:presentation:${owner}`);}
     await useZynth.getState().hydrate();
+    void import("@/lib/inventory-client").then(async inventory=>{await inventory.syncInventory(owner);await inventory.loadInventory(owner);}).catch(()=>{/* Equipment never blocks lesson synchronization. */});
     let current=useZynth.getState();if(disposed||current.user?.id!==owner||!current.profile||current.mode!=="trusted")return;
     if(current.activeQuest&&!current.activeQuest.learning&&current.activeQuest.type!=="mission"){
      const upgraded=await journeyRequest<{profile:typeof current.profile;quest:typeof current.activeQuest}>(owner,"lessons",{},"PUT");

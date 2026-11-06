@@ -1,11 +1,15 @@
 import {parseAvatar,SKIN_COLORS,HAIR_COLORS,OUTFIT_COLORS,type Avatar} from "@/lib/avatar";
+import type {Equipment} from "@/lib/inventory";
 /** Inline SVG layers have no remote asset dependency. Invalid versions/IDs fall
  * back to the free default; no visual layer makes an ownership/XP claim. */
-export function AvatarArt({value,name="Your Wayfarer"}:{value:Avatar;name?:string}){
- const avatar=parseAvatar(value),skin=SKIN_COLORS[avatar.skin],hair=HAIR_COLORS[avatar.hairColor],cloth=OUTFIT_COLORS[avatar.palette],female=avatar.gender==="female";
- return <div className={`avatar-art scene-${avatar.background}`} role="img" aria-label={`${name}, ${avatar.gender} avatar, wearing a ${avatar.outfit.replaceAll("-"," ")}`}>
+export function AvatarArt({value,equipment={},name="Your Wayfarer"}:{value:Avatar;equipment?:Equipment;name?:string}){
+ const base=parseAvatar(value),scholar=equipment.outfit==="scholar-coat";
+ const avatar={...base,outfit:scholar?"wayfarer-coat":["wayfarer-coat","studio-knit","field-jacket"].includes(equipment.outfit??"")?equipment.outfit!:base.outfit},skin=SKIN_COLORS[base.skin],hair=HAIR_COLORS[base.hairColor],cloth=OUTFIT_COLORS[base.palette],female=base.gender==="female";
+ const outfitName=scholar?"scholar coat":avatar.outfit.replaceAll("-"," "),accessoryName=["trail-scarf","mission-satchel","sharp-pin"].includes(equipment.accessory??"")?`, with ${equipment.accessory!.replaceAll("-"," ")}`:"";
+ return <div className={`avatar-art scene-${avatar.background}`} role="img" aria-label={`${name}, ${avatar.gender} avatar, wearing a ${outfitName}${accessoryName}${equipment.aura==="focus-halo"?", with focus halo":""}`}>
  <svg viewBox="0 0 480 480" aria-hidden="true" focusable="false">
   <circle cx="240" cy="178" r="138" className="avatar-halo"/>
+  {equipment.aura==="focus-halo"&&<g fill="none" stroke="#c2a35e" strokeWidth="2"><ellipse cx="240" cy="173" rx="116" ry="142"/><path d="M240 24v19M240 303v19M114 173h18M348 173h18"/><circle cx="240" cy="32" r="5" fill="#c2a35e"/></g>}
   {avatar.background==="atrium"?<g className="avatar-architecture"><path d="M107 382V195a133 133 0 0 1 266 0v187M130 382V195a110 110 0 0 1 220 0v187"/><path d="M86 382h308M67 400h346M47 420h386"/></g>:avatar.background==="grove"?<g className="avatar-architecture"><path d="M66 381Q130 230 96 101M395 381Q338 220 380 92M95 221q-68-35-53-81 59 4 53 81M98 170q67-29 66-74-60-5-66 74M376 182q-67-40-60-78 60 0 60 78M379 244q62-28 62-68-54-9-62 68"/><path d="M59 401q180-51 364 0"/></g>:<g className="avatar-architecture"><path d="M66 130h348M66 143h348M96 143v245M385 143v245M67 319h110M324 319h90M87 339v62M394 339v62"/><rect x="117" y="82" width="46" height="48" rx="5"/><rect x="177" y="96" width="22" height="34" rx="3"/><circle cx="352" cy="100" r="29"/></g>}
   <ellipse cx="240" cy="408" rx="98" ry="13" fill="currentColor" opacity=".08"/>
   {(avatar.hair==="long"||avatar.hair==="bob")&&<path d={avatar.hair==="long"?"M191 129q-1-62 49-62t49 62l13 119q-27 13-39-4l-23-65-23 65q-15 17-39 4z":"M191 128q-1-61 49-61t49 61l4 68q-23 17-53 9-30 8-53-9z"} fill={hair}/>}
@@ -22,6 +26,10 @@ export function AvatarArt({value,name="Your Wayfarer"}:{value:Avatar;name?:strin
   <path d="M222 186q18 9 36 0" fill="none" stroke="#593e34" strokeWidth="2" strokeLinecap="round" opacity=".6"/>
   {avatar.hair==="long"||avatar.hair==="bob"?<path d="M192 150v-27q0-57 48-57t48 57v27l-13-31q-22-6-32-25-13 25-38 31l-5 25z" fill={hair}/>:avatar.hair==="waves"?<path d="M196 153v-29q-3-54 46-54 50 1 44 57l-5 25-10-37q-40 20-62 5l-5 33z" fill={hair}/>:avatar.hair==="coils"?<g fill={hair}><path d="M195 147v-34h91v34l-12-24h-65l-7 25z"/>{[[206,99],[226,83],[250,82],[272,94],[284,116],[196,120],[241,103]].map(([x,y])=><circle key={`${x}:${y}`} cx={x} cy={y} r="20"/>)}</g>:avatar.hair==="crop"?<path d="M197 145v-29q-2-42 44-42 44 0 44 41v30l-9-27-68-5z" fill={hair}/>:<path d="M201 125q2-44 40-44t38 44q-40-13-78 0" fill={hair} opacity=".22"/>}
   <circle cx="240" cy="264" r="5" fill="#d6b474"/>
+  {scholar&&<g fill="none" stroke="#d6b474" strokeWidth="4"><path d="m213 216 27 31 27-31M240 248v99M181 351l59-7 59 7"/><path d="M198 277h27v24h-27M256 277h27v24h-27" strokeWidth="2"/></g>}
+  {equipment.accessory==="trail-scarf"&&<g fill="#c69865"><path d="M214 210q26 12 52 0l4 18q-30 13-60 0z"/><path d="m249 228 18-2 14 65-22 4z"/></g>}
+  {equipment.accessory==="mission-satchel"&&<g><path d="m211 220 77 111" stroke="#b58b5d" strokeWidth="9"/><rect x="261" y="302" width="47" height="43" rx="7" fill="#876346"/><path d="M263 312h43M285 308v14" stroke="#e0bc7e" strokeWidth="3"/></g>}
+  {equipment.accessory==="sharp-pin"&&<path d="m272 237 6 11 12 3-12 5-6 12-5-12-12-5 12-3z" fill="#e5c77f" stroke="#8a6c37" strokeWidth="1.5"/>}
  </svg><span className="avatar-art-caption" aria-hidden="true">Z / WAYFARER</span>
  </div>;
 }

@@ -1,12 +1,12 @@
 # Zynth milestone completion action plan
 
-Updated: 5 November 2026 (Africa/Lagos).
+Updated: 6 November 2026 (Africa/Lagos).
 
 ## Goal and current position
 
 Complete the ZYNTH EVOLUTION & CHRONICLES roadmap, ZEC-M0 through ZEC-M11, against the Complete Application Blueprint v2, retaining unchanged v1 progression rules and the owner's onboarding, landscape Overview map, voice replies and leaderboard additions.
 
-**Current tracked completion: 47% — 47 of 100 weighted acceptance points. Remaining: 53 points.**
+**Current tracked completion: 55% — 55 of 100 weighted acceptance points. Remaining: 45 points.**
 
 This is an initial planning estimate based on evidenced work packages, not elapsed time, lines of code, test coverage or production readiness. Weights reflect scope and risk; they are not promised durations. The existing account, landing, branding and leaderboard features are shipped foundations, not extra credits counted again in this expansion denominator. A plan, schema draft or passing build alone does not complete a feature.
 
@@ -15,7 +15,7 @@ The base app and leaderboard are live at the owner-approved production address. 
 ## Execution order
 
 1. **Close M1's trust boundary first.** Complete every existing gameplay mutation on the server, durable recovery and real Postgres concurrency checks before removing client progression writes. Start the M11 dependency audit/upgrade preparation alongside this work.
-2. **M2 complete.** Hosted schema and two-session names/themes/retry verification passed without changing XP. M3 is also complete; continue with M4.
+2. **M2 complete.** Hosted schema and two-session names/themes/retry verification passed without changing XP. M3 and M4 are also complete; continue with M5.
 3. **Deliver M3 then M4.** Ship a small default avatar/editor, then ownership-backed inventory and equipment. New grants depend on M1's verified events.
 4. **Deliver M5 then M6.** Add a small versioned region package/atlas and permanent environmental changes. Reuse the landscape in Overview and Mark Map.
 5. **Finish M7, then M8.** Build deterministic chapters around the existing lore, then truthful branches and the private paginated archive.
@@ -78,12 +78,12 @@ Exit: names and appearance work locally and across hosted sessions; no progress 
 
 Dependency: M2 and M1's persistence contract. Exit: a returning account restores its saved appearance; users can use the app without customization. Only default/free items are equippable until M4 ownership checks are live.
 
-### M4 — Cosmetic inventory: 0/8 points (0%)
+### M4 — Cosmetic inventory: 8/8 points (100%)
 
-- [ ] M4-A — **2 points:** versioned item catalog, categories, previews, default items and explicit compatible slots.
-- [ ] M4-B — **3 points:** server-owned grants from verified events, unique ownership and retry-safe ledger; no cosmetic purchases.
-- [ ] M4-C — **1 point:** owned/locked/equipped filters and validated equip/remove actions connected to the avatar.
-- [ ] M4-D — **2 points:** ownership/RLS, concurrent duplicate grant, source-event replay, wrong-slot and prestige-preservation tests.
+- [x] M4-A — **2 points:** versioned item catalog, categories, previews, default items and explicit compatible slots.
+- [x] M4-B — **3 points:** server-owned grants from verified events, unique ownership and retry-safe ledger; no cosmetic purchases.
+- [x] M4-C — **1 point:** owned/locked/equipped filters and validated equip/remove actions connected to the avatar.
+- [x] M4-D — **2 points:** ownership/RLS, concurrent duplicate grant, source-event replay, wrong-slot and prestige-preservation tests.
 
 Dependencies: M1 and M3. Exit: a client cannot grant an item or equip an unowned item, and replay cannot duplicate ownership.
 
@@ -178,3 +178,7 @@ Every weighted package is accepted; existing accounts retain their history; all 
 Equipment slots accept free default outfits only; accessory/aura and unreleased earned equipment stay locked until M4. Strict validation rejects forged IDs, incompatible slots and progression fields. Appearance does not write XP, skills or profile progress. Existing Auth metadata provides bounded account persistence without a migration.
 
 Focused avatar-boundary and browser checks passed, including fresh-session restore, reset/Escape/focus, locked items, unchanged profile data and phone fit; screenshots were inspected. Actual hosted save/restore passed on the existing approved hidden zero-XP test account, and its previous avatar was restored. TypeScript, lint and production compilation passed. Broader testing remains deferred as requested. Evidence: docs/expansion/M3_AVATAR.md. Next: M4 Cosmetic Inventory. Publication uses the existing authorized GitHub/Vercel workflow.
+
+## 6 November 2026 - M4 accepted
+
+M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion. Evidence: docs/expansion/M4_INVENTORY.md. Weights are unchanged.

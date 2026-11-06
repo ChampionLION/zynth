@@ -2,11 +2,11 @@
 
 Updated: 6 November 2026 (Africa/Lagos).
 
-## Current roadmap snapshot — 47%
+## Current roadmap snapshot — 55%
 
-The full ZEC-M0–M11 roadmap has **47/100 accepted weighted points**, with 53 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
+The full ZEC-M0–M11 roadmap has **55/100 accepted weighted points**, with 45 remaining. M1 is 22/22 points: trusted actions, client recovery, local grants/concurrency evidence and owner-approved hosted activation are complete. The owner approved all three migrations and activation after checks. This is a planning estimate tied to completed packages, not a production-readiness score. [ACTION_PLAN.md](ACTION_PLAN.md) defines the weights and explicit M1-F split. [PROGRESS.md](PROGRESS.md) contains milestone percentages. [The rollout](docs/expansion/STEP1_ROLLOUT.md) records the release boundary.
 
-Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 complete → M4 inventory → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
+Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 complete → M4 complete → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
 
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
 ## Completed milestones
@@ -180,9 +180,9 @@ Related owner additions — locally implemented and verified: voice replies with
 
 Completed 5 November 2026: layered default avatar and environment, optional skin/hair/outfit/backdrop editor, preview/save/cancel/reset, scoped account persistence and queued retry. Profile/Overview share the character; actual identity, six attributes and compact skills use responsive layouts. Free-only equipment validation keeps unreleased accessory/aura items locked; no XP/ownership grants are introduced. Focused UI checks cover save/cancel, fresh-session restoration, reset/Escape/focus, phone width and reduced motion. Hosted persistence passed on the existing hidden zero-EXP test account, whose original avatar was restored. See docs/expansion/M3_AVATAR.md. M3 is 8/8; M4 verified inventory/grants is next.
 
-### ZEC-M4 Cosmetic Inventory — NOT STARTED
+### ZEC-M4 Cosmetic Inventory - COMPLETE (8/8)
 
-Objective: secure cosmetic ownership and equipment. Scope/tasks: versioned catalog, categories, server grants from existing achievements/events, duplicate protection, ownership and equipped UI. Dependencies: M1 trusted events, M3. Acceptance: unauthorized/concurrent grant rejection, event replay, slot validation, persistence and existing economy compatibility. Evidence: none. References: blueprint sections 10/13/19. Risk/blocker: browser profile claims cannot authorize cosmetics. Next: server-owned inventory after trust boundary passes.
+M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion.
 
 ### ZEC-M5 World Expansion Foundation — NOT STARTED
 
@@ -285,3 +285,8 @@ Focused avatar-boundary and browser checks passed, including fresh-session resto
 ### 6 November 2026 ? Male and female avatar options
 
 Added a male/female selector, distinct character silhouettes and bob/long hair for both options. Existing saved appearances remain compatible; Profile and Overview share the selection on web and Android. Focused avatar and TypeScript checks passed. No database migration or progression changes. Weighted completion remains **47/100 (47%)**; M4 inventory remains next. [Implementation notes](docs/expansion/M3_AVATAR.md).
+
+
+## 6 November 2026 - M4 Cosmetic Inventory completed
+
+M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion. [Evidence](docs/expansion/M4_INVENTORY.md).

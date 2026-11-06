@@ -6,10 +6,13 @@ import {cachedAvatar,pendingAvatar,cacheAvatar,loadAvatar,saveAvatar} from "@/li
 import {display} from "@/lib/ui";
 import {Dialog} from "./Dialog";
 import {AvatarArt} from "./AvatarArt";
+import {InventoryPanel} from "./InventoryPanel";
+import {useInventory} from "./useInventory";
 const draftKey=(owner:string)=>`zynth:avatar-draft:${owner}`;
 const label=(value:string)=>value.replaceAll("-"," ").replace(/^./,s=>s.toUpperCase());
 export function AvatarIdentity({profile}:{profile:Profile}){
  const owner=profile.user_id;
+ const inventory=useInventory(owner);
  const [value,setValue]=useState<Avatar>(()=>pendingAvatar(owner)??cachedAvatar(owner)),[draft,setDraft]=useState(value);
  const [editing,setEditing]=useState(false),[busy,setBusy]=useState(false),[status,setStatus]=useState(""),[error,setError]=useState("");
  const version=useRef(0),saving=useRef(false),mounted=useRef(true),editingRef=useRef(false);
@@ -45,18 +48,20 @@ export function AvatarIdentity({profile}:{profile:Profile}){
  const stats:[string,number][]=[["Focus",profile.stats.focus],["Consistency",profile.stats.consistency],["Adaptability",profile.stats.adaptability],["Execution",profile.stats.execution],[profile.stats.stat_5.name,profile.stats.stat_5.value],[profile.stats.stat_6.name,profile.stats.stat_6.value]];
  return <>
   <section className="avatar-identity" aria-label="Your identity">
-   <div className="avatar-stage"><AvatarArt value={value} name={profile.character_name||profile.display_name}/><div className="avatar-stage-label"><span>YOUR WAYFARER</span><button type="button" onClick={open}>Customize appearance ↗</button></div></div>
+   <div className="avatar-stage"><AvatarArt value={value} equipment={inventory?.equipment} name={profile.character_name||profile.display_name}/><div className="avatar-stage-label"><span>YOUR WAYFARER</span><button type="button" onClick={open}>Customize appearance ↗</button></div></div>
    <div className="avatar-identity-copy"><p className="eyebrow">STILL BECOMING</p><div className="avatar-identity-meta"><span>LEVEL {profile.level}</span><span>{profile.title}</span>{profile.prestige>0&&<span>Prestige {profile.prestige}</span>}</div><h1>{profile.character_name||profile.display_name}</h1><p className="avatar-profession">{profile.profession}</p><p className="avatar-direction">{profile.aspiration||"One deliberate step at a time."}</p><span className="avatar-domain">{label(profile.domain.toLowerCase())} · {display(profile.behavior_signature)}</span><dl className="avatar-attributes" aria-label="Your attributes">{stats.map(([name,number])=><div key={name}><dt>{display(name)}</dt><dd>{number}</dd></div>)}</dl><p className="avatar-note">Your look is yours. Your progress comes from what you learn and do.</p>{status&&<p className="settings-status" role="status">{status} {status.includes("pending")&&<button type="button" className="underline" onClick={()=>void retry()}>Retry save</button>}</p>}</div>
   </section>
-  {editing&&<Dialog title="Make your Wayfarer yours." className="avatar-editor" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close}>×</button><p className="avatar-note">Every option here is free. Preview a change, then save when it feels right.</p><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} name="Appearance preview"/><p>PREVIEW</p></div><div className="avatar-options"><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
+  <InventoryPanel owner={owner} appearance={value} inventory={inventory}/>
+  {editing&&<Dialog title="Make your Wayfarer yours." className="avatar-editor" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close}>×</button><p className="avatar-note">Every option here is free. Preview a change, then save when it feels right.</p><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} equipment={inventory?.equipment} name="Appearance preview"/><p>PREVIEW</p></div><div className="avatar-options"><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
    <Choices name="Avatar gender" selected={draft.gender} options={["male","female"] as const} onChange={gender=>setDraft({...draft,gender})}/>
    <Swatches name="Skin tone" selected={draft.skin} colors={SKIN_COLORS} onChange={skin=>setDraft({...draft,skin})}/>
    <Choices name="Hair style" selected={draft.hair} options={["crop","waves","coils","shaved","bob","long"] as const} onChange={hair=>setDraft({...draft,hair})}/>
    <Swatches name="Hair color" selected={draft.hairColor} colors={HAIR_COLORS} onChange={hairColor=>setDraft({...draft,hairColor})}/>
-   <Choices name="Outfit" selected={draft.outfit} options={FREE_OUTFITS.map(o=>o.id)} onChange={outfit=>setDraft(equipAvatar(draft,"outfit",outfit))}/>
+   {inventory?.equipment.outfit&&<p className="avatar-note">Your inventory outfit is equipped. Remove it in your inventory to change your base outfit.</p>}
+   <fieldset disabled={!!inventory?.equipment.outfit}><legend className="sr-only">Base outfit</legend><Choices name="Outfit" selected={draft.outfit} options={FREE_OUTFITS.map(o=>o.id)} onChange={outfit=>setDraft(equipAvatar(draft,"outfit",outfit))}/></fieldset>
    <Swatches name="Outfit color" selected={draft.palette} colors={OUTFIT_COLORS} onChange={palette=>setDraft({...draft,palette})}/>
    <Choices name="Backdrop" selected={draft.background} options={["atrium","grove","workshop"] as const} onChange={background=>setDraft({...draft,background})}/>
-   <fieldset className="avatar-equipment"><legend>Equipment slots</legend><p><span>Outfit</span><strong>{label(draft.outfit)} · Free</strong></p><p><span>Accessory</span><strong>None equipped</strong></p><p><span>Aura</span><strong>None equipped</strong></p><button type="button" disabled>Locked · Earned equipment</button><small>Earned items are not released yet. Your accessory and aura slots are ready for inventory.</small></fieldset>
+   <fieldset className="avatar-equipment"><legend>Equipment slots</legend>{(["outfit","accessory","aura"] as const).map(slot=><p key={slot}><span>{label(slot)}</span><strong>{label(inventory?.equipment[slot]??(slot==="outfit"?draft.outfit:"None equipped"))}</strong></p>)}<button type="button" onClick={()=>{close();requestAnimationFrame(()=>document.getElementById("inventory")?.scrollIntoView({behavior:"auto"}));}}>Open inventory</button><small>Earn accessories, outfits and auras through learning and missions.</small></fieldset>
   </fieldset></div></div>{error&&<p role="alert" className="account-error">{error}</p>}<div className="avatar-editor-actions"><button type="button" disabled={busy} onClick={()=>setDraft({...DEFAULT_AVATAR})}>Reset preview</button><div><button type="button" disabled={busy} onClick={close}>Cancel</button><button type="button" className="settings-save" disabled={busy} onClick={()=>void save()}>{busy?"Saving…":"Save appearance"}</button></div></div></Dialog>}
  </>;
 }

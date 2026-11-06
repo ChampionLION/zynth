@@ -17,5 +17,7 @@ export async function POST(req:NextRequest){try{
   const raw=await llmChain(prompt,{maxTokens:800,expectJson:true});
   return GradeResultSchema.parse(JSON.parse(raw.replace(/^```(?:json)?\s*/i,"").replace(/\s*```\s*$/,""))) as GradeResult;
  });
+ // Cosmetics reconcile from durable outcomes; a cosmetic outage cannot undo learning.
+ try{await client.rpc("sync_cosmetic_inventory",{p_user_id:user.id});}catch{/* Inventory reads recover any missed grant. */}
  return journeyReply(result);
 }catch(error){return journeyFailure(error);}}

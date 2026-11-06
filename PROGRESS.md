@@ -3,9 +3,9 @@
 Updated: 6 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
-## Current completion: 47%
+## Current completion: 55%
 
-**47 of 100 weighted acceptance points complete; 53 points remaining.** Roadmap weights unchanged; status reviewed 5 November 2026 (Africa/Lagos).
+**55 of 100 weighted acceptance points complete; 45 points remaining.** Roadmap weights unchanged; status reviewed 6 November 2026 (Africa/Lagos).
 
 Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, including production hardening. This is an evidence-based planning baseline, not a measurement of time, code coverage or production readiness. The already shipped base app is not counted a second time. Weights and evidence are defined in [the action plan](ACTION_PLAN.md).
 
@@ -13,7 +13,7 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M1 Quests/trusted progression — 100%** (22/22): trusted actions/recovery, local PostgreSQL concurrency checks and owner-approved hosted permissions/configuration activation complete.
 - **M2 Profile/appearance — 100%** (8/8): implementation, local UI/SQL evidence and authorized hosted cross-session persistence/retry complete.
 - **M3 Identity/avatar — 100%** (8/8): character/editor, account persistence, free equipment restrictions and responsive/keyboard evidence complete.
-- **M4 Cosmetic inventory — 0%** (0/8).
+- **M4 Cosmetic inventory — 100%** (8/8): catalog, verified grants, ownership/equipment and focused acceptance complete.
 - **M5 World expansion — 0%** (0/8).
 - **M6 Living Mark Map — 0%** (0/7).
 - **M7 Chronicles foundation — 25%** (2/8): Lore Bible done; chapter runtime/first arc remain.
@@ -22,7 +22,7 @@ Scope: the full Evolution & Chronicles roadmap, **ZEC-M0 through ZEC-M11**, incl
 - **M10 Expansion readiness — 0%** (0/5).
 - **M11 Production hardening — 18%** (2/11): reusable baseline checks credited; security, original-engine gaps and final acceptance remain.
 
-**Next action:** start M4 Cosmetic Inventory; M2 and M3 are complete. See [Step 1 rollout](docs/expansion/STEP1_ROLLOUT.md). The dependency audit was refreshed; unresolved upgrades earn no hardening completion points.
+**Next action:** M5 World Expansion. M2, M3 and M4 are complete.
 
 The original leaderboard UI and all four scopes are live. Global includes verified profiles by default, including zero EXP; Settings can hide entries, and regional location remains optional. Current application commit: 0bdc38da81c6758b988c803849d255156f55d672. The owner-approved leaderboard migrations are applied, and the owner confirms prior database/SMTP setup. No repeated setup is requested. Real hosted preference/inbox/user-journey verification is distinct from that confirmation.
 
@@ -248,3 +248,8 @@ Focused avatar-boundary and browser checks passed, including fresh-session resto
 ### 6 November 2026 ? Male and female avatar options
 
 Added a male/female selector, distinct character silhouettes and bob/long hair for both options. Existing saved appearances remain compatible; Profile and Overview share the selection on web and Android. Focused avatar and TypeScript checks passed. No database migration or progression changes. Weighted completion remains **47/100 (47%)**; M4 inventory remains next. [Implementation notes](docs/expansion/M3_AVATAR.md).
+
+
+## 6 November 2026 - M4 Cosmetic Inventory completed
+
+M4 completed: versioned eight-item catalog, verified server-owned grants, private ownership/equipment, compatible equip/remove, locked previews and owned/equipped filters. Profile and Overview share the equipment layers for male and female avatars. Cached selections sync on reconnection. Focused SQL, independent-connection duplicate-grant and desktop/phone UI checks passed; the owner-approved production migration is applied. No XP, currency or progression changes. **M4: 8/8 (100%); overall: 55/100 (55%), 45 points remaining.** Next: M5 World Expansion. [Evidence](docs/expansion/M4_INVENTORY.md).
