@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {useZynth} from "@/lib/store";
-import {REGIONS,savedWorld} from "@/lib/world";
+import {REGIONS,savedWorld,reconcileWorld} from "@/lib/world";
 import type {Profile} from "@/lib/types";
 export function WorldAtlas({profile,compact=false}:{profile:Profile;compact?:boolean}){
  const action=useZynth(s=>s.journeyAction),mode=useZynth(s=>s.mode);
@@ -15,7 +15,7 @@ export function WorldAtlas({profile,compact=false}:{profile:Profile;compact?:boo
  },[action,mode,profile.user_id,profile.quest_history.length]);
  async function select(id:string){
   if(lock.current)return;lock.current=true;setBusy(true);setError("");
-  try{if(!navigator.onLine)throw new Error("Connect to change regions.");await action({kind:"world",requestId:crypto.randomUUID(),region:id as typeof region.id});}
+  try{if(mode==="legacy"){const next=structuredClone(profile),missions=next.quest_history.filter(q=>q.quest_type==="mission"&&q.grade!=="Fail").map(q=>q.quest_id);const state=reconcileWorld(savedWorld(next),missions,id);next.memory.milestones=next.memory.milestones.filter(m=>m.type!=="world_state");next.memory.milestones.push({type:"world_state",date:new Date().toISOString(),state});await useZynth.getState().setProfile(next);return;}if(!navigator.onLine)throw new Error("Connect to change regions.");await action({kind:"world",requestId:crypto.randomUUID(),region:id as typeof region.id});}
   catch(e){setError(e instanceof Error?e.message:"Please try again.");}finally{lock.current=false;setBusy(false);}
  }
  return <section className="atlas-panel" aria-label="World atlas"><nav aria-label="Regions">{REGIONS.map(r=><button key={r.id} disabled={busy||!state.discovered.includes(r.id)} aria-pressed={state.selected===r.id} onClick={()=>void select(r.id)}>{r.name}{!state.discovered.includes(r.id)?" · Locked":""}</button>)}</nav>

@@ -1,5 +1,6 @@
 import {supabase,isSupabaseConfigured} from "./supabase";
 import {AppearanceSchema,parseAppearance,type Appearance} from "./appearance";
+import {PUBLIC_ACCESS} from "./public-access";
 const key=(owner:string)=>`zynth:appearance:${owner}`;
 const pendingKey=(owner:string)=>`${key(owner)}:pending`;
 export function cachedAppearance(owner:string):Appearance{try{return parseAppearance(JSON.parse(localStorage.getItem(key(owner))??"null"));}catch{return parseAppearance(null);}}
@@ -13,6 +14,7 @@ export async function loadAppearance(owner:string):Promise<Appearance|null>{
  if(error)throw error;return data?AppearanceSchema.parse(data):null;
 }
 export async function saveAppearance(owner:string,value:Appearance):Promise<void>{
+ if(PUBLIC_ACCESS){cacheAppearance(owner,AppearanceSchema.parse(value));return;}
  const clean=AppearanceSchema.parse(value);if(!isSupabaseConfigured())throw new Error("Account sync is unavailable.");
  const {error}=await supabase().from("user_preferences").upsert({user_id:owner,...clean,updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error)throw error;
 }

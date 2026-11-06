@@ -9,7 +9,19 @@ The full ZEC-M0–M11 roadmap has **70/100 accepted weighted points**, with 30 r
 Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 complete → M4 complete → M5 regions → M6 living map → M7 chapter runtime → M8 branches/archive → M9 integration → M10 content-release compatibility → M11 final hardening. Dependency audit and upgrade preparation start early. M11 already has baseline test/release evidence, so it is IN PROGRESS; final acceptance remains open.
 
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
-## Completed milestones
+## Planned addition — Completion reward minigames
+
+Status: planned; implementation and acceptance remain open. Added 6 November 2026 at the owner's request. This addition is not yet included in the weighted M0–M11 baseline; reported completion remains 70% until its scope and weight are incorporated into ACTION_PLAN.md.
+
+- [ ] Offer an optional reward after a completed daily lesson or mission: a short, intriguing, fun minigame drawn from a varied pool.
+- [ ] Start with approachable puzzles, pattern games, memory challenges and quick creative play; vary selections and avoid frequent repeats.
+- [ ] Give mission completions a more distinctive reward experience than daily lessons.
+- [ ] Let users play, skip or leave immediately. Reward play must not block learning, cost Skip Tokens, or put earned progress at risk.
+- [ ] Keep existing lesson/mission XP rewards intact. Randomize the game selection, with no gambling or paid random prizes.
+- [ ] Record completion eligibility once, preserve it across reloads and reconnects, and support the same experience on web and Android, including cached games when disconnected.
+- [ ] Verify that replaying a game cannot duplicate learning rewards, and provide accessible controls and reduced-motion support.
+
+## Completed milestone history
 
 ### 5 November 2026 — Learning, Android identity and offline continuity
 
@@ -323,3 +335,8 @@ Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atl
 Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
 
 M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.
+
+
+## Temporary public access — 6 November 2026
+
+Authentication screens and login controls are hidden. Visitors enter all application routes with a separate device-local guest journey; existing account records and server authorization remain private. Auth URLs redirect to Overview. Guest profile/appearance changes persist locally. Focused no-session persistence/isolation checks, TypeScript and changed-component lint passed. Hosted rankings and earned account inventory are not published to guests.

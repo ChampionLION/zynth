@@ -65,7 +65,6 @@ function SettingsForm({profile}:{profile:Profile}){
    catch{setError("We couldn’t sign you out. Please try again.");}
    finally{lock.current=false;setBusy(false);setPendingLeave(null);}
  };
- const signOut=async()=>{if(lock.current)return;if(dirty)setPendingLeave("signout");else await leave("signout");};
  const erase=async()=>{
    if(!user||lock.current)return;lock.current=true;setBusy(true);setError(null);
    try{await eraseProgress(user);allowNavigation.current=true;reset();await useZynth.getState().hydrate();router.replace("/onboarding");}
@@ -101,7 +100,7 @@ function SettingsForm({profile}:{profile:Profile}){
    </section>
    <FocusSettings owner={profile.user_id}/>
    <OfflineSettings owner={profile.user_id}/>
-   <section className="settings-panel settings-account"><div><p className="eyebrow">04 / YOUR ACCOUNT</p><h2>{user?.email}</h2></div><button disabled={busy} onClick={()=>void signOut()}>Sign out ↗</button></section>
+   
    <details className="settings-danger"><summary>Reset progress</summary><p>This permanently removes your current profile and quests.</p><button disabled={busy} onClick={()=>setConfirmReset(true)}>Reset my progress</button></details></div>
    {error&&<p role="alert" className="settings-error">{error}</p>}
    {pendingLeave&&<Dialog title="Leave your unsaved edits?" onClose={()=>setPendingLeave(null)}><p>Your saved profile stays as it is. These edits will be discarded.</p><div className="settings-actions"><button autoFocus onClick={()=>setPendingLeave(null)}>Keep editing</button><button disabled={busy} onClick={()=>void leave(pendingLeave)}>Discard and leave</button></div></Dialog>}

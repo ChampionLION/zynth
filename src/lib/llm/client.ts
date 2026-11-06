@@ -4,6 +4,7 @@
 // final fallback so the user always gets a quest (Engine 24 rule).
 
 import { validateOnboardingAnswers } from "../engines/onboarding";
+import {PUBLIC_ACCESS} from "../public-access";
 import {supabase} from "../supabase";
 import {
   OnboardingResultSchema,
@@ -41,7 +42,7 @@ import type {
 } from "../types";
 
 export function isLiveMode(): boolean {
-  return process.env.NEXT_PUBLIC_ZYNTH_MODE === "live";
+  return !PUBLIC_ACCESS&&process.env.NEXT_PUBLIC_ZYNTH_MODE === "live";
 }
 
 async function callApi(prompt: string, purpose: string, expectJson = true): Promise<string> {

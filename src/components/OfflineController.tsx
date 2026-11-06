@@ -1,4 +1,6 @@
 "use client";
+import {PUBLIC_ACCESS} from "@/lib/public-access";
+
 import {useEffect,useRef} from "react";
 import {useZynth} from "@/lib/store";
 import {readJourneyCache,saveJourneyCache,savedReplies,saveReplies,type LessonPack} from "@/lib/lesson-cache";
@@ -10,7 +12,7 @@ export function OfflineController(){
  useEffect(()=>{if(process.env.NODE_ENV==="production"&&"serviceWorker" in navigator)void navigator.serviceWorker.register("/sw.js",{scope:"/",updateViaCache:"none"}).catch(()=>{});},[]);
  useEffect(()=>{if(!user||!profile||!hydrated)return;try{saveJourneyCache({user,profile,activeQuest,mode,pendingOutcome,pack:readJourneyCache(user.id)?.pack??null});}catch{/* Keep the current page usable if device storage is full. */}},[user,profile,activeQuest,mode,pendingOutcome,hydrated]);
  useEffect(()=>{
-  if(!owner||!hydrated)return;let disposed=false;
+  if(PUBLIC_ACCESS||!owner||!hydrated)return;let disposed=false;
   const sync=async()=>{
    if(disposed||running.current||!navigator.onLine)return;running.current=true;
    try{
