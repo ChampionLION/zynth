@@ -77,6 +77,7 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
    const classified=await models.classify(complete);
    const name=user.name.trim().replace(/[\u0000-\u001f\u007f]/g,"").slice(0,60)||"Explorer";
    const starting=buildProfile(owner,name,classified,complete.Q1[0]);
+   if(user.email==="guest-demo@zynth.invalid")starting.leaderboard_opt_out=true;
    return await repo.commit(owner,key,lease,0,starting,null,{});
   }
   if(action.kind==="legacy_archive")return await repo.commit(owner,key,lease,0,null,null,{});

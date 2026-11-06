@@ -25,6 +25,11 @@ export async function signUp(email:string, password:string, name:string) {
 }
 export async function signIn(email:string,password:string,remember=true) {
   setRememberSession(remember,authStorageKey());
+  if(email.trim().toLowerCase()==="guest"){
+    const response=await fetch("/api/auth/guest",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:"guest",password})});
+    const result=await response.json();if(!response.ok)throw new Error(result.error??"Guest access is unavailable.");
+    const {error}=await supabase().auth.setSession(result);if(error)throw error;return;
+  }
   const {error} = await supabase().auth.signInWithPassword({email:email.trim().toLowerCase(),password});
   if (error) throw error;
 }
