@@ -16,7 +16,6 @@ import {gradeLearningCheck} from "./learning";
 import {runPostGradePipeline} from "./engines/pipeline";
 import {runExploitCheck} from "./engines/exploit";
 import {mockEvolveSkillName,mockDiscoveryMessage,mockBehaviorSummary} from "./llm/mock";
-import {PUBLIC_ACCESS} from "./public-access";
 interface GradeRevealData {gradeResult:GradeResult;expEarned:number;streakMultiplier:number;changedStats:string[]}
 interface ZynthStore {
  user:AccountUser|null;profile:Profile|null;activeQuest:Quest|null;onboardingDraft:OnboardingDraft|null;
@@ -43,12 +42,12 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    set({loading:!get().hydrated,hydrationError:null});
    const promise=(async()=>{
      try {
-       const savedOwner=PUBLIC_ACCESS?null:cachedSessionUser()?.id;
+       const savedOwner=cachedSessionUser()?.id;
        if(savedOwner&&((typeof navigator!=="undefined"&&navigator.onLine===false)||savedReplies(savedOwner).length)){
          const cache=readJourneyCache(savedOwner);
          if(cache){const presentation=cache.pendingOutcome?outcomePresentation(cache.pendingOutcome):{gradeReveal:null,events:[]};set({...empty,...cache,activeQuest:cache.activeQuest??nextCachedLesson(savedOwner,cache.profile),gradeReveal:presentation.gradeReveal,eventQueue:presentation.events,hydrated:true,loading:false});return;}
        }
-       if(!PUBLIC_ACCESS&&typeof navigator!=="undefined"&&navigator.onLine===false){
+       if(typeof navigator!=="undefined"&&navigator.onLine===false){
          const owner=cachedSessionUser()?.id,cache=owner?readOfflinePack(owner):null;
          if(cache){set({...empty,user:cache.user,profile:cache.profile,activeQuest:cache.quest,mode:cache.mode,hydrated:true,loading:false});return;}
        }

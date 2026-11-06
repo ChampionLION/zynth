@@ -1,4 +1,3 @@
-import {PUBLIC_ACCESS} from "./public-access";
 import {supabase,publicSupabaseConfig,cachedSessionUser} from "./supabase";
 import {AvatarSchema,parseAvatar,type Avatar} from "./avatar";
 const key=(owner:string)=>`zynth:avatar:${owner}`;
@@ -6,13 +5,11 @@ export function cachedAvatar(owner:string):Avatar{try{const cached=JSON.parse(lo
 export function pendingAvatar(owner:string):Avatar|null{try{const parsed=AvatarSchema.safeParse(JSON.parse(localStorage.getItem(`${key(owner)}:pending`)??"null"));return parsed.success?parsed.data:null;}catch{return null;}}
 export function cacheAvatar(owner:string,value:Avatar,pending=false):boolean{try{localStorage.setItem(key(owner),JSON.stringify(AvatarSchema.parse(value)));if(pending)localStorage.setItem(`${key(owner)}:pending`,JSON.stringify(value));window.dispatchEvent(new Event("zynth-avatar-updated"));return true;}catch{return false;}}
 export async function loadAvatar(owner:string):Promise<Avatar>{
- if(PUBLIC_ACCESS)return cachedAvatar(owner);
  const {data,error}=await supabase().auth.getUser();if(error||data.user?.id!==owner)throw new Error("Your appearance could not be loaded.");
  return parseAvatar(data.user.user_metadata.zynth_avatar);
 }
 const saves=new Map<string,Promise<void>>();
 export async function saveAvatar(owner:string,input:Avatar):Promise<void>{
- if(PUBLIC_ACCESS){cacheAvatar(owner,AvatarSchema.parse(input));return;}
  const clean=AvatarSchema.parse(input),previous=saves.get(owner)??Promise.resolve();
  const operation=previous.catch(()=>{}).then(()=>writeAvatar(owner,clean));saves.set(owner,operation);
  try{await operation;}finally{if(saves.get(owner)===operation)saves.delete(owner);}

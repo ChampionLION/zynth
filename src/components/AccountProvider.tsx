@@ -8,7 +8,6 @@ import {NativeFocusController} from "./NativeFocusController";
 import {nativeFocusRequest} from "@/lib/native-focus";
 import {OfflineController} from "./OfflineController";
 import {AppDownloadAlert} from "./AppDownloadAlert";
-import {PUBLIC_ACCESS} from "@/lib/public-access";
 const protectedRoutes=["/dashboard","/quest","/markmap","/chronicle","/leaderboard","/profile","/settings","/onboarding","/reveal","/grade","/events","/achievements","/prestige"];
 export function AccountProvider({children}:{children:React.ReactNode}) {
  const router=useRouter(),pathname=usePathname();
@@ -31,7 +30,6 @@ export function AccountProvider({children}:{children:React.ReactNode}) {
    return()=>{disposed=true;subscription.unsubscribe();};
  },[hydrate]);
  useEffect(()=>{
-   if(PUBLIC_ACCESS&&pathname.startsWith("/auth")){router.replace("/dashboard");return;}
    if(!protectedPage||!hydrated||loading||hydrationError)return;
    if(!user)router.replace("/auth?mode=signin");
    else if(!profile && pathname!=="/onboarding")router.replace("/onboarding");

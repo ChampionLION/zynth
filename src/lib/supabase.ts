@@ -1,6 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {sessionStorageAdapter} from "./remember-session";
-import {PUBLIC_ACCESS} from "./public-access";
 
 export function publicSupabaseConfig() {
   return {
@@ -9,7 +8,6 @@ export function publicSupabaseConfig() {
   };
 }
 export function isSupabaseConfigured(): boolean {
-  if(PUBLIC_ACCESS)return false;
   const { url, key } = publicSupabaseConfig();
   return Boolean(url && key);
 }

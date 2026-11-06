@@ -2,7 +2,6 @@ import { isSupabaseConfigured, supabase } from "./supabase";
 import type { AccountUser } from "./account-flow";
 import {authStorageKey} from "./supabase";
 import {setRememberSession} from "./remember-session";
-import {PUBLIC_ACCESS,guestUser} from "./public-access";
 
 export { isSupabaseConfigured };
 export function accountUser(user: { id:string; email?:string; user_metadata?:Record<string,unknown> }): AccountUser {
@@ -10,7 +9,6 @@ export function accountUser(user: { id:string; email?:string; user_metadata?:Rec
   return { id:user.id, email:user.email ?? "", name:typeof name === "string" && name.trim() ? name.trim() : user.email?.split("@")[0] || "Explorer" };
 }
 export async function getCurrentUser(): Promise<AccountUser | null> {
-  if(PUBLIC_ACCESS)return guestUser;
   if (!isSupabaseConfigured()) return null;
   const { data:sessionData, error:sessionError } = await supabase().auth.getSession();
   if (sessionError) throw sessionError;

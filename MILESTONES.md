@@ -21,7 +21,7 @@ Status: planned; implementation and acceptance remain open. Added 6 November 202
 - [ ] Record completion eligibility once, preserve it across reloads and reconnects, and support the same experience on web and Android, including cached games when disconnected.
 - [ ] Verify that replaying a game cannot duplicate learning rewards, and provide accessible controls and reduced-motion support.
 
-## Completed milestone history
+## Completed milestones
 
 ### 5 November 2026 — Learning, Android identity and offline continuity
 
@@ -335,8 +335,3 @@ Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atl
 Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
 
 M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.
-
-
-## Temporary public access — 6 November 2026
-
-Authentication screens and login controls are hidden. Visitors enter all application routes with a separate device-local guest journey; existing account records and server authorization remain private. Auth URLs redirect to Overview. Guest profile/appearance changes persist locally. Focused no-session persistence/isolation checks, TypeScript and changed-component lint passed. Hosted rankings and earned account inventory are not published to guests.

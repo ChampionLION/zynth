@@ -1,6 +1,5 @@
 import {InventorySchema,EquipInput,previewEquipment,type Inventory} from "./inventory";
 import {journeyRequest,JourneyRequestError} from "./journey-client";
-import {PUBLIC_ACCESS} from "./public-access";
 const key=(owner:string)=>`zynth:inventory:${owner}`;
 const pendingKey=(owner:string)=>`${key(owner)}:pending`;
 type Intent=EquipInput&{nonce:string};
@@ -19,7 +18,6 @@ function cache(owner:string,input:unknown):Inventory{
 }
 const reads=new Map<string,Promise<Inventory>>(),writes=new Map<string,Promise<void>>(),epochs=new Map<string,number>();
 export async function loadInventory(owner:string):Promise<Inventory>{
- if(PUBLIC_ACCESS)return cachedInventory(owner)??cache(owner,{version:1,owner,equipment:{},items:[]});
  let request=reads.get(owner);if(!request){const epoch=epochs.get(owner)??0;request=journeyRequest(owner,"inventory").then(value=>(epochs.get(owner)??0)!==epoch?cachedInventory(owner)??InventorySchema.parse(value):cache(owner,value));reads.set(owner,request);}
  try{return await request;}finally{if(reads.get(owner)===request)reads.delete(owner);}
 }

@@ -7,13 +7,10 @@ import {readJourneyState,trustedJourney,sendJourneyAction,journeyRequest} from "
 import type {PendingOutcome} from "./journey-contract";
 import {clearOfflinePack} from "./offline-learning";
 import {clearJourneyCache} from "./lesson-cache";
-import {PUBLIC_ACCESS} from "./public-access";
-import {buildProfile} from "./engines/onboarding";
-import {mockClassifyOnboarding} from "./llm/mock";
 export { supabase };
 /** Data sync is independent of the model provider's mock/live setting. */
 export const isLive = isSupabaseConfigured;
-const LS_PROFILE=PUBLIC_ACCESS?"zynth_guest_profile":"zynth_profile", LS_QUEST=PUBLIC_ACCESS?"zynth_guest_quest":"zynth_active_quest", LS_USER="zynth_user", LS_ACCOUNT="zynth_account";
+const LS_PROFILE="zynth_profile", LS_QUEST="zynth_active_quest", LS_USER="zynth_user", LS_ACCOUNT="zynth_account";
 
 function readLocal(key:string): unknown {
   if (typeof window === "undefined") return null;
@@ -110,11 +107,6 @@ export async function ensurePlannedQuest(userId:string,quest:Quest):Promise<Ques
 
 /** Only a verified account with the same email can import this browser's old local journey. */
 export async function loadAccountJourney(user:AccountUser):Promise<{profile:Profile|null;activeQuest:Quest|null;mode:"legacy"|"trusted";pendingOutcome:PendingOutcome|null}> {
-    if(PUBLIC_ACCESS){
-      let profile=await loadProfile(user.id);
-      if(!profile){profile=buildProfile(user.id,user.name,mockClassifyOnboarding({Q1:["Explore my potential"],Q2:["A"],Q3:["B"],Q4:["C"],Q5:["D"]}));await saveProfile(profile);}
-      return {profile,activeQuest:await loadActiveQuest(user.id),mode:"legacy",pendingOutcome:null};
-    }
   const state=await readJourneyState(user.id);
   if(state.mode==="trusted"){
     const profile=state.profile??null,activeQuest=state.activeQuest??null;
@@ -186,7 +178,6 @@ export async function saveQuestDraft(userId:string,questId:string,draft:QuestDra
 export function clearQuestDraft(userId:string,questId:string):void { localStorage.removeItem(questKey(userId,questId)); }
 const resetRequests=new Map<string,string>();
 export async function eraseProgress(user:AccountUser):Promise<void> {
-  if(PUBLIC_ACCESS){localStorage.removeItem(LS_PROFILE);localStorage.removeItem(LS_QUEST);return;}
   if(!isLive())throw new Error("Account access is not connected.");
   if(trustedJourney(user.id)){
     const key=`zynth:reset:${user.id}`;
