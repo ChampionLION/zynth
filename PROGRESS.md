@@ -301,3 +301,10 @@ Redesigned Overview, lesson/mission workspace, Mark Map, Profile, Chronicle, Lea
 ## 7 November 2026 — Weak-area learning and unlimited lessons
 
 Implemented weaker-skill/recent-correction targeting and support for all six stats across generated/authored lessons. Removed same-day generation and cached future-date locks. Extra completed lessons earn +2 EXP; each pair of extras earns a bankable Skip Token (lessons 3, 5, 7, ...). Corrective practice continues the daily streak without counting multiple same-day lessons as extra days. Reward replay remains idempotent; three upcoming lessons refill after learning/reconnection. Focused content, reward, cache and trusted transaction checks, TypeScript and changed-file lint passed. No database migration or production account rewrite is required. See docs/LEARNING_QUESTS.md. Overall remains 70%.
+
+
+## 7 November 2026 ? Optional reward games
+
+Implemented one randomly selected optional game after each Basic/Good/Excellent quest clear, on the feedback screen. The pool contains 300 deterministic puzzle configurations across ten mechanics: pairs, sliding tiles, lights, memory sequence, paths, target sums, ordering, word reconstruction, number patterns and odd-symbol search. A clear offers Play or Skip; there is no game browser, reroll or next-game chain. Continue learning can leave immediately. Account/quest-scoped device receipts keep the same selection and retain skip/completed status across reloads. No XP, currency or ownership is granted by game play. All content is bundled for the shared web/Android application; physical-device acceptance and cross-device receipt synchronization remain outside this local receipt implementation.
+
+Checks: all 300 configurations for solvability/invariants and deterministic regeneration, receipt isolation/skip/completion preservation, TypeScript and changed-file lint. Browser acceptance is recorded separately. Overall roadmap remains 70%; no new weighted points were assigned.

@@ -11,13 +11,13 @@ Execution order: M1 trusted mutations/recovery/cutover → M2 complete → M3 co
 The leaderboard participation update is pushed and production-verified at eea7ce7fa5441a682554fb10c7396e37ff38af9b, and its separately approved migrations are applied. Earlier dated setup/publication notes are historical. The owner confirms earlier migration/SMTP setup; actual hosted behavior still needs the dedicated remaining checks. Future production migrations retain their explicit authorization requirement.
 ## Planned addition — Completion reward minigames
 
-Status: planned; implementation and acceptance remain open. Added 6 November 2026 at the owner's request. This addition is not yet included in the weighted M0–M11 baseline; reported completion remains 70% until its scope and weight are incorporated into ACTION_PLAN.md.
+Status: implemented core optional pool; physical-device acceptance and cross-device receipt synchronization remain open. Added 6 November 2026 at the owner's request. This addition is not yet included in the weighted M0–M11 baseline; reported completion remains 70% until its scope and weight are incorporated into ACTION_PLAN.md.
 
-- [ ] Offer an optional reward after a completed daily lesson or mission: a short, intriguing, fun minigame drawn from a varied pool.
+- [x] Offer an optional reward after a completed daily lesson or mission: a short, intriguing, fun minigame drawn from a varied pool.
 - [ ] Start with approachable puzzles, pattern games, memory challenges and quick creative play; vary selections and avoid frequent repeats.
 - [ ] Give mission completions a more distinctive reward experience than daily lessons.
-- [ ] Let users play, skip or leave immediately. Reward play must not block learning, cost Skip Tokens, or put earned progress at risk.
-- [ ] Keep existing lesson/mission XP rewards intact. Randomize the game selection, with no gambling or paid random prizes.
+- [x] Let users play, skip or leave immediately. Reward play must not block learning, cost Skip Tokens, or put earned progress at risk.
+- [x] Keep existing lesson/mission XP rewards intact. Randomize the game selection, with no gambling or paid random prizes.
 - [ ] Record completion eligibility once, preserve it across reloads and reconnects, and support the same experience on web and Android, including cached games when disconnected.
 - [ ] Verify that replaying a game cannot duplicate learning rewards, and provide accessible controls and reduced-motion support.
 
@@ -350,3 +350,10 @@ Redesigned Overview, lesson/mission workspace, Mark Map, Profile, Chronicle, Lea
 ## 7 November 2026 — Weak-area learning and unlimited lessons
 
 Implemented weaker-skill/recent-correction targeting and support for all six stats across generated/authored lessons. Removed same-day generation and cached future-date locks. Extra completed lessons earn +2 EXP; each pair of extras earns a bankable Skip Token (lessons 3, 5, 7, ...). Corrective practice continues the daily streak without counting multiple same-day lessons as extra days. Reward replay remains idempotent; three upcoming lessons refill after learning/reconnection. Focused content, reward, cache and trusted transaction checks, TypeScript and changed-file lint passed. No database migration or production account rewrite is required. See docs/LEARNING_QUESTS.md. Overall remains 70%.
+
+
+## 7 November 2026 ? Optional reward games
+
+Implemented one randomly selected optional game after each Basic/Good/Excellent quest clear, on the feedback screen. The pool contains 300 deterministic puzzle configurations across ten mechanics: pairs, sliding tiles, lights, memory sequence, paths, target sums, ordering, word reconstruction, number patterns and odd-symbol search. A clear offers Play or Skip; there is no game browser, reroll or next-game chain. Continue learning can leave immediately. Account/quest-scoped device receipts keep the same selection and retain skip/completed status across reloads. No XP, currency or ownership is granted by game play. All content is bundled for the shared web/Android application; physical-device acceptance and cross-device receipt synchronization remain outside this local receipt implementation.
+
+Checks: all 300 configurations for solvability/invariants and deterministic regeneration, receipt isolation/skip/completion preservation, TypeScript and changed-file lint. Browser acceptance is recorded separately. Overall roadmap remains 70%; no new weighted points were assigned.
