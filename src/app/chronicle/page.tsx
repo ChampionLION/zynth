@@ -1,14 +1,10 @@
 "use client";
-
-// CHRONICLE — My Chronicle (history) + Community (top responses).
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRequireProfile } from "@/components/useRequireProfile";
-import { BottomNav } from "@/components/BottomNav";
-import { GRADE_COLORS, formatDate, display } from "@/lib/ui";
-import {Tabs} from "@/components/ui/Atlas";
-
+import {useState} from "react";
+import Link from "next/link";
+import {useRequireProfile} from "@/components/useRequireProfile";
+import {BottomNav} from "@/components/BottomNav";
+import {Tabs,EmptyState,Chip,Button} from "@/components/ui/Atlas";
+import {formatDate,display} from "@/lib/ui";
 const COMMUNITY_SAMPLES = [
   {
     domain: "TECHNICAL",
@@ -37,126 +33,14 @@ const COMMUNITY_SAMPLES = [
   },
 ];
 
-export default function ChroniclePage() {
-  const { profile, hydrated } = useRequireProfile();
-  const [tab, setTab] = useState<"mine" | "community">("mine");
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [domainFilter, setDomainFilter] = useState<string>("all");
-
-  if (!hydrated || !profile) return null;
-
-  const history = [...profile.quest_history].reverse();
-  const community =
-    domainFilter === "all"
-      ? COMMUNITY_SAMPLES
-      : COMMUNITY_SAMPLES.filter((c) => c.domain === domainFilter);
-
-  return (
-    <main className="app-page collection-page">
-      <h1 className="text-xl font-bold">Chronicle</h1>
-
-      <Tabs label="Chronicle" items={[{id:"mine",label:"My Chronicle"},{id:"community",label:"Examples"}]} value={tab} onChange={value=>setTab(value as "mine"|"community")}/>
-
-      {tab === "mine" ? (
-        <div className="mt-5 space-y-3">
-          {history.length === 0 && (
-            <p className="py-16 text-center text-sm text-dim">
-              Your chronicle begins with your first quest.
-            </p>
-          )}
-          {history.map((q) => (
-            <motion.button
-              key={q.quest_id + q.completed_at}
-              layout
-              onClick={() =>
-                setExpanded(expanded === q.quest_id ? null : q.quest_id)
-              }
-              className="w-full rounded-xl border border-edge bg-surface p-4 text-left"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">{q.quest_title}</p>
-                  <p className="mt-0.5 text-xs text-dim">
-                    {formatDate(q.completed_at)} ·{" "}
-                    <span className="text-amber">+{q.exp_earned} EXP</span>
-                  </p>
-                </div>
-                <span
-                  className="shrink-0 rounded-full border px-2 py-0.5 text-xs"
-                  style={{
-                    borderColor: GRADE_COLORS[q.grade].border,
-                    color: GRADE_COLORS[q.grade].text,
-                  }}
-                >
-                  {q.grade}
-                </span>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {q.skills_targeted.map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full bg-amber/10 px-2 py-0.5 text-xs text-amber"
-                  >
-                    {display(s)}
-                  </span>
-                ))}
-              </div>
-              {expanded === q.quest_id && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-3 border-t border-edge pt-3"
-                >
-                  {q.mentor_line && (
-                    <p className="text-sm font-semibold text-primary">
-                      {q.mentor_line}
-                    </p>
-                  )}
-                  {q.feedback && (
-                    <p className="mt-1 text-xs text-muted">{q.feedback}</p>
-                  )}
-                </motion.div>
-              )}
-            </motion.button>
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["all", "TECHNICAL", "CREATIVE", "ANALYTICAL", "SOCIAL", "STRATEGIC"].map(
-              (d) => (
-                <button
-                  key={d}
-                  onClick={() => setDomainFilter(d)}
-                  className={`rounded-full px-3 py-1 text-xs capitalize transition-colors ${
-                    domainFilter === d
-                      ? "bg-amber text-black"
-                      : "border border-edge text-muted"
-                  }`}
-                >
-                  {d === "all" ? "All" : d.toLowerCase()}
-                </button>
-              )
-            )}
-          </div>
-          <div className="mt-3 space-y-3">
-            {community.map((c, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-edge bg-surface p-4"
-              >
-                <span className="text-xs tracking-widest text-muted">
-                  {c.domain}
-                </span>
-                <p className="mt-2 text-sm italic leading-relaxed text-primary/90">
-                  &ldquo;{c.excerpt}&rdquo;
-                </p>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-      <BottomNav />
-    </main>
-  );
+export default function ChroniclePage(){
+ const {profile,hydrated}=useRequireProfile(),[tab,setTab]=useState('mine'),[query,setQuery]=useState(''),[skill,setSkill]=useState('all'),[category,setCategory]=useState('all');
+ if(!hydrated||!profile)return null;
+ const history=[...profile.quest_history].reverse(),skills=[...new Set(history.flatMap(q=>q.skills_targeted))];
+ const filtered=history.filter(q=>(skill==='all'||q.skills_targeted.includes(skill))&&`${q.quest_title} ${q.feedback??''} ${q.response??''}`.toLowerCase().includes(query.toLowerCase()));
+ const weeks=new Map<string,typeof filtered>();for(const q of filtered){const date=new Date(q.completed_at);date.setUTCDate(date.getUTCDate()-((date.getUTCDay()+6)%7));const key=date.toISOString().slice(0,10);weeks.set(key,[...(weeks.get(key)??[]),q]);}
+ const samples=COMMUNITY_SAMPLES.filter(s=>category==='all'||s.domain===category),titles=['A quieter notification','A place between places','One less decision','A bridge worth building','Count before you move'];
+ return <main className="app-page chronicle-v2"><header className="page-intro"><p className="eyebrow">YOUR EXPLORER’S JOURNAL</p><h1>Pages of <em>becoming.</em></h1></header><Tabs label="Chronicle" value={tab} onChange={setTab} items={[{id:'mine',label:'My Chronicle'},{id:'examples',label:'Examples'}]}/>
+ {tab==='mine'?<>{history.length===0?<><EmptyState title="The first page is yours." action={<Link className="site-button" href="/dashboard">Start your first quest →</Link>}>Every quest you finish becomes a page here.</EmptyState><article className="journal-ghost" aria-label="Example chronicle entry"><span className="eyebrow">EXAMPLE</span><h2>A small idea, put into practice.</h2><div className="mission-skills"><Chip>Clear thinking</Chip><Chip>Creative practice</Chip></div><p>“I started with what I noticed, tried a different approach, and found a next step…”</p></article></>:<><div className="journal-filters"><label>Search your pages<input type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="A title, idea or reflection…"/></label><label>Skill<select value={skill} onChange={e=>setSkill(e.target.value)}><option value="all">All skills</option>{skills.map(s=><option key={s} value={s}>{s}</option>)}</select></label></div><div className="journal-timeline">{[...weeks].map(([week,entries])=><section key={week}><h2>Week of {formatDate(week)}</h2>{entries.map(q=><details className="journal-entry" key={q.quest_id+q.completed_at}><summary><span className="timeline-dot"/><span><small>{formatDate(q.completed_at)}</small><strong>{q.quest_title}</strong></span><Chip kind="progress">+{q.exp_earned} EXP</Chip></summary><div><div className="mission-skills">{q.skills_targeted.map(s=><Chip key={s}>{s}</Chip>)}</div>{q.feedback&&<p>{q.feedback}</p>}{q.response&&<blockquote>{q.response}</blockquote>}{q.mentor_line&&<p>{q.mentor_line}</p>}</div></details>)}</section>)}{!filtered.length&&<p>No pages match yet. Try another search or skill.</p>}</div></>}</>:null}
+ {(tab==='examples'||!history.length)&&<section className="example-library"><header><div><p className="eyebrow">A LITTLE INSPIRATION</p><h2>Other ways to think.</h2></div><span>Examples · swipe to explore →</span></header><div className="category-chips" role="group" aria-label="Example categories">{['all','TECHNICAL','CREATIVE','ANALYTICAL','SOCIAL','STRATEGIC'].map(c=><Button key={c} variant="ghost" aria-pressed={category===c} onClick={()=>setCategory(c)}>{c==='all'?'All':display(c.toLowerCase())}</Button>)}</div><div className="example-carousel">{samples.map(sample=><article key={sample.domain}><Chip kind={sample.domain.toLowerCase() as 'technical'}>{sample.domain.toLowerCase()}</Chip><h3>{titles[COMMUNITY_SAMPLES.indexOf(sample)]}</h3><p>{sample.excerpt}</p><small>Example response</small></article>)}</div></section>}<BottomNav/></main>;
 }

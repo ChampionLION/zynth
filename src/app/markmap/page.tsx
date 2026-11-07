@@ -1,63 +1,37 @@
 "use client";
-
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
-import { useRequireProfile } from "@/components/useRequireProfile";
-import { BottomNav } from "@/components/BottomNav";
-import { WorldMapArt } from "@/components/WorldMap";
-import { activeWorldChapter, buildWorldMarks, completedMarks, MARKS_PER_CHAPTER } from "@/lib/engines/markmap";
-import { GRADE_COLORS, formatDate } from "@/lib/ui";
-import { useZynth } from "@/lib/store";
-import {WorldAtlas} from "@/components/WorldAtlas";
+import {useEffect,useMemo,useRef,useState} from "react";
+import {useRouter} from "next/navigation";
+import {useRequireProfile} from "@/components/useRequireProfile";
+import {BottomNav} from "@/components/BottomNav";
+import {WorldMapArt} from "@/components/WorldMap";
+import {AvatarPortrait} from "@/components/AvatarPortrait";
+import {Button,Chip,LockIcon} from "@/components/ui/Atlas";
+import {useMapViewport} from "@/components/useMapViewport";
+import {activeWorldChapter,buildWorldMarks,completedMarks,MARKS_PER_CHAPTER} from "@/lib/engines/markmap";
 import {savedWorld} from "@/lib/world";
-
-export default function MarkMapPage() {
-  const router = useRouter();
-  const { profile, hydrated } = useRequireProfile();
-  const activeQuest = useZynth(s=>s.activeQuest);
-  const reducedMotion = useReducedMotion();
-  const [chapter, setChapter] = useState<number | null>(null);
-  const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-  const mapScroll = useRef<HTMLDivElement>(null);
-  const currentChapter = profile ? activeWorldChapter(profile) : 0;
-  const visibleChapter = chapter ?? currentChapter;
-  const marks = useMemo(()=>profile ? buildWorldMarks(profile,visibleChapter) : [],[profile,visibleChapter]);
-  const frontier = marks.find(m=>m.state==="current"||m.state==="tomorrow");
-  const selected = marks.find(m=>m.number===selectedNumber) ?? frontier ?? marks[0];
-
-  useEffect(()=>{
-    const container=mapScroll.current;
-    if (!container || !marks.length) return;
-    const anchor=marks.find(m=>m.state==="current"||m.state==="tomorrow") ?? marks[0];
-    container.scrollLeft = Math.max(0, anchor.x / 1200 * container.scrollWidth - container.clientWidth / 2);
-  },[marks]);
-
-  if (!hydrated || !profile) return null;
-  const completed=completedMarks(profile).length;
-  const readyQuest=activeQuest && activeQuest.status==="active";
-  const isSelectedActive=selected?.state==="current";
-  const selectChapter=(next:number)=>{setChapter(next);setSelectedNumber(null);};
-
-  return <motion.main className="app-page world-page" initial={reducedMotion?false:{opacity:0,x:35}} animate={{opacity:1,x:0}} transition={{duration: 0.2}}>
-    <header className="workspace-header"><span>THE ZYNTH ATLAS</span><span>{completed} {completed===1?"MARK":"MARKS"} MADE</span></header>
-    <div className="world-page-heading"><div><p className="eyebrow">A WORLD BUILT BY SHOWING UP</p><h1>Your Mark Map.</h1></div><button className="quiet-link" onClick={()=>{setChapter(null);setSelectedNumber(null);}}>Return to my checkpoint ↗</button></div>
-    <div className="world-toolbar"><div><p className="eyebrow">SEGMENT {String(visibleChapter+1).padStart(2,"0")}</p><h2>{visibleChapter===0?"The first crossing":`Beyond the crossing · ${visibleChapter+1}`}</h2><span>Marks {visibleChapter*MARKS_PER_CHAPTER+1}–{(visibleChapter+1)*MARKS_PER_CHAPTER}</span></div><div className="world-chapter-controls"><button aria-label="Previous map segment" disabled={visibleChapter===0} onClick={()=>selectChapter(visibleChapter-1)} data-disabled-reason="No further page">←</button><span>{visibleChapter+1} / {Math.max(3,currentChapter+2)}</span><button aria-label="Next map segment" disabled={visibleChapter>=Math.max(3,currentChapter+2)-1} onClick={()=>selectChapter(visibleChapter+1)} data-disabled-reason="No further page">→</button></div></div>
-    <section className="world-map-frame" aria-label={`World map segment ${visibleChapter+1}`}>
-      <div className="world-map-scroll" ref={mapScroll} tabIndex={0} aria-label="Scrollable world map; use arrow keys to explore">
-        <div className="world-map-stage">
-          <WorldMapArt marks={marks} world={savedWorld(profile)} />
-          {marks.map(mark=><button key={mark.number} className={`world-checkpoint checkpoint-${mark.state} ${mark.isMission?"checkpoint-mission":""} ${selected?.number===mark.number?"checkpoint-selected":""}`} style={{left:`${mark.x/12}%`,top:`${mark.y/6.8}%`}} aria-label={`${mark.isMission?"Mission":"Mark"} ${mark.number}, ${mark.state==="tomorrow"?"available tomorrow":mark.state==="future"?"locked":mark.state}${mark.entry?`, ${mark.entry.quest_title}, ${mark.entry.grade}`:""}`} aria-pressed={selected?.number===mark.number} onClick={()=>{ if(mark.state==="current") router.push(readyQuest?"/quest":"/dashboard"); else setSelectedNumber(mark.number); }}><span className="checkpoint-disc">{mark.state==="completed"?"✓":mark.isMission?"◇":mark.number}</span><span className="checkpoint-caption">{mark.state==="current"?"YOU ARE HERE":mark.isMission?`MISSION ${mark.number}`:`MARK ${mark.number}`}</span>{mark.state==="current"&&<span className="checkpoint-beacon"/>}</button>)}
-        </div>
-      </div>
-      <footer className="world-map-legend"><div><span><i className="legend-completed"/>Completed</span><span><i className="legend-current"/>Current</span><span><i className="legend-future"/>Ahead</span><span><i className="legend-mission"/>Mission</span></div><p>Swipe or scroll sideways to explore</p></footer>
-    </section>
-    <section className="world-detail" aria-live="polite" aria-atomic="true">
-      <div className="world-detail-symbol" aria-hidden="true">{selected?.state==="completed"?"✓":selected?.isMission?"◇":"◎"}</div>
-      <div className="world-detail-copy"><p className="eyebrow">{selected?.isMission?"MISSION LANDMARK":"CHECKPOINT"} / MARK {selected?.number}</p><h2>{selected?.entry?.quest_title ?? (isSelectedActive ? readyQuest?activeQuest!.quest_title:"Your next mark starts here." : selected?.state==="tomorrow"?"Today's journey is complete.":"Uncharted territory.")}</h2>{selected?.entry ? <><p><span style={{color:GRADE_COLORS[selected.entry.grade].text}}>{selected.entry.grade}</span> · {formatDate(selected.entry.completed_at)} · +{selected.exp} EXP</p>{selected.entry.feedback&&<p className="world-detail-feedback">{selected.entry.feedback}</p>}</> : <p>{isSelectedActive?readyQuest?`${activeQuest!.estimated_time} · ${activeQuest!.type}${activeQuest!.steps.length?` · ${activeQuest!.steps.length} steps`:""}`:"Your daily check-in and quest are waiting in Overview.":selected?.state==="tomorrow"?"Your next checkpoint opens tomorrow. Your progress is saved.":selected?.isMission?"A mission landmark ahead. Keep making marks to reach it.":"This checkpoint opens as your journey advances."}</p>}</div>
-      {isSelectedActive && <button className="world-detail-action" onClick={()=>router.push(readyQuest?"/quest":"/dashboard")}>{readyQuest?"Begin quest":"Prepare my quest"} →</button>}
-    </section>
-    <WorldAtlas key={profile.user_id} profile={profile}/>
-    <BottomNav />
-  </motion.main>;
+import {rewardPreview} from "@/lib/journey-presentation";
+import {useZynth} from "@/lib/store";
+export default function MarkMapPage(){
+ const router=useRouter(),{profile,hydrated}=useRequireProfile(),{activeQuest,mode,journeyAction}=useZynth();
+ const [segment,setSegment]=useState<number|null>(null),[selected,setSelected]=useState<number|null>(null),[landmark,setLandmark]=useState(false),[celebrate,setCelebrate]=useState(false);
+ const map=useMapViewport(),panel=useRef<HTMLElement>(null),opener=useRef<HTMLElement|null>(null);
+ const current=profile?activeWorldChapter(profile):0,visible=segment??current,completed=profile?completedMarks(profile).length:0;
+ const marks=useMemo(()=>profile?buildWorldMarks(profile,visible):[],[profile,visible]);
+ const mark=marks.find(m=>m.number===selected),fog=visible>current;
+ useEffect(()=>{if(mode==='trusted'&&profile&&navigator.onLine)void journeyAction({kind:'world',requestId:crypto.randomUUID()}).catch(()=>{});},[mode,journeyAction,profile?.user_id,profile?.quest_history.length]); // eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{if(!profile)return;const key=`zynth:map-seen:${profile.user_id}`;try{const old=Number(localStorage.getItem(key)??completed);setCelebrate(completed>old);localStorage.setItem(key,String(completed));}catch{}},[profile?.user_id,completed]); // eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{if(!map.element||!marks.length)return;const anchor=marks.find(m=>m.state==='current'||m.state==='tomorrow')??marks[0];map.recenter((600-anchor.x)*Math.max(960,map.element.clientWidth)/1200-map.element.clientWidth*.2,-40);},[map.element,visible,profile?.user_id,completed]); // eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{if(selected===null&&!landmark)return;opener.current=document.activeElement as HTMLElement;panel.current?.focus();const close=(e:KeyboardEvent)=>{if(e.key==='Escape'){setSelected(null);setLandmark(false);}};window.addEventListener('keydown',close);return()=>{window.removeEventListener('keydown',close);opener.current?.focus();};},[selected,landmark]);
+ if(!hydrated||!profile)return null;
+ const stageCount=Math.max(3,current+2),stages=Array.from({length:Math.min(4,stageCount)},(_,i)=>Math.max(0,Math.min(visible-1,stageCount-4))+i);
+ const recenter=()=>{setSegment(null);setSelected(null);setLandmark(false);const node=buildWorldMarks(profile,current).find(m=>m.state==='current'||m.state==='tomorrow');const width=map.element?.clientWidth??1000;map.recenter(node?(600-node.x)*Math.max(960,width)/1200-width*.2:0,-40);};
+ const ready=mark?.state==='current'&&activeQuest?.status==='active',lit=savedWorld(profile).restored.includes('foothills');
+ return <main className="app-page markmap-v2"><header className="map-heading"><div><p className="eyebrow">THE ATLAS OF REMEMBRANCE</p><h1>Your marks. Your world.</h1></div><p><strong>{completed}</strong> marks made</p></header>
+ <nav className="segment-switcher" aria-label="Map segments">{visible>1&&<Button variant="ghost" aria-label="Earlier map segments" onClick={()=>{setSegment(visible-1);setSelected(null);}}>←</Button>}{stages.map(index=>{const done=Math.min(14,Math.max(0,completed-index*14));return <button key={index} aria-pressed={visible===index} onClick={()=>{setSegment(index);setSelected(null);setLandmark(false);map.recenter();}} title={index>current?`Reach mark ${index*14+1} to uncover this segment`:undefined}><svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14" fill="none" stroke="var(--border)" strokeWidth="3"/><circle cx="18" cy="18" r="14" fill="none" stroke="var(--progress)" strokeWidth="3" pathLength="100" strokeDasharray={`${done/14*100} 100`} transform="rotate(-90 18 18)"/></svg><span>Segment {index+1}<small>{index>current?'Locked':`${done}/${MARKS_PER_CHAPTER}`}</small></span></button>;})}</nav>
+ <section className={`map-explorer ${celebrate?'map-celebrate':''}`} aria-label="Interactive world map"><div className="map-viewport" ref={map.ref} tabIndex={0} role="region" aria-label="Pan and zoom the map. Arrow keys pan; plus and minus zoom." {...map.handlers} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();map.pan(map.view.x+(e.key==='ArrowLeft'?60:e.key==='ArrowRight'?-60:0),map.view.y+(e.key==='ArrowUp'?60:e.key==='ArrowDown'?-60:0));}if(e.key==='+')map.zoom(map.view.scale+.2);if(e.key==='-')map.zoom(map.view.scale-.2);}}><div className={`map-canvas ${fog?'map-fog':''}`} style={{transform:`translate(${map.view.x}px,${map.view.y}px) scale(${map.view.scale})`}}><WorldMapArt marks={marks} world={savedWorld(profile)}/>{marks.map((m,i)=>{const next=m.number===completed+2,state=next?'next':m.state;return <button key={m.number} className={`world-checkpoint checkpoint-${state} ${m.isMission?'checkpoint-mission':''} ${i===13?'checkpoint-landmark':''}`} style={{left:`${m.x/12}%`,top:`${m.y/6.8}%`}} aria-label={`${m.entry?.quest_title??`Mark ${m.number}`}, ${state==='future'?'locked':state}`} aria-pressed={selected===m.number} onClick={()=>{setSelected(m.number);setLandmark(false);}}><span className="checkpoint-disc"><span className="checkpoint-icon">{m.state==='completed'?'✓':m.state==='future'&&!next?<LockIcon/>:m.isMission?'◇':m.number}</span></span>{m.state==='current'&&<><span className="node-wayfarer"><AvatarPortrait owner={profile.user_id}/></span><span className="checkpoint-beacon"/></>}<span className="checkpoint-caption">{m.state==='current'?'YOU ARE HERE':m.isMission?'MISSION':i===13?'LANDMARK':`MARK ${m.number}`}</span></button>;})}<button className={`spring-landmark ${lit?'spring-lit':''}`} style={{left:'17.5%',top:'58.8%'}} onClick={()=>{setLandmark(true);setSelected(null);}} aria-label={`Wayfarer spring, ${lit?'restored':'reward preview'}`}>♧<span>Wayfarer spring</span></button></div></div>
+ {fog&&<div className="fog-teaser"><span><LockIcon size={40}/></span><h2>There is more beyond the crossing.</h2><p>Reach mark {visible*14+1} to uncover this part of your trail.</p><Button onClick={recenter}>Return to my path →</Button></div>}
+ <div className="map-tools"><Button aria-label="Zoom in" onClick={()=>map.zoom(map.view.scale+.2)}>+</Button><Button aria-label="Zoom out" onClick={()=>map.zoom(map.view.scale-.2)}>−</Button><Button onClick={recenter}>◎ Recenter on me</Button></div>
+ <details className="compact-map-legend"><summary>Map legend</summary><div><span>✓ Completed</span><span>◎ You are here</span><span>○ Next</span><span>⌑ Locked</span><span>◇ Mission</span><span>♧ Landmark</span></div></details>
+ {(mark||landmark)&&<aside className="map-node-panel" ref={panel} tabIndex={-1} aria-label={landmark?'Landmark details':'Checkpoint details'}><button className="panel-close" aria-label="Close checkpoint details" onClick={()=>{setSelected(null);setLandmark(false);}}>×</button>{landmark?<><p className="eyebrow">{lit?'A RESTORED LANDMARK':'A REWARD AHEAD'}</p><div className={`landmark-preview ${lit?'spring-lit':''}`}>♧</div><h2>Wayfarer spring</h2><p>{lit?'Water returns to the Wayfarer spring.':'Complete a verified mission while exploring the Foothills to awaken the spring.'}</p></>:<><p className="eyebrow">{mark!.isMission?'MISSION':'CHECKPOINT'} · MARK {mark!.number}</p><h2>{mark!.entry?.quest_title??(ready?activeQuest!.quest_title:mark!.state==='current'?'Your next step awaits.':mark!.state==='tomorrow'?'A little further, tomorrow.':'A new part of your journey.')}</h2><div className="mission-skills">{(mark!.entry?.skills_targeted??(ready?activeQuest!.skills_targeted:[])).map(s=><Chip key={s}>{s}</Chip>)}</div><p>{mark!.entry?`+${mark!.exp} EXP earned`:ready?rewardPreview(profile,activeQuest!):'Rewards and skills are revealed with the quest.'}</p>{ready&&<p>◷ {activeQuest!.estimated_time}</p>}{mark!.entry?.feedback&&<p>{mark!.entry.feedback}</p>}{mark!.state==='future'&&<p>Continue making marks to reach this checkpoint.</p>}{mark!.state==='tomorrow'&&<p>Your next daily checkpoint opens tomorrow.</p>}{mark!.state==='current'&&<Button variant="primary" onClick={()=>router.push(ready?'/quest':'/dashboard')}>{ready?'Begin quest':'Prepare my quest'} →</Button>}</>}</aside>}
+ </section><BottomNav/></main>;
 }

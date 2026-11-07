@@ -1,161 +1,17 @@
 "use client";
-
-// GRADE REVEAL — timed sequence per blueprint UI spec.
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useZynth } from "@/lib/store";
-import { GRADE_COLORS } from "@/lib/ui";
-import { CountUp } from "@/components/effects";
-
-export default function GradeRevealPage() {
-  const router = useRouter();
-  const { gradeReveal, eventQueue, ackGrade, profile,pendingOutcome } = useZynth();
-  const [t, setT] = useState(0);
-  const [busy,setBusy]=useState(false),[error,setError]=useState("");
-
-  useEffect(() => {
-    const timers = [400, 700, 1000, 1300, 1600, 1800, 2200].map((ms, i) =>
-      setTimeout(() => setT(i + 1), ms)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  if (!gradeReveal || !profile) {
-    if (typeof window !== "undefined") router.replace("/dashboard");
-    return null;
-  }
-
-  const { gradeResult, expEarned, streakMultiplier, changedStats } = gradeReveal;
-  const completed=pendingOutcome?profile.quest_history.find(q=>q.quest_id===pendingOutcome.questId):profile.quest_history.at(-1);
-  const practice=!!completed?.learning_topics?.length;
-  const colors = GRADE_COLORS[gradeResult.grade];
-
-  const cont = async () => {
-    if(busy)return;setBusy(true);setError("");
-    try{await ackGrade();router.replace(eventQueue.length > 0 ? "/events" : "/dashboard");}
-    catch{setError("We couldn’t save your place. Please try again.");setBusy(false);}
-  };
-
-  return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center px-6 pb-10">
-      {/* GRADE CARD */}
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 18 }}
-        className="w-full rounded-2xl border-2 bg-surface px-8 py-10 text-center"
-        style={{ borderColor: colors.border }}
-      >
-        <p
-          className={`text-4xl font-black tracking-wide ${
-            gradeResult.grade === "Excellent" ? "glow-gold" : ""
-          }`}
-          style={{ color: colors.text }}
-        >
-          {practice?"Practice complete":gradeResult.grade}
-        </p>
-
-        {(practice||t >= 1) && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-5 text-lg font-bold text-primary"
-          >
-            {gradeResult.mentor_line}
-          </motion.p>
-        )}
-
-        {(practice||t >= 2) && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-3 text-sm text-muted"
-          >
-            {gradeResult.feedback}
-          </motion.p>
-        )}
-
-        {(practice||t >= 3) && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6"
-          >
-            <CountUp
-              to={expEarned}
-              prefix="+"
-              suffix=" EXP"
-              className="text-2xl font-bold text-amber"
-            />
-            {streakMultiplier > 1 && (
-              <p className="mt-1 text-xs text-amber/80">
-                {streakMultiplier}× streak
-              </p>
-            )}
-          </motion.div>
-        )}
-
-        {(practice||t >= 4) && changedStats.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-4 flex justify-center gap-4"
-          >
-            {changedStats.map((s) => (
-              <span key={s} className="text-sm">
-                <span className="text-teal">↑</span>{" "}
-                <span className="capitalize text-muted">{s}</span>
-              </span>
-            ))}
-          </motion.div>
-        )}
-
-        {(practice||t >= 5) && gradeResult.strengths.length > 0 && (
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            {gradeResult.strengths.map((s, i) => (
-              <motion.span
-                key={s}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15 }}
-                className="rounded-full border border-teal/40 bg-teal/10 px-3 py-1 text-xs text-teal"
-              >
-                {s}
-              </motion.span>
-            ))}
-          </div>
-        )}
-
-        {(practice||t >= 6) && gradeResult.improvements.length > 0 && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {gradeResult.improvements.map((s, i) => (
-              <motion.span
-                key={s}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.15 }}
-                className="rounded-full border border-amber/40 bg-amber/10 px-3 py-1 text-xs text-amber"
-              >
-                {s}
-              </motion.span>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
-      {(practice||t >= 7) && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          onClick={()=>void cont()} disabled={busy}
-          className="mt-8 w-full max-w-sm rounded-lg bg-amber py-3 font-semibold text-black"
-        >
-          Continue →
-        </motion.button>
-      )}
-      {error&&<p role="alert" className="mt-3 text-xs text-amber">{error}</p>}
-    </main>
-  );
+import {useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
+import {useZynth} from "@/lib/store";
+import {CountUp} from "@/components/effects";
+import {Button,Chip} from "@/components/ui/Atlas";
+import {EarnedCosmetics} from "@/components/EarnedCosmetics";
+import {ShareButton} from "@/components/JourneyUI";
+const encouragement={Fail:'Needs work',Bad:'Needs work',Basic:'Getting there',Good:'Strong',Excellent:'Excellent'};
+export default function GradeRevealPage(){
+ const router=useRouter(),{gradeReveal,eventQueue,ackGrade,profile,pendingOutcome}=useZynth(),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{if(!gradeReveal&&profile)router.replace('/dashboard');},[gradeReveal,profile,router]);
+ if(!gradeReveal||!profile)return null;
+ const{gradeResult,expEarned,streakMultiplier,changedStats}=gradeReveal,completed=pendingOutcome?profile.quest_history.find(q=>q.quest_id===pendingOutcome.questId):profile.quest_history.at(-1),practice=!!completed?.learning_topics?.length;
+ const cont=async()=>{if(busy)return;setBusy(true);setError('');try{await ackGrade();router.replace(eventQueue.length?'/events':'/dashboard');}catch{setError('Your progress is saved. Please try continuing again.');setBusy(false);}};
+ return <main className="lesson-feedback"><div className="reward-atmosphere" aria-hidden="true"/><section className="feedback-card"><p className="eyebrow">{practice?'A LESSON, TAKEN WITH YOU':'A STEP IN YOUR CRAFT'}</p><span className="feedback-symbol" aria-hidden="true">{gradeResult.grade==='Excellent'?'✦':gradeResult.grade==='Good'?'✧':'↗'}</span><h1>{encouragement[gradeResult.grade]}</h1><p className="feedback-mentor">{gradeResult.mentor_line}</p><p className="feedback-reading">{gradeResult.feedback}</p><div className="feedback-exp"><CountUp to={expEarned} prefix="+" suffix=" EXP"/>{streakMultiplier>1&&<Chip kind="progress">{streakMultiplier}× streak</Chip>}</div><div className="mission-skills">{changedStats.map(stat=><Chip key={stat}>↑ {stat}</Chip>)}{gradeResult.strengths.map(s=><Chip key={s}>{s}</Chip>)}</div>{completed&&<EarnedCosmetics key={profile.user_id+completed.quest_id} owner={profile.user_id} questId={completed.quest_id}/>}<aside className="improve-next"><p className="eyebrow">WHAT TO IMPROVE NEXT</p><p>{gradeResult.improvements[0]??gradeResult.mentor_line}</p></aside><div className="feedback-actions"><Button variant="primary" disabled={busy} disabledReason="Saving your place…" onClick={()=>void cont()}>Continue learning →</Button>{['Good','Excellent'].includes(gradeResult.grade)&&<ShareButton title={`${encouragement[gradeResult.grade]} · ${completed?.quest_title??'A new mark'}`} lines={[`+${expEarned} EXP`,...changedStats.map(s=>`${s} growing`)]}/>}</div>{error&&<p role="alert">{error}</p>}</section></main>;
 }

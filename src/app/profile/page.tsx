@@ -1,213 +1,24 @@
 "use client";
-
-// PROFILE — identity, radar chart, skills, hidden skills, stats,
-// engagement, links to achievements/settings/prestige.
-
-import { useRouter } from "next/navigation";
-import { useRequireProfile } from "@/components/useRequireProfile";
-import { BottomNav } from "@/components/BottomNav";
+import {useState} from "react";
+import Link from "next/link";
+import {useRequireProfile} from "@/components/useRequireProfile";
+import {BottomNav} from "@/components/BottomNav";
 import {AvatarIdentity} from "@/components/AvatarIdentity";
 import {StreakRecovery} from "@/components/StreakRecovery";
-import { DOMAIN_COLORS, display, formatDate } from "@/lib/ui";
-import { getSkillTier, calculateSkillExpToNext } from "@/lib/engines/progression";
-
-export default function ProfilePage() {
-  const router = useRouter();
-  const { profile, hydrated } = useRequireProfile();
-  if (!hydrated || !profile) return null;
-
-  const color = DOMAIN_COLORS[profile.domain];
-  const discovered = profile.hidden_skills.filter((s) => s.discovered);
-
-  return (
-    <main className="app-page collection-page">
-      <AvatarIdentity key={profile.user_id} profile={profile}/>
-      <div className="profile-development"><section>
-      {/* RADAR */}
-      <div className="mt-6 rounded-2xl border border-edge bg-surface p-4">
-        <RadarChart profile={profile} color={color} />
-      </div>
-
-      </section><section>
-      {/* SKILLS */}
-      <h2 className="mt-6 text-sm font-semibold tracking-widest text-muted">
-        SKILLS
-      </h2>
-      <div className="mt-2 space-y-2">
-        {profile.skills.map((s) => {
-          const tier = getSkillTier(s.level);
-          const toNext = calculateSkillExpToNext(s.level);
-          return (
-            <div key={s.name} className="rounded-xl border border-edge bg-surface p-4">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-sm text-amber">{display(s.name)}</span>
-                <span className="rounded-full border border-edge px-2 py-0.5 text-xs text-muted">
-                  Tier {tier.tier} · {tier.name}
-                </span>
-              </div>
-              <div className="mt-2 flex items-center gap-3">
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-edge">
-                  <div
-                    className="h-full rounded-full bg-amber"
-                    style={{ width: `${Math.min(100, (s.exp / toNext) * 100)}%` }}
-                  />
-                </div>
-                <span className="text-xs font-semibold">Lv {s.level}</span>
-              </div>
-              {(s.evolutions?.length ?? 0) > 0 && (
-                <p className="mt-1.5 text-xs text-dim">
-                  evolved from {s.evolutions!.map(display).join(" → ")}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      </section></div>
-      {/* HIDDEN SKILLS */}
-      <h2 className="mt-6 text-sm font-semibold tracking-widest text-muted">
-        HIDDEN SKILLS
-      </h2>
-      <div className="mt-2 space-y-1.5">
-        {discovered.map((s) => (
-          <div
-            key={s.name}
-            className="flex items-center justify-between rounded-xl border border-teal/40 bg-teal/5 px-4 py-3"
-          >
-            <span className="font-mono text-sm text-teal">{display(s.name)}</span>
-            <span className="text-xs text-teal">Lv {s.level}</span>
-          </div>
-        ))}
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center rounded-xl border border-edge bg-surface px-4 py-3"
-          >
-            <span className="font-mono text-sm text-dim">???</span>
-          </div>
-        ))}
-      </div>
-
-      {/* ENGAGEMENT */}
-      <div className="mt-6 grid grid-cols-2 gap-2 text-center">
-        <Stat label="Streak" value={`${profile.streak} 🔥`} />
-        <Stat label="Best streak" value={String(profile.streak_best)} />
-        <Stat label="Quests" value={String(profile.quest_history.length)} />
-        <Stat label="Member since" value={formatDate(profile.created_at)} />
-      </div>
-
-      <StreakRecovery key={profile.user_id} profile={profile}/>
-      {/* ECONOMY */}
-      <div className="mt-4 flex gap-2">
-        <div className="flex-1 rounded-xl border border-edge bg-surface px-4 py-3 text-center">
-          <p className="text-lg font-bold text-amber">◈ {profile.tokens}</p>
-          <p className="text-xs text-muted">Skip Tokens</p>
-        </div>
-        <div className="flex-1 rounded-xl border border-edge bg-surface px-4 py-3 text-center">
-          <p className="text-lg font-bold text-teal">⬡ {profile.xp_cards}</p>
-          <p className="text-xs text-muted">XP Cards</p>
-        </div>
-      </div>
-
-      {/* LINKS */}
-      <div className="mt-6 space-y-2">
-        <button
-          onClick={() => router.push("/achievements")}
-          className="w-full rounded-xl border border-edge bg-surface px-4 py-3.5 text-left text-sm"
-        >
-          ★ Achievements
-          <span className="float-right text-muted">→</span>
-        </button>
-        {profile.level >= 100 && (
-          <button
-            onClick={() => router.push("/prestige")}
-            className="w-full rounded-xl border border-gold bg-surface px-4 py-3.5 text-left text-sm text-gold"
-          >
-            ✦ Prestige
-            <span className="float-right">→</span>
-          </button>
-        )}
-        <button
-          onClick={() => router.push("/settings")}
-          className="w-full rounded-xl border border-edge bg-surface px-4 py-3.5 text-left text-sm"
-        >
-          ⚙ Settings
-          <span className="float-right text-muted">→</span>
-        </button>
-      </div>
-      <BottomNav />
-    </main>
-  );
+import {Chip,ProgressBar,LockIcon} from "@/components/ui/Atlas";
+import {attributes} from "@/lib/journey-presentation";
+import {display,formatDate} from "@/lib/ui";
+import {getSkillTier,calculateSkillExpToNext} from "@/lib/engines/progression";
+import {HIDDEN_SKILL_POOL} from "@/lib/engines/hiddenSkills";
+import {ACHIEVEMENTS} from "@/lib/engines/achievements";
+import type {Profile} from "@/lib/types";
+export default function ProfilePage(){const{profile,hydrated}=useRequireProfile();if(!hydrated||!profile)return null;
+ const skills=[...profile.skills].sort((a,b)=>profile.quest_history.findLastIndex(q=>q.skills_targeted.includes(b.name))-profile.quest_history.findLastIndex(q=>q.skills_targeted.includes(a.name)));
+ const earned=profile.achievements_unlocked.slice(-3).reverse().map(id=>ACHIEVEMENTS.find(a=>a.id===id)).filter(Boolean);
+ const hidden=HIDDEN_SKILL_POOL.filter(s=>(s.domain===profile.domain||s.domain==='ANY')&&!profile.hidden_skills.some(h=>h.name===s.name&&h.discovered)).slice(0,3);
+ return <main className="app-page profile-v2"><AvatarIdentity key={profile.user_id} profile={profile}/><div className="profile-statline">{[['♨','Streak',profile.streak],['✦','Best streak',profile.streak_best],['✓','Quests',profile.quest_history.length],['◷','Member since',formatDate(profile.created_at)]].map(([icon,label,value])=><div key={label}><span aria-hidden="true">{icon}</span><strong>{value}</strong><small>{label}</small></div>)}</div><StreakRecovery profile={profile}/>
+ <div className="profile-content-grid"><section className="attribute-card"><p className="eyebrow">YOUR ATTRIBUTES</p><h2>Strength takes shape.</h2><InteractiveRadar profile={profile}/></section><section className="skill-section"><p className="eyebrow">RECENTLY PRACTISED</p><h2>Your growing craft.</h2><div className="skill-card-list">{skills.map(skill=>{const tier=getSkillTier(skill.level),next=[4,10,25,50,100,200].find(n=>n>skill.level),floor=[1,4,10,25,50,100,200].filter(n=>n<=skill.level).at(-1)??1;const current=skill.level-floor+skill.exp/calculateSkillExpToNext(skill.level),total=(next??skill.level+1)-floor;return <article className="skill-growth-card" key={skill.name}><div><h3>{display(skill.name)}</h3><Chip kind="progress">Tier {tier.tier} · {tier.name}</Chip></div><ProgressBar value={current} max={Math.max(1,total)} label={`${skill.name} progress to next tier`}/><p>Level {skill.level}{next?` · Next: ${getSkillTier(next).name} at Level ${next}`:' · Transcendent tier'}</p></article>;})}</div></section></div>
+ <section className="hidden-discoveries"><p className="eyebrow">NOT EVERY STRENGTH HAS A NAME YET</p><h2>What might emerge?</h2><div>{profile.hidden_skills.filter(h=>h.discovered).map(h=><article key={h.name}><span aria-hidden="true">✧</span><h3>{display(h.name)}</h3><Chip kind="progress">Level {h.level}</Chip><p>{h.discovery_message}</p></article>)}{hidden.map(h=><article className="hidden-silhouette" key={h.counterKey}><span aria-hidden="true"><LockIcon size={24}/></span><h3>An undiscovered strength</h3><p>{h.domain==='SOCIAL'?'Help someone understand an idea.':h.domain==='CREATIVE'?'Bring two different ideas together.':h.domain==='ANALYTICAL'?'Look for connections and recurring patterns.':'Think about how ideas work in practice.'}</p><small>{profile.hidden_skill_counters[h.counterKey]??0}/{h.threshold} qualifying responses</small></article>)}{hidden.length===0&&profile.hidden_skills.filter(h=>h.discovered).length===0&&<article><span>⌑</span><h3>There’s more to discover.</h3><p>Keep practising and let new strengths emerge.</p></article>}</div></section>
+ <section className="recent-achievements"><header><div><p className="eyebrow">SMALL SIGNS OF SOMETHING BIGGER</p><h2>Recent achievements</h2></div><Link className="quiet-link" href="/achievements">View all →</Link></header><div>{earned.length?earned.map(a=><Link key={a!.id} href="/achievements" title={a!.description}><span>✦</span><strong>{a!.name}</strong><small>{a!.rarity}</small></Link>):<p>Your first badge is waiting for its story.</p>}</div></section><div className="profile-resources"><span>◈ {profile.tokens} Skip Tokens</span><span>▱ {profile.xp_cards} XP Cards</span>{profile.level>=100&&<Link className="quiet-link" href="/prestige">✦ Prestige →</Link>}</div><BottomNav/></main>;
 }
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-edge bg-surface px-3 py-3">
-      <p className="text-sm font-semibold">{value}</p>
-      <p className="text-xs text-muted">{label}</p>
-    </div>
-  );
-}
-
-function RadarChart({
-  profile,
-  color,
-}: {
-  profile: NonNullable<ReturnType<typeof useRequireProfile>["profile"]>;
-  color: string;
-}) {
-  const stats: [string, number][] = [
-    ["Focus", profile.stats.focus],
-    ["Consistency", profile.stats.consistency],
-    ["Adaptability", profile.stats.adaptability],
-    ["Execution", profile.stats.execution],
-    [profile.stats.stat_5.name, profile.stats.stat_5.value],
-    [profile.stats.stat_6.name, profile.stats.stat_6.value],
-  ];
-  const MAX = 25;
-  const cx = 150, cy = 130, R = 95;
-  const angle = (i: number) => (Math.PI * 2 * i) / 6 - Math.PI / 2;
-  const point = (i: number, r: number): [number, number] => [
-    cx + Math.cos(angle(i)) * r,
-    cy + Math.sin(angle(i)) * r,
-  ];
-  const polygon = stats
-    .map(([, v], i) => point(i, (Math.min(v, MAX) / MAX) * R).join(","))
-    .join(" ");
-
-  return (
-    <svg viewBox="0 0 300 270" className="w-full">
-      {[5, 10, 15, 20, 25].map((ring) => (
-        <polygon
-          key={ring}
-          points={stats.map((_, i) => point(i, (ring / MAX) * R).join(",")).join(" ")}
-          fill="none"
-          stroke="rgb(var(--color-edge))"
-          strokeWidth="1"
-        />
-      ))}
-      {stats.map((_, i) => {
-        const [x, y] = point(i, R);
-        return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgb(var(--color-edge))" strokeWidth="1" />;
-      })}
-      <polygon points={polygon} fill={color} fillOpacity="0.25" stroke={color} strokeWidth="2" />
-      {stats.map(([name, v], i) => {
-        const [x, y] = point(i, R + 22);
-        return (
-          <text
-            key={name}
-            x={x}
-            y={y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="profile-radar-label"
-            fontSize="var(--type-label)"
-          >
-            {display(name)} {v}
-          </text>
-        );
-      })}
-    </svg>
-  );
-}
+function InteractiveRadar({profile}:{profile:Profile}){const stats=attributes(profile),[selected,setSelected]=useState(0),max=Math.max(5,...stats.map(s=>s[1]));const point=(i:number,r:number)=>[200+Math.cos(i*Math.PI/3-Math.PI/2)*r,158+Math.sin(i*Math.PI/3-Math.PI/2)*r];const hints=['Show your reasoning in thoughtful answers.','Keep showing up and reach streak milestones.','Try varied challenges and new approaches.','Follow through and complete your solutions.','Practise your domain skills through learning and missions.','Apply what you learn in your own solutions.'];return <><svg className="interactive-radar" viewBox="0 0 400 330" role="group" aria-label="Your six attributes, scaled to your strongest attribute">{[.25,.5,.75,1].map(scale=><polygon key={scale} points={stats.map((_,i)=>point(i,100*scale).join(',')).join(' ')} fill="none" stroke="var(--border)"/>)}{stats.map((_,i)=><path key={i} d={`M200 158L${point(i,100).join(' ')}`} stroke="var(--border)"/>)}<polygon points={stats.map((s,i)=>point(i,Math.max(10,s[1]/max*100)).join(',')).join(' ')} fill="var(--progress-tint)" stroke="var(--progress)" strokeWidth="2"/>{stats.map(([name,value],i)=>{const[x,y]=point(i,135);return <g key={name} role="button" tabIndex={0} aria-pressed={i===selected} aria-label={`${name}: ${value}. Learn how it grows.`} onClick={()=>setSelected(i)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSelected(i);}}}><rect x={x-55} y={y-18} width="110" height="44" rx="8" fill={i===selected?'var(--primary-tint)':'var(--surface)'}/><text x={x} y={y-2} textAnchor="middle" fill="var(--text)" fontSize="12">{display(name)}</text><text x={x} y={y+16} textAnchor="middle" fill="var(--progress)" fontSize="14">{value}</text></g>;})}</svg><div className="radar-insight" role="status"><strong>{display(stats[selected][0])}</strong><p>{hints[selected]}</p></div></>;}

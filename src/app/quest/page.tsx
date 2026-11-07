@@ -8,8 +8,6 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion,useReducedMotion } from "framer-motion";
 import { useZynth } from "@/lib/store";
 import { useRequireProfile } from "@/components/useRequireProfile";
-import { DifficultyPips } from "@/components/effects";
-import { display } from "@/lib/ui";
 import { runExploitCheck, recordExploitFlag } from "@/lib/engines/exploit";
 import { gradeResponse } from "@/lib/llm/client";
 import { runPostGradePipeline } from "@/lib/engines/pipeline";
@@ -23,6 +21,10 @@ import {Dialog} from "@/components/Dialog";
 import {JourneyRequestError} from "@/lib/journey-client";
 import {QuestLearning} from "@/components/QuestLearning";
 import {learningChoiceResponse,selectedLearningOption} from "@/lib/learning";
+import {Button} from "@/components/ui/Atlas";
+import {BottomNav} from "@/components/BottomNav";
+import {caseBlocks,answerChecks} from "@/lib/journey-presentation";
+import {cachedInventory} from "@/lib/inventory-client";
 import {useAppearance} from "@/components/AppearanceProvider";
 
 
@@ -33,6 +35,12 @@ export default function QuestPage() {
   const { profile, hydrated } = useRequireProfile();
   const { user, activeQuest, retireActiveQuest, setProfile, applyPipelineResult,mode,journeyAction,completeQuest } = useZynth();
 
+  const [focusMode,setFocusMode]=useState(false),[caseOpen,setCaseOpen]=useState(false),[reviewStep,setReviewStep]=useState<number|null>(null),[reviewedCriteria,setReviewedCriteria]=useState(false);
+  const caseRef=useRef<HTMLDetailsElement>(null);
+  const [smallScreen,setSmallScreen]=useState(false);
+  useEffect(()=>{const media=matchMedia("(max-width:700px)"),sync=()=>setSmallScreen(media.matches);sync();media.addEventListener("change",sync);return()=>media.removeEventListener("change",sync);},[]);
+  useEffect(()=>{document.body.dataset.focusMode=String(focusMode);return()=>{delete document.body.dataset.focusMode;};},[focusMode]);
+  useEffect(()=>{if(new URLSearchParams(location.search).get('skip')==='1')setSkipConfirm(true);},[]);
   const [response, setResponse] = useState("");
   const [stepResponses, setStepResponses] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -48,7 +56,7 @@ export default function QuestPage() {
   const startRef = useRef(Date.now());
   const [restoredId,setRestoredId]=useState<string|null>(null);
   const restoredRef=useRef<string|null>(null);
-  const [syncStatus,setSyncStatus]=useState("Your draft saves as you go.");
+  const [syncStatus,setSyncStatus]=useState("Saving draft…");
 
   useEffect(()=>{
     if(!activeQuest){if(hydrated&&profile)router.replace("/dashboard");return;}
@@ -68,7 +76,7 @@ export default function QuestPage() {
     cacheQuestDraft(user.id,activeQuest.id,draft);
     let disposed=false;
     setSyncStatus("Saving draft…");
-    const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Draft saved to your account.");}).catch(()=>{if(!disposed)setSyncStatus("Draft saved.");});},600);
+    const timer=setTimeout(()=>{void saveQuestDraft(user.id,activeQuest.id,draft).then(()=>{if(!disposed)setSyncStatus("Saved ✓");}).catch(()=>{if(!disposed)setSyncStatus("Saved on this device ✓");});},600);
     const flush=()=>{cacheQuestDraft(user.id,activeQuest.id,draft);void saveQuestDraft(user.id,activeQuest.id,draft).catch(()=>{});};
     window.addEventListener("zynth-focus-ending",flush);
     return()=>{disposed=true;clearTimeout(timer);window.removeEventListener("zynth-focus-ending",flush);};
@@ -91,7 +99,12 @@ export default function QuestPage() {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
 
+  const blocks=caseBlocks(activeQuest.scenario??activeQuest.description),checks=answerChecks(response,activeQuest.scenario??activeQuest.description,step?.success_criteria??activeQuest.success_criteria);
+  const caseReading=<div className="case-reading">
+     {activeQuest.learning?<QuestLearning part="lessons" quest={activeQuest} response={response} disabled={voiceBusy} onSelect={()=>{}}/>:<><p className="eyebrow">THE PROBLEM</p><h2>A case to work with.</h2><p>{blocks.problem}</p>{blocks.evidence.length>0&&<section><h3>Evidence & constraints</h3><ul>{blocks.evidence.map((line,i)=><li key={i}>{line.replace(/^[-•]\s*/,'')}</li>)}</ul></section>}<details className="reference-accordion"><summary>▤ Reference for this case</summary><p>{blocks.reference||activeQuest.description}</p>{!!activeQuest.assessment_topics?.length&&<p>{activeQuest.assessment_topics.join(' · ')}</p>}</details></>}
+    </div>;
   const nextStep = () => {
+    setReviewedCriteria(false);setReviewStep(null);
     if (!response.trim()||voiceBusy) return;
     setStepResponses([...stepResponses, response]);
     setResponse("");
@@ -102,6 +115,7 @@ export default function QuestPage() {
     if (!response.trim() || submissionLock.current || voiceBusy) return;
     if(activeQuest.learning&&!selectedLearningOption(activeQuest,response)){setSubmitError("Choose an option, or start your reply with Option A, Option B or Option C.");return;}
     submissionLock.current = true;
+    try{const inventory=cachedInventory(profile.user_id),key=`zynth:inventory-before:${profile.user_id}:${activeQuest.id}`;if(inventory&&!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(inventory.items.filter(i=>i.owned).map(i=>i.id)));}catch{/* Cosmetic presentation never blocks learning. */}
     setSubmitError(null);
     setEvaluating(true);
     try {
@@ -202,154 +216,24 @@ export default function QuestPage() {
   }
 
   return (
-    <motion.main
-      initial={quietMotion?false:{y:16,opacity:0}}
-      animate={{ y: 0,opacity:1 }}
-      transition={{ duration:quietMotion?0:0.2, ease: "easeInOut" }}
-      className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 pb-6 pt-6"
-    >
-      {/* TOP BAR */}
-      <div className="flex items-center justify-between">
-        <button
-          disabled={voiceBusy}
-          aria-label="Back to your journey"
-          onClick={() =>
-            response.trim() || stepResponses.length
-              ? setBackConfirm(true)
-              : router.back()
-          }
-          className="text-xl text-muted" data-disabled-reason="Requirements not met"
-        >
-          ←
-        </button>
-        <span className="font-mono text-sm text-dim">
-          {mm}:{ss}
-        </span>
-      </div>
-
-      {/* HEADER */}
-      <div className="mt-3">
-        <div className="flex items-center gap-3">
-          <span className="rounded-full border border-edge px-2 py-0.5 text-xs uppercase tracking-wider text-muted">
-            {activeQuest.learning?"Learn & practise":activeQuest.type}
-          </span>
-          <DifficultyPips difficulty={activeQuest.difficulty} />
-        </div>
-        <div className="mt-3 border-l-2 border-amber pl-3">
-          <p className="text-sm italic text-amber/90">{activeQuest.flavor_text}</p>
-        </div>
-        <h1 className="mt-3 text-2xl font-bold">{activeQuest.quest_title}</h1>
-
-        {isMultiStep ? (
-          <>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{activeQuest.description}</p>
-            {activeQuest.scenario&&<section className="quest-case" aria-label="Provided mission scenario"><p className="eyebrow">YOUR CASE</p><h2>The problem to solve</h2><p>{activeQuest.scenario}</p>{!!activeQuest.assessment_topics?.length&&<p className="quest-case-topics">Bring together: {activeQuest.assessment_topics.join(" · ")}</p>}</section>}
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-muted">
-                Step {currentStep + 1} of {activeQuest.steps.length}
-              </span>
-              <span className="flex gap-1">
-                {activeQuest.steps.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      i <= currentStep ? "bg-amber" : "bg-edge"
-                    }`}
-                  />
-                ))}
-              </span>
-            </div>
-            {/* previous steps collapsed */}
-            {stepResponses.map((r, i) => (
-              <details
-                key={i}
-                className="mt-2 rounded-lg border-l-2 border-amber bg-surface px-3 py-2"
-              >
-                <summary className="cursor-pointer text-xs text-muted">
-                  ✓ Step {i + 1}: {activeQuest.steps[i].title}
-                </summary>
-                <p className="mt-1 whitespace-pre-wrap text-xs text-dim">{r}</p>
-              </details>
-            ))}
-            {step && (
-              <>
-                <h2 className="mt-4 font-semibold">{step.title}</h2>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{step.prompt}</p>
-              </>
-            )}
-          </>
-        ) : (
-          <p className="mt-2 whitespace-pre-wrap text-sm text-muted">
-            {activeQuest.description}
-          </p>
-        )}
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {activeQuest.skills_targeted.map((s) => (
-            <span
-              key={s}
-              className="rounded-full bg-amber/10 px-2.5 py-0.5 text-xs text-amber"
-            >
-              {display(s)}
-            </span>
-          ))}
-        </div>
-        {!activeQuest.learning&&<div className="mt-3 rounded-lg bg-bg p-3 text-xs text-muted">
-          <span className="text-dim">Success criteria — </span>
-          {step ? step.success_criteria : activeQuest.success_criteria}
-        </div>}
-      </div>
-
-      {/* INPUT */}
-      <QuestLearning quest={activeQuest} response={response} disabled={voiceBusy} onSelect={key=>{setResponse(learningChoiceResponse(activeQuest,response,key));setSubmitError(null);}}/>
-      {activeQuest.learning&&<p className="mt-5 text-xs text-muted">You can add a short explanation below, or say “Option B” using voice input. You do not need to write an essay.</p>}
-      <VoiceReply key={`${user?.id}:${activeQuest.id}:${currentStep}`} value={response} onChange={setResponse} onBusyChange={setVoiceBusy}/>
-      <label htmlFor="quest-response" className="mt-5 text-xs font-medium text-muted">Your reply / editable transcript</label>
-      <textarea
-        id="quest-response"
-        disabled={voiceBusy}
-        maxLength={24000}
-        value={response}
-        onChange={(e) => setResponse(e.target.value)}
-        placeholder={activeQuest.learning?"Choose an option above, then add your reasoning here if you like…":"Type your answer, or record it above and review the transcript here…"}
-        className="mt-2 min-h-[200px] flex-1 resize-none rounded-xl border border-edge bg-surface p-4 text-sm leading-relaxed text-primary placeholder:text-dim disabled:opacity-70"
-      />
-      <p className="mt-2 text-xs text-muted" role="status">{syncStatus}</p>
-
-      {submitError && <p role="alert" className="mt-3 text-sm text-amber">{submitError}</p>}
-      {/* ACTION ROW */}
-      <div className="quest-actions mt-3">
-        <button
-          onClick={() => setHintOpen(true)}
-          className="rounded-lg border border-edge px-4 py-3 text-sm text-muted"
-        >
-          Hint ◎
-        </button>
-        <button
-          onClick={() => setSkipConfirm(true)}
-          disabled={profile.tokens < 1||voiceBusy}
-          className="rounded-lg border border-edge px-4 py-3 text-sm text-muted disabled:opacity-30" data-disabled-reason="Requirements not met"
-        >
-          Skip ◈{profile.tokens}
-        </button>
-        {isLastStep ? (
-          <button
-            onClick={submit}
-            disabled={!response.trim()||voiceBusy}
-            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30" data-disabled-reason="Requirements not met"
-          >
-            {activeQuest.learning?"Check understanding →":isMultiStep ? "Complete Mission →" : "Submit →"}
-          </button>
-        ) : (
-          <button
-            onClick={nextStep}
-            disabled={!response.trim()||voiceBusy}
-            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30" data-disabled-reason="Requirements not met"
-          >
-            Next Step →
-          </button>
-        )}
-      </div>
+   <motion.main initial={quietMotion?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} className={`app-page quest-workbench ${focusMode?'focus-mode':''}`}>
+    <header className="quest-topline"><button className="quiet-link" disabled={voiceBusy} onClick={()=>response.trim()||stepResponses.length?setBackConfirm(true):router.back()}>← Your journey</button><span className="calm-timer">◷ {mm}:{ss} elapsed · {activeQuest.estimated_time}</span><Button variant="ghost" aria-pressed={focusMode} onClick={()=>setFocusMode(v=>!v)}>{focusMode?'Exit focus':'Focus mode'} ⛶</Button></header>
+    <div className="quest-title"><p className="eyebrow">{activeQuest.learning?'LEARN & PRACTISE':'YOUR MISSION'}</p><h1>{activeQuest.quest_title}</h1></div>
+    {isMultiStep&&<nav className="mission-stepper" aria-label="Mission steps">{activeQuest.steps.map((s,i)=><button key={s.step_number} aria-current={i===currentStep?'step':undefined} disabled={i>currentStep||voiceBusy} data-disabled-reason={i>currentStep?'Finish the previous step':'Recording…'} aria-label={`${i<currentStep?'Review completed step':i===currentStep?'Current step':'Locked step'} ${i+1}: ${s.title}`} onClick={()=>setReviewStep(i<currentStep?i:null)}><b>{i<currentStep?'✓':i+1}</b><span>{['Understand','Solve','Check'][i]??s.title}</span></button>)}</nav>}
+    <div className="quest-columns"><details className="case-sheet" hidden={smallScreen} open={caseOpen} onToggle={e=>setCaseOpen(e.currentTarget.open)} ref={caseRef}><summary>▤ {activeQuest.learning?'Read the lessons':'Read the case'}</summary>{caseReading}</details><section className="answer-workspace" aria-label="Your answer workspace"><button className="mobile-case-toggle quiet-link" onClick={()=>{setCaseOpen(true);if(!smallScreen)setTimeout(()=>caseRef.current?.scrollIntoView({behavior:quietMotion?'auto':'smooth',block:'start'}),0);}}>▤ {activeQuest.learning?'Read the lessons':'Read the case'}</button>
+     {reviewStep!==null?<section className="step-review"><p className="eyebrow">✓ COMPLETED STEP {reviewStep+1}</p><h2>{activeQuest.steps[reviewStep].title}</h2><p>{activeQuest.steps[reviewStep].prompt}</p><blockquote>{stepResponses[reviewStep]}</blockquote><Button onClick={()=>setReviewStep(null)}>Return to current step →</Button></section>:<>
+     <p className="eyebrow">{isMultiStep?`STEP ${currentStep+1}`:'YOUR NEXT STEP'}</p><h2>{step?.title??(activeQuest.learning?'Try what you learned.':'Make it your own.')}</h2>{step&&<p className="step-prompt">{step.prompt}</p>}
+     <QuestLearning part="check" quest={activeQuest} response={response} disabled={voiceBusy} onSelect={key=>{setResponse(learningChoiceResponse(activeQuest,response,key));setSubmitError(null);}}/>
+     <div className="answer-editor"><div className="answer-toolbar"><label htmlFor="quest-response">{activeQuest.learning?'Your reasoning (optional)':'Your answer'}</label><span role="status">{syncStatus.startsWith('Saving')?'Saving…':'Saved ✓'}</span></div>
+      <textarea id="quest-response" disabled={voiceBusy} maxLength={24000} value={response} onChange={e=>setResponse(e.target.value)} placeholder={activeQuest.learning?'Choose an option, then add a thought if you like…':'Work with the supplied case. Explain your solution and why it fits…'}/>
+      <div className="answer-bottom-toolbar"><VoiceReply compact key={`${user?.id}:${activeQuest.id}:${currentStep}`} value={response} onChange={setResponse} onBusyChange={setVoiceBusy}/><small>{checks.words} words</small></div>
+     </div>
+     <aside className="answer-checklist" aria-label="Before you complete"><p className="eyebrow">BEFORE YOU COMPLETE</p>{activeQuest.learning?<p>{selectedLearningOption(activeQuest,response)?'✓ Answer selected':'○ Choose a solution above'}</p>:<>{checks.checks.map((check,i)=>'manual'in check?<label key={i}><input type="checkbox" checked={reviewedCriteria} onChange={e=>setReviewedCriteria(e.target.checked)}/><span>I’ve checked: {check.label}</span></label>:<p key={i} className={check.done?'check-done':''}><span aria-hidden="true">{check.done?'✓':'○'}</span> {check.label}</p>)}<small>The checklist helps you review; your solution is evaluated when you complete.</small></>}</aside>
+     </>}
+     {submitError&&<p role="alert">{submitError}</p>}
+    </section></div>
+    {smallScreen&&caseOpen&&<Dialog title={activeQuest.learning?"Read the lessons":"Read the case"} className="mobile-reading-sheet" onClose={()=>setCaseOpen(false)}><button className="panel-close" aria-label="Close reading sheet" onClick={()=>setCaseOpen(false)}>×</button>{caseReading}</Dialog>}
+    <footer className="quest-actionbar"><Button onClick={()=>setHintOpen(true)}>Hint ◎</Button><Button variant="ghost" disabled={profile.tokens<1||voiceBusy} disabledReason={profile.tokens<1?'No Skip Tokens':'Recording…'} onClick={()=>setSkipConfirm(true)}>Skip · {profile.tokens} tokens</Button><div><Button variant="primary" disabled={reviewStep!==null||!response.trim()||voiceBusy||!!activeQuest.learning&&!selectedLearningOption(activeQuest,response)} disabledReason={reviewStep!==null?'Return to the current step':voiceBusy?'Finish recording first':activeQuest.learning?'Choose an option above':'Write your answer to continue'} onClick={()=>isLastStep?void submit():nextStep()}>{activeQuest.learning?'Check understanding':isLastStep?'Complete mission':'Next step'} →</Button></div></footer><BottomNav/>
 
       {/* HINT DRAWER */}
       <AnimatePresence>
@@ -389,7 +273,7 @@ export default function QuestPage() {
         {backConfirm && (
           <ConfirmModal
             title="Leave the quest?"
-            body={syncStatus.includes("account")?"Your draft is saved. Come back when you’re ready.":"Your latest draft stays on this browser. Wait for it to sync to continue on another device."}
+            body={syncStatus==="Saved ✓"?"Your draft is saved. Come back when you’re ready.":"Your latest draft stays on this browser. Wait for it to sync to continue on another device."}
             confirmLabel="Leave"
             onConfirm={() => router.back()}
             onCancel={() => setBackConfirm(false)}

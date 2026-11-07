@@ -1,8 +1,9 @@
 "use client";
+import {MicIcon} from "./ui/Atlas";
 import {useEffect,useRef,useState} from "react";
 import {browserVoiceDependencies,REPLY_LIMIT,VoiceReplySession,type VoicePhase} from "@/lib/voice-reply";
 
-export function VoiceReply({value,onChange,onBusyChange}:{value:string;onChange:(text:string)=>void;onBusyChange:(busy:boolean)=>void}){
+export function VoiceReply({value,onChange,onBusyChange,compact=false}:{value:string;onChange:(text:string)=>void;onBusyChange:(busy:boolean)=>void;compact?:boolean}){
   const [supported,setSupported]=useState<boolean|null>(null),[phase,setPhase]=useState<VoicePhase>("idle");
   const [error,setError]=useState(""),[interim,setInterim]=useState(""),[audio,setAudio]=useState("");
   const [seconds,setSeconds]=useState(0),[language,setLanguage]=useState("en-US");
@@ -35,6 +36,7 @@ export function VoiceReply({value,onChange,onBusyChange}:{value:string;onChange:
     },value,language);
     session.current=next;void next.start();
   };
+  if(compact)return <section className="voice-toolbar" aria-label="Voice reply"><div><button type="button" className="mic-button" aria-label={busy?'Stop recording':'Record reply'} title={busy?'Stop recording':'Record your reply'} disabled={supported!==true||phase==='finishing'||(!busy&&value.length>=REPLY_LIMIT)} data-disabled-reason={supported===false?'Unavailable in this browser':supported===null?'Checking…':phase==='finishing'?'Finishing…':'Reply limit reached'} onClick={()=>busy?session.current?.stop():start()}>{busy?'■':<MicIcon/>}</button>{busy&&<>{phase==='recording'&&<span className="voice-waveform" aria-hidden="true">{Array.from({length:10},(_,i)=><i key={i} style={{animationDelay:`${i*.08}s`}}/>)}</span>}<span role="status">{phase==='requesting'?'Allow microphone access':phase==='finishing'?'Finishing transcript…':`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`}</span></>}<details className="voice-info"><summary aria-label="Voice privacy and language">ⓘ</summary><p>Your browser’s speech provider may process your voice. Only the editable transcript is saved; audio stays on this page.</p><label>Recording language<select disabled={busy} value={language} onChange={e=>setLanguage(e.target.value)}>{[['en-US','English (US)'],['en-GB','English (UK)'],['en-NG','English (Nigeria)'],['es-ES','Español'],['fr-FR','Français'],['de-DE','Deutsch'],['pt-BR','Português'],['hi-IN','हिन्दी']].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label></details>{supported===false&&<small>Type your reply; voice isn’t available in this browser.</small>}</div>{interim&&<p aria-label="Words being recognized">{interim}</p>}{audio&&<div className="voice-playback"><audio controls src={audio} aria-label="Listen to your latest recording"/><button disabled={busy} onClick={clearAudio}>Remove audio</button></div>}{error&&<p role="alert">{error}</p>}</section>;
   return <section className="voice-reply" aria-label="Voice reply">
     <div className="voice-heading"><div><p className="eyebrow">SPEAK YOUR MIND</p><h2>Say it in your own words.</h2></div><span className="voice-badge">VOICE REPLY</span></div>
     <p className="voice-description">Record your answer or type below.</p>

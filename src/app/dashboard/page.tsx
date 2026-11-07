@@ -3,20 +3,20 @@
 // DASHBOARD — top bar, daily pop-up (energy + profiling question),
 // character area, quest card, mini stats.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { useZynth } from "@/lib/store";
 import { useRequireProfile } from "@/components/useRequireProfile";
-import { OverviewMapBackground } from "@/components/WorldMap";
 import { BottomNav } from "@/components/BottomNav";
 import {AvatarPortrait} from "@/components/AvatarPortrait";
 import {StreakRecovery} from "@/components/StreakRecovery";
 import {WorldAtlas} from "@/components/WorldAtlas";
-import {ProgressBar,Chip} from "@/components/ui/Atlas";
-import { DifficultyPips, Particles } from "@/components/effects";
+import {Button,Chip,FlameIcon} from "@/components/ui/Atlas";
+import {AttributeList,LevelStrip} from "@/components/JourneyUI";
+import {rewardPreview} from "@/lib/journey-presentation";
+import { DifficultyPips } from "@/components/effects";
 import { display } from "@/lib/ui";
-import { resolveQuestPlan, todayStr, daysSince } from "@/lib/engines/quest";
+import { resolveQuestPlan, todayStr } from "@/lib/engines/quest";
 import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive";
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
@@ -59,7 +59,7 @@ export default function DashboardPage() {
       const answeredToday = profile.continuous_profile_answers.some(
         (a) => a.answered_at.slice(0, 10) === today
       );
-      if (!answeredToday) {
+      if (!answeredToday && profile.quest_history.length>0) {
         void dailyQuestion(profile).then((q) => {
           if (q) {
             setDailyQ(q);
@@ -105,7 +105,7 @@ export default function DashboardPage() {
   // auto-generate quest for today if none
   useEffect(() => {
     if (!profile || !hydrated) return;
-    if (!dailyChecked || generationError || popupStage !== "done") return;
+    if (!dailyChecked || generationError) return;
     const doneToday = profile.last_quest_date === todayStr();
     if (!activeQuest && (!doneToday||missionProgress(profile).eligible) && !generating) {
       void generateTodaysQuest();
@@ -113,21 +113,9 @@ export default function DashboardPage() {
     // Keep unfinished challenges and their drafts, including missions after a break.
   }, [profile, hydrated, activeQuest, popupStage, dailyChecked, generationError]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const characterState = useMemo(() => {
-    if (!profile) return "active";
-    const absent = daysSince(profile.last_active);
-    const trailing = profile.quest_history.slice(-3);
-    if (absent >= 3) return "returning";
-    if (trailing.length === 3 && trailing.every((q) => q.grade === "Excellent")) return "peak";
-    if (profile.streak >= 7) return "streak";
-    if (profile.last_quest_date === todayStr()) return "active";
-    return "idle";
-  }, [profile]);
-
   if (!hydrated || !profile) return null;
 
 
-  const expPct = Math.min(100, (profile.exp / profile.exp_to_next) * 100);
   const doneToday = profile.last_quest_date === todayStr();
   const mission=missionProgress(profile,activeQuest);
 
@@ -137,6 +125,7 @@ export default function DashboardPage() {
       let next=profile;
       if(mode==="trusted")await journeyAction({kind:"energy",energy:level});
       else{next={...structuredClone(profile),energy_today:level,energy_date:todayStr()};await setProfile(next);}
+      if(profile.quest_history.length===0){setPopupStage("done");return;}
       const q=await dailyQuestion(next);
       if(q){setDailyQ(q);setPopupStage("question");}else setPopupStage("done");
     }catch{setDailyError("We couldn't save this check-in. Please try again, or choose Not now.");}
@@ -158,206 +147,26 @@ export default function DashboardPage() {
     finally{dailyLock.current=false;setDailyBusy(false);}
   };
 
-  return (
-    <main className="app-page dashboard-page">
-<OverviewMapBackground profile={profile} />
-<header className="workspace-header"><span>YOUR PERSONAL EVOLUTION</span><span>{new Date().toLocaleDateString(undefined, {weekday:"long",month:"short",day:"numeric"})}</span></header>
-<div className="dashboard-heading"><div><p className="eyebrow">THE NEXT VERSION OF YOU</p><h1>Keep becoming.</h1><p>Welcome back, {profile.display_name.split(" ")[0]}. Make today a turning point.</p></div><button className="quiet-link" onClick={()=>router.push("/profile")}>Your identity ↗</button></div>
-<div className="overview-strip"><div><span>Current level</span><strong>{profile.level}<small>{profile.title}</small></strong></div><div><span>Day streak</span><strong>{profile.streak}<small>days of momentum</small></strong></div><div><span>Quests completed</span><strong>{profile.quest_history.length}<small>marks made</small></strong></div><div><span>Total experience</span><strong>{profile.cumulative_exp.toLocaleString()}<small>EXP earned</small></strong></div></div>
-<StreakRecovery key={profile.user_id} profile={profile}/>
-<WorldAtlas key={`atlas-${profile.user_id}`} profile={profile} compact/>
-<div className="dashboard-grid"><section><div className="section-label"><h2>Your next move</h2><span>ONE QUEST. REAL PROGRESS.</span></div>
-      {/* TOP BAR */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Chip kind="progress">
-            Lv {profile.level}
-          </Chip>
-          <span className="text-sm text-amber">{profile.title}</span>
-          {profile.prestige > 0 && (
-            <span className="rounded-full border border-gold px-2 py-0.5 text-xs text-gold">
-              P{profile.prestige}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1 text-amber">
-          {profile.streak > 0 ? (
-            <>
-              <span>🔥</span>
-              <span className="text-sm font-semibold">{profile.streak}</span>
-            </>
-          ) : (
-            <span className="text-dim">—</span>
-          )}
-        </div>
-      </div>
-      {/* EXP bar */}
-      <ProgressBar value={expPct} label="EXP"/>
-      <p className="mt-1 text-right text-xs text-dim">
-        {profile.exp} / {profile.exp_to_next} EXP
-      </p>
-
-      {/* QUEST CARD */}
-      <div className="quest-feature">
-        {doneToday && !activeQuest && !mission.eligible ? (
-          <div className="py-6 text-center">
-            <p className="text-2xl">✓</p>
-            <p className="mt-2 font-semibold">Today&apos;s lesson is complete.</p>
-            <p className="mt-1 text-sm text-muted">
-              Your progress is saved. Take a breath and come back tomorrow.
-            </p>
-          </div>
-        ) : generationError ? (<div role="alert"><p>We couldn’t prepare your quest.</p><button onClick={()=>void generateTodaysQuest()} className="mt-4 text-amber">Try again →</button></div>) : generating || !activeQuest ? (
-          <div className="space-y-3 py-2">
-            <div className="shimmer h-4 w-2/3 rounded" />
-            <div className="shimmer h-8 w-full rounded" />
-            <div className="shimmer h-4 w-1/2 rounded" />
-            <p className="pt-2 text-center text-xs text-dim">
-              Preparing today&apos;s lesson...
-            </p>
-          </div>
-        ) : (
-          <>
-            <p className="text-sm italic text-amber/90">
-              {activeQuest.flavor_text}
-            </p>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">{activeQuest.quest_title}</h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted">{activeQuest.description}</p>
-            <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted">
-              <DifficultyPips difficulty={activeQuest.difficulty} />
-              <span>{activeQuest.estimated_time}</span>
-              <span className="rounded-full border border-edge px-2 py-0.5 uppercase tracking-wider">
-                {activeQuest.type==="mission"?"Mission":"Daily lesson"}
-              </span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {activeQuest.skills_targeted.map((s) => (
-                <span
-                  key={s}
-                  className="rounded-full bg-amber/10 px-2.5 py-0.5 text-xs text-amber"
-                >
-                  {display(s)}
-                </span>
-              ))}
-            </div>
-            <button
-              onClick={() => router.push("/quest")}
-              className="mt-4 w-full rounded-lg bg-amber py-3 font-semibold text-black"
-            >
-              {activeQuest.learning?"Begin lesson →":activeQuest.type==="mission"?"Begin mission →":"Continue saved quest →"}
-            </button>
-          </>
-        )}
-      </div>
-
-      <div className="section-label mt-8"><h2>Your attributes</h2><span>BUILT THROUGH ACTION</span></div>
-      <dl aria-label="Your attributes" className="overview-attributes mt-4 grid grid-cols-2 gap-3">
-        {(
-          [
-            ["Focus", profile.stats.focus],
-            ["Consistency", profile.stats.consistency],
-            ["Adaptability", profile.stats.adaptability],
-            ["Execution", profile.stats.execution],
-            [profile.stats.stat_5.name, profile.stats.stat_5.value],
-            [profile.stats.stat_6.name, profile.stats.stat_6.value],
-          ] as [string, number][]
-        ).map(([name, value],index) => (
-          <div key={index} className="rounded-xl border border-edge bg-surface px-4 py-3">
-            <dt className="text-xs text-muted">{display(name)}</dt>
-            <dd className="text-xl font-bold">{value}</dd>
-          </div>
-        ))}
-      </dl>
-
-<section className="journey-card"><p className="eyebrow">EVERY MARK MATTERS</p><h2>A little further, every day.</h2><p>Your journey is built one deliberate action at a time.</p><button className="quiet-link" onClick={()=>router.push("/markmap")}>Explore your Mark Map →</button></section></section><aside className="dashboard-aside"><section className="identity-card"><div className="section-label"><h2>Your synthesis</h2><span>● {display(characterState)}</span></div>      {/* CHARACTER AREA */}
-      <div className="relative mt-4 flex h-44 items-center justify-center">
-        {(characterState === "peak" || characterState === "streak") && (
-          <Particles count={8} color={characterState === "peak" ? "var(--text-muted)" : "var(--text-muted)"} />
-        )}
-        <AvatarPortrait key={profile.user_id} owner={profile.user_id}/>
-        <span className="absolute bottom-0 font-mono text-xs text-amber">
-          {display(profile.behavior_signature)}
-        </span>
-      </div>
-
-<p className="eyebrow mt-6">{profile.domain} DOMAIN</p><h2 className="mt-2 text-xl font-semibold">{profile.profession}</h2></section><section className="resource-card"><p className="eyebrow">READY WHEN YOU ARE</p><div><span>Skip tokens</span><strong>◈ {profile.tokens}</strong></div><div><span>XP cards</span><strong>▱ {profile.xp_cards}</strong></div><button className="quiet-link" onClick={()=>router.push("/achievements")}>View achievements ↗</button></section></aside></div>
-      {/* DAILY POP-UP */}
-      <AnimatePresence>
-        {popupStage !== "done" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ y: 80 }}
-              animate={{ y: 0 }}
-              exit={{ y: 120, opacity: 0 }}
-              className="w-full max-w-lg rounded-t-3xl border-t border-edge bg-surface p-6 pb-10"
-            >
-              {popupStage === "energy" ? (
-                <>
-                  <button disabled={dailyBusy} onClick={()=>{setDailyError("");setPopupStage("done");}} className="mb-4 block ml-auto text-xs text-muted" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}>Not now ×</button><p className="text-center text-sm text-muted">
-                    Before anything — how&apos;s your energy today?
-                  </p>
-                  {!dailyBusy&&<div className="mt-5 flex justify-center gap-3">
-                    {(
-                      [
-                        ["high", "⚡", "HIGH"],
-                        ["mid", "〰️", "MID"],
-                        ["low", "🌙", "LOW"],
-                      ] as const
-                    ).map(([key, icon, label]) => (
-                      <button
-                        key={key}
-                        disabled={dailyBusy}
-                        onClick={() => answerEnergy(key)}
-                        className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-edge bg-bg py-4 transition-colors hover:border-amber" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
-                      >
-                        <span className="text-2xl">{icon}</span>
-                        <span className="text-xs text-muted">{label}</span>
-                      </button>
-                    ))}
-                  </div>}
-                </>
-              ) : dailyQ ? (
-                <>
-                  <p className="text-center text-xs tracking-widest text-dim">
-                    A QUICK ONE
-                  </p>
-                  <p className="mt-2 text-center text-sm font-medium">
-                    {dailyQ.question}
-                  </p>
-                  {!dailyBusy&&<><div className="mt-4 space-y-2">
-                    {dailyQ.options.map((o) => (
-                      <button
-                        key={o.key}
-                        disabled={dailyBusy}
-                        onClick={() => answerDaily(o.key)}
-                        className="w-full rounded-lg border border-edge bg-bg px-4 py-3 text-left text-sm text-muted transition-colors hover:border-amber hover:text-primary" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    disabled={dailyBusy}
-                    onClick={() => answerDaily(null)}
-                    className="mt-3 w-full text-center text-xs text-dim" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
-                  >
-                    skip
-                  </button></>}
-                </>
-              ) : null}
-              {dailyBusy&&<p role="status" className="mt-5 text-center text-sm text-muted">{popupStage==="energy"?"Preparing your question...":"Saving your answer..."}</p>}
-              {dailyError&&<p role="alert" className="mt-3 text-xs text-amber">{dailyError}</p>}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <BottomNav />
-    </main>
-  );
+  return <main className="app-page overview-v2">
+   <header className="overview-hero"><div><p className="eyebrow">YOUR NEXT CHAPTER</p><h1>Keep <em>becoming</em>, {profile.display_name.split(' ')[0]}.</h1></div><div className="streak-hook"><span aria-hidden="true"><FlameIcon size={40}/></span><div><strong>{profile.streak?`${profile.streak} days`:'A first spark.'}</strong><p>{profile.streak?'Keep your flame going.':'Start your streak today'}</p></div></div></header>
+   <div className="overview-statline" aria-label="Journey statistics"><span>◈ Level {profile.level}</span><span>♨ {profile.streak} streak</span><span>✓ {profile.quest_history.length} quests</span><span>✦ {profile.cumulative_exp.toLocaleString()} EXP</span></div>
+   {popupStage==='energy'&&<section className="energy-inline" aria-label="Daily energy"><span>How’s your energy?</span>{!dailyBusy&&(['low','mid','high'] as const).map((energy,i)=><Button key={energy} variant="ghost" onClick={()=>void answerEnergy(energy)}>{['Low','Okay','High'][i]}</Button>)}<Button variant="ghost" disabled={dailyBusy} onClick={()=>setPopupStage('done')}>Not now</Button>{dailyBusy&&<small role="status">Saving…</small>}</section>}
+   {popupStage==='question'&&dailyQ&&profile.quest_history.length>0&&<section className="quick-question" aria-label="Daily quick question"><div><p className="eyebrow">A QUICK ONE</p><Button variant="ghost" aria-label="Dismiss quick question" disabled={dailyBusy} onClick={()=>setPopupStage('done')}>×</Button></div><h2>{dailyQ.question}</h2>{!dailyBusy&&<div>{dailyQ.options.map(o=><Button key={o.key} onClick={()=>void answerDaily(o.key)}>{o.label}</Button>)}</div>}{dailyBusy&&<small role="status">Saving…</small>}<Button variant="ghost" disabled={dailyBusy} onClick={()=>void answerDaily(null)}>Skip for now</Button></section>}
+   {dailyError&&<p role="alert">{dailyError}</p>}
+   <div className="overview-main-grid"><section className="overview-work">
+    <div className="overview-progress"><LevelStrip profile={profile}/></div>
+    <article className="today-mission" id="today-mission"><p className="eyebrow">{activeQuest?.learning?"TODAY’S LESSON":"TODAY’S MISSION"}</p>
+     {doneToday&&!activeQuest&&!mission.eligible?<><h2>A mark made. A little further.</h2><p>Today’s lesson is complete. Come back when you’re ready for your next step.</p><Button onClick={()=>router.push('/markmap')}>See your mark →</Button></>:generationError?<><h2>Your next step is still here.</h2><p>We couldn’t prepare your quest.</p><Button variant="primary" onClick={()=>void generateTodaysQuest()}>Try again →</Button></>:!activeQuest||generating?<><h2>Preparing your next chapter…</h2><div className="shimmer h-8 rounded"/><p role="status">Finding a useful place to begin.</p></>:<>
+      <h2>{activeQuest.quest_title}</h2><p className="mission-summary">{activeQuest.learning?.objective??activeQuest.description}</p>
+      <div className="mission-meta"><span>◷ {activeQuest.estimated_time}</span><DifficultyPips difficulty={activeQuest.difficulty}/><span className="reward-preview">{rewardPreview(profile,activeQuest)}</span></div>
+      <div className="mission-skills">{activeQuest.skills_targeted.map(s=><Chip key={s}>{display(s)}</Chip>)}</div>
+      <Button variant="primary" onClick={()=>router.push('/quest')}>{activeQuest.learning?'Begin lesson':'Begin mission'} →</Button><Button variant="ghost" onClick={()=>router.push('/quest?skip=1')}>Skip ({profile.tokens} tokens)</Button>
+     </>}
+    </article>
+    {profile.quest_history.length===0&&<a className="first-mission-note" href="#today-mission"><span aria-hidden="true">↗</span><div><strong>Your first mark starts here.</strong><p>One short lesson. One useful idea. Take your first step above.</p></div></a>}
+    <StreakRecovery key={profile.user_id} profile={profile}/>
+   </section><aside className="overview-person"><section className="overview-avatar"><AvatarPortrait key={profile.user_id} owner={profile.user_id}/><p className="eyebrow">YOUR WAYFARER</p><h2>{profile.character_name??profile.profession}</h2><Button variant="ghost" onClick={()=>router.push('/profile')}>Your identity ↗</Button></section><AttributeList profile={profile}/><div className="resource-line"><span>◈ {profile.tokens} Skip Tokens</span><span>▱ {profile.xp_cards} XP Cards</span></div></aside></div>
+   <div className="overview-stages"><WorldAtlas key={profile.user_id} profile={profile} compact/></div>
+   <footer className="overview-footer"><button className="quiet-link" onClick={()=>router.push('/markmap')}>Every mark matters · Explore your map →</button></footer><BottomNav/>
+  </main>;
 }

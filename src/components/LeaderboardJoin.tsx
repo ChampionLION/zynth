@@ -5,7 +5,7 @@ import {useZynth} from "@/lib/store";
 import Link from "next/link";
 import {LeaderboardLocationSchema,loadLeaderboardMembership,saveLeaderboardMembership,type LeaderboardLocation,type LeaderboardMembership} from "@/lib/leaderboard-membership";
 export function LeaderboardJoin({owner,onChange}:{owner:string;onChange:(value:LeaderboardMembership)=>void}){
- const [member,setMember]=useState<LeaderboardMembership|null>(null),[open,setOpen]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState("");
+ const [,setMember]=useState<LeaderboardMembership|null>(null),[open,setOpen]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState("");
  const [choice,setChoice]=useState<"global"|"regional">("global"),[area,setArea]=useState<LeaderboardLocation>({country:"",state:"",city:""});
  const [retry,setRetry]=useState(0);const lock=useRef(false);
  useEffect(()=>{
@@ -28,9 +28,10 @@ export function LeaderboardJoin({owner,onChange}:{owner:string;onChange:(value:L
   finally{lock.current=false;setBusy(false);}
  };
  return <>
-  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted"><Link className="text-amber" href="/settings">Settings</Link><button disabled={loading} className="text-amber" onClick={()=>{setError("");setOpen(true);}} data-disabled-reason={loading?"Please wait…":"Requirements not met"}>{loading?"Loading…":member?.choice==="regional"?"Manage regions":"Regions"}</button></div>
+  <div className="leaderboard-manage"><button disabled={loading} className="leaderboard-gear" aria-label="Leaderboard settings and regions" title="Settings and regional participation" onClick={()=>{setError("");setOpen(true);}} data-disabled-reason={loading?"Please wait…":"Requirements not met"}>⚙</button></div>
   {!open&&error&&<p role="alert" className="mt-2 text-xs text-muted">{error} <button className="text-amber" onClick={()=>setRetry(value=>value+1)}>Try again</button></p>}
   {open&&<Dialog title="Regional rankings" onClose={()=>{if(!busy)setOpen(false);}}>
+    <Link className="quiet-link" href="/settings">Account and privacy settings ↗</Link>
 
     <fieldset disabled={busy} className="leaderboard-join-options"><legend className="sr-only">Participation</legend>
       <label><input type="radio" name="participation" checked={choice==="global"} onChange={()=>setChoice("global")}/><span>Global only<small>Keep your location private.</small></span></label>

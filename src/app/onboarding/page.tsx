@@ -84,12 +84,12 @@ export default function OnboardingPage() {
     <aside className="onboarding-story">
       <Link href="/" className="auth-brand"><BrandLogo tone="light" priority/></Link>
       <div className="onboarding-story-copy"><p className="eyebrow">START WITH A DIRECTION</p><h1>Your next chapter<br/>starts with <em>you.</em></h1><p>One destination. Four everyday decisions.<br/>A starting point that can evolve with you.</p></div>
-      <div className="onboarding-route" aria-hidden="true"><svg viewBox="0 0 380 210"><path d="M25 165 C60 165 55 65 120 70 S170 190 220 140 S270 50 350 55" fill="none" stroke="currentColor" strokeDasharray="4 7" />{[[25,165],[120,70],[185,153],[257,78],[350,55]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r={i===step?14:9} className={i<=step?"route-reached":"route-future"}/><text x={x} y={y+4} textAnchor="middle">{i+1}</text></g>)}</svg><span>{normalizedGoal || "Your destination is yours to name."}</span></div>
+      <div className="onboarding-route" aria-hidden="true"><svg viewBox="0 0 380 210"><path d="M25 165 C60 165 55 65 120 70 S170 190 220 140 S270 50 350 55" fill="none" stroke="currentColor" strokeDasharray="4 7" /><path className="onboarding-growing-path" d="M25 165 C60 165 55 65 120 70 S170 190 220 140 S270 50 350 55" fill="none" stroke="currentColor" pathLength="1" strokeDasharray="1" strokeDashoffset={1-(step+1)/5}/><g className="destination-flag"><path d="M350 55V12h-70v24h70"/><text x="285" y="28">{normalizedGoal?normalizedGoal.slice(0,16):"Your destination"}</text></g>{[[25,165],[120,70],[185,153],[257,78],[350,55]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r={i===step?14:9} className={i<=step?"route-reached":"route-future"}/><text x={x} y={y+4} textAnchor="middle">{i+1}</text></g>)}</svg><span>{normalizedGoal || "Your destination is yours to name."}</span></div>
       <p className="onboarding-footnote">No right answers. No personal history required.</p>
     </aside>
     <section className="onboarding-content">
       <div className="onboarding-topline"><span>YOUR STARTING POINT</span><span>STEP {step + 1} OF 5</span></div>
-      <div className="onboarding-progress" aria-label={`Step ${step+1} of 5`}>{ONBOARDING_QUESTIONS.map((question,i)=><span key={question.id} className={i<=step?"reached":""}/>)}</div>
+      <ol className="onboarding-progress labelled-steps" aria-label={`Step ${step+1} of 5`}>{["Direction","Approach","Practice","Decisions","Momentum"].map((label,i)=><li key={label} className={i<=step?"reached":""} aria-current={i===step?"step":undefined}><b>{i<step?"✓":i+1}</b><span>{label}</span></li>)}</ol>
       <form onSubmit={next}>
         <AnimatePresence mode="wait" onExitComplete={()=>heading.current?.focus()}>
           <motion.div key={q.id} initial={reducedMotion?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={reducedMotion?{}:{opacity:0,y:-8}} transition={{duration: 0.2}}>
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
         {error && <p role="alert" className="onboarding-error">{error}</p>}
-        <div className="onboarding-actions"><button type="button" className="onboarding-back" disabled={step===0} onClick={()=>{setError(null);setStep(step-1);}} data-disabled-reason="Choose an answer first">← Back</button><button type="submit" className="onboarding-next" disabled={!canContinue} data-disabled-reason="Choose an answer first">{step===4?"Find my starting point":"Continue"} <span>→</span></button></div>
+        <div className="onboarding-actions"><button type="button" className="onboarding-back" disabled={step===0} onClick={()=>{setError(null);setStep(step-1);}} data-disabled-reason="Choose an answer first">← Back</button><button type="submit" className="onboarding-next" disabled={!canContinue} data-disabled-reason="Choose an answer first">{!canContinue?(step===0?"Name your direction":"Choose an option"):step===4?"Find my starting point":"Continue"} <span>→</span></button></div>{step===0&&<button type="button" className="onboarding-skip quiet-link" onClick={()=>{setGoal("Still exploring");setAnswers(a=>({...a,Q1:["Still exploring"]}));setStep(1);}}>Still exploring? Skip for now →</button>}
         <p className="onboarding-purpose" role="status">{syncStatus}</p>
       </form>
     </section>

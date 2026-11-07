@@ -3,6 +3,7 @@
 // PROFILE REVEAL — domain badge → profession → stat bars (staggered)
 // → behavior signature typewriter → skill tags float in → title drop.
 
+import {AvatarPortrait} from "@/components/AvatarPortrait";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -48,8 +49,8 @@ export default function RevealPage() {
   ] as [string, number][];
 
   return (
-    <main className="flex min-h-dvh flex-col items-center px-6 pb-12 pt-16">
-      <div className="w-full max-w-md">
+    <main className="starting-reveal flex min-h-dvh flex-col items-center px-6 pb-12 pt-16">
+      <div className="w-full max-w-md"><p className="eyebrow">HERE’S YOUR STARTING POINT</p><div className="starting-wayfarer"><AvatarPortrait owner={profile.user_id}/><span aria-hidden="true">✦</span></div>
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}

@@ -340,3 +340,8 @@ M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicle
 ## 7 November 2026 — Atlas UI foundation
 
 Established canonical Atlas tokens, light/dark themes, six-size typography, shared controls/cards/chips/progress/tabs/modals/toasts/empty-state primitives and a token-only compatibility skin across existing screens. Improved disabled-control reasons, readable map captions, indigo XP, copper actions, dark Android-banner contrast and the full-height sidebar. Existing copy, routes, data and progression behavior are preserved. Standalone light/dark style guide and literal-color exception report: docs/design/ATLAS.md. TypeScript, lint, 12 focused token contrast checks and 1440/390 responsive/theme checks passed. Roadmap completion remains 70%.
+
+
+## 7 November 2026 — Explorer’s journal screen redesign
+
+Redesigned Overview, lesson/mission workspace, Mark Map, Profile, Chronicle, Leaderboard, reward/feedback screens, navigation, onboarding and Home using Atlas tokens. Added compact voice tools, draft review/checklist, focus, touch map controls, shareable cards, actual reward cues and real product previews. Stored progression/grading/authorization rules are unchanged. Scope, truthful reward boundaries, completed focused checks and the owner-waived final browser run are documented in docs/design/JOURNEY_REDESIGN.md. Overall remains 70%.

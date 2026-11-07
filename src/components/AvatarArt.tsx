@@ -15,8 +15,8 @@ export function AvatarArt({value,equipment={},name="Your Wayfarer",portrait=fals
   {(avatar.hair==="long"||avatar.hair==="bob")&&<path d={avatar.hair==="long"?"M191 129q-1-62 49-62t49 62l13 119q-27 13-39-4l-23-65-23 65q-15 17-39 4z":"M191 128q-1-61 49-61t49 61l4 68q-23 17-53 9-30 8-53-9z"} fill={hair}/>}
   <path d="m197 323-6 78q10 8 29 0l18-65 10 65q18 8 29 0l-3-78" fill="#343b38"/>
   <path d="M188 396h33v15h-43q-4-9 10-15M249 396h31q18 5 17 15h-48" fill="#252c2a"/>
-  <path d="M184 219q-30 7-37 100l15 4 32-76M292 219q29 8 36 100l-15 4-31-76" fill={cloth}/>
-  <path d="m147 316 15 3 1 18q-7 13-15 0zM313 319l15-3-1 21q-8 13-15 0z" fill={skin}/>
+  <g className="avatar-arm-left"><path d="M184 219q-30 7-37 100l15 4 32-76" fill={cloth}/><path d="m147 316 15 3 1 18q-7 13-15 0z" fill={skin}/></g>
+  <g className="avatar-arm-right"><path d="M292 219q29 8 36 100l-15 4-31-76" fill={cloth}/><path d="M313 319l15-3-1 21q-8 13-15 0z" fill={skin}/></g>
   <path d={female?(avatar.outfit==="studio-knit"?"M201 211q39-19 77 0l-6 57 18 55q-50 15-100 0l18-55z":avatar.outfit==="field-jacket"?"M200 213q40-23 78 0l-5 58 24 67H183l24-67z":"M200 212q40-24 78 0l-7 60 32 88-63-8-63 8 31-88z"):(avatar.outfit==="studio-knit"?"M193 211q45-19 91 0l13 112q-58 15-113 0z":avatar.outfit==="field-jacket"?"M192 213q48-23 94 0l12 125H182z":"M192 212q48-24 94 0l18 148-64-8-64 8z")} fill={cloth}/>
   <path d="M217 202v20q24 23 46 0v-20" fill={skin}/>
   {avatar.outfit==="studio-knit"?<g fill="none" stroke="#fff" opacity=".2"><path d="M203 245h74M199 259h82M196 273h88M194 287h92"/></g>:<g fill="none" stroke="#fff" opacity=".3"><path d="m215 214 25 33 24-33M240 247v98"/><path d="M198 277h27v24h-27M256 277h27v24h-27"/></g>}
