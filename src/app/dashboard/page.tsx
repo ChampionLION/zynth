@@ -10,7 +10,6 @@ import { useRequireProfile } from "@/components/useRequireProfile";
 import { BottomNav } from "@/components/BottomNav";
 import {AvatarPortrait} from "@/components/AvatarPortrait";
 import {StreakRecovery} from "@/components/StreakRecovery";
-import {WorldAtlas} from "@/components/WorldAtlas";
 import {Button,Chip,FlameIcon} from "@/components/ui/Atlas";
 import {AttributeList,LevelStrip} from "@/components/JourneyUI";
 import {rewardPreview} from "@/lib/journey-presentation";
@@ -21,6 +20,7 @@ import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
 import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
+import {JourneyRequestError} from "@/lib/journey-client";
 
 
 export default function DashboardPage() {
@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const { activeQuest, createPlannedQuest, setProfile, eventQueue,gradeReveal,mode,journeyAction } = useZynth();
   const generationLock = useRef(false), dailyLock=useRef(false);
   const [generating, setGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState(false);
+  const [generationError, setGenerationError] = useState<string|null>(null);
   const [dailyChecked, setDailyChecked] = useState(false);
   const [dailyQ, setDailyQ] = useState<DailyQuestion | null>(null);
   const [dailyBusy,setDailyBusy]=useState(false),[dailyError,setDailyError]=useState("");
@@ -73,8 +73,11 @@ export default function DashboardPage() {
 
   const generateTodaysQuest = async () => {
     if (!profile || generationLock.current) return;
+    const current=useZynth.getState();
+    if(current.profile?.user_id!==profile.user_id||current.activeQuest||current.gradeReveal||current.eventQueue.length)return;
+    if(current.profile.last_quest_date===todayStr()&&!missionProgress(current.profile).eligible)return;
     generationLock.current = true;
-    setGenerationError(false);
+    setGenerationError(null);
     setGenerating(true);
     try {
     if(mode==="trusted"){await journeyAction({kind:"generate"});return;}
@@ -99,19 +102,26 @@ export default function DashboardPage() {
     const latest = useZynth.getState().profile;
     if (!latest || latest.user_id !== p.user_id) return;
     await createPlannedQuest(quest,p.user_id);
-    } catch { setGenerationError(true); } finally { generationLock.current = false; setGenerating(false); }
+    } catch(error) {
+      const latest=useZynth.getState();
+      if(latest.profile?.user_id===profile.user_id&&!latest.activeQuest&&(latest.profile.last_quest_date!==todayStr()||missionProgress(latest.profile).eligible)){
+        setGenerationError(error instanceof JourneyRequestError?error.message:"We couldn’t prepare your quest. Please try again.");
+      }
+    } finally { generationLock.current = false; setGenerating(false); }
   };
+
+  useEffect(()=>{setGenerationError(null);},[profile?.user_id,activeQuest?.id]);
 
   // auto-generate quest for today if none
   useEffect(() => {
     if (!profile || !hydrated) return;
-    if (!dailyChecked || generationError) return;
+    if (!dailyChecked || generationError || gradeReveal || eventQueue.length) return;
     const doneToday = profile.last_quest_date === todayStr();
     if (!activeQuest && (!doneToday||missionProgress(profile).eligible) && !generating) {
       void generateTodaysQuest();
     }
     // Keep unfinished challenges and their drafts, including missions after a break.
-  }, [profile, hydrated, activeQuest, popupStage, dailyChecked, generationError]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profile, hydrated, activeQuest, popupStage, dailyChecked, generationError,gradeReveal,eventQueue.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!hydrated || !profile) return null;
 
@@ -156,7 +166,7 @@ export default function DashboardPage() {
    <div className="overview-main-grid"><section className="overview-work">
     <div className="overview-progress"><LevelStrip profile={profile}/></div>
     <article className="today-mission" id="today-mission"><p className="eyebrow">{activeQuest?.learning?"TODAY’S LESSON":"TODAY’S MISSION"}</p>
-     {doneToday&&!activeQuest&&!mission.eligible?<><h2>A mark made. A little further.</h2><p>Today’s lesson is complete. Come back when you’re ready for your next step.</p><Button onClick={()=>router.push('/markmap')}>See your mark →</Button></>:generationError?<><h2>Your next step is still here.</h2><p>We couldn’t prepare your quest.</p><Button variant="primary" onClick={()=>void generateTodaysQuest()}>Try again →</Button></>:!activeQuest||generating?<><h2>Preparing your next chapter…</h2><div className="shimmer h-8 rounded"/><p role="status">Finding a useful place to begin.</p></>:<>
+     {doneToday&&!activeQuest&&!mission.eligible?<><h2>A mark made. A little further.</h2><p>Today’s lesson is complete. Come back when you’re ready for your next step.</p><Button onClick={()=>router.push('/markmap')}>See your mark →</Button></>:generationError&&!activeQuest?<><h2>Your next step is still here.</h2><p role="alert">{generationError}</p><Button variant="primary" onClick={()=>void generateTodaysQuest()}>Try again →</Button></>:!activeQuest?<><h2>Preparing your next chapter…</h2><div className="shimmer h-8 rounded"/><p role="status">Finding a useful place to begin.</p></>:<>
       <h2>{activeQuest.quest_title}</h2><p className="mission-summary">{activeQuest.learning?.objective??activeQuest.description}</p>
       <div className="mission-meta"><span>◷ {activeQuest.estimated_time}</span><DifficultyPips difficulty={activeQuest.difficulty}/><span className="reward-preview">{rewardPreview(profile,activeQuest)}</span></div>
       <div className="mission-skills">{activeQuest.skills_targeted.map(s=><Chip key={s}>{display(s)}</Chip>)}</div>
@@ -166,7 +176,6 @@ export default function DashboardPage() {
     {profile.quest_history.length===0&&<a className="first-mission-note" href="#today-mission"><span aria-hidden="true">↗</span><div><strong>Your first mark starts here.</strong><p>One short lesson. One useful idea. Take your first step above.</p></div></a>}
     <StreakRecovery key={profile.user_id} profile={profile}/>
    </section><aside className="overview-person"><section className="overview-avatar"><AvatarPortrait key={profile.user_id} owner={profile.user_id}/><p className="eyebrow">YOUR WAYFARER</p><h2>{profile.character_name??profile.profession}</h2><Button variant="ghost" onClick={()=>router.push('/profile')}>Your identity ↗</Button></section><AttributeList profile={profile}/><div className="resource-line"><span>◈ {profile.tokens} Skip Tokens</span><span>▱ {profile.xp_cards} XP Cards</span></div></aside></div>
-   <div className="overview-stages"><WorldAtlas key={profile.user_id} profile={profile} compact/></div>
    <footer className="overview-footer"><button className="quiet-link" onClick={()=>router.push('/markmap')}>Every mark matters · Explore your map →</button></footer><BottomNav/>
   </main>;
 }

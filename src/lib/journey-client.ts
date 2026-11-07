@@ -1,6 +1,10 @@
 import {supabase} from "./supabase";
 import type {JourneyAction,JourneyActionResult,JourneyState} from "./journey-contract";
 import type {CompletionResponse} from "./server/complete-quest";
+import type {Profile} from "./types";
+import {nextCachedLesson,readJourneyCache} from "./lesson-cache";
+import {missionProgress,plannedQuestId} from "./engines/quest-cycle";
+import {todayStr} from "./engines/quest";
 const modes=new Map<string,"legacy"|"trusted">();
 export class JourneyRequestError extends Error{constructor(message:string,public status:number){super(message);}}
 export function trustedJourney(owner:string){return modes.get(owner)==="trusted";}
@@ -20,4 +24,25 @@ export async function readJourneyState(owner:string):Promise<JourneyState>{
  modes.set(owner,state.mode);return state;
 }
 export const sendJourneyAction=(owner:string,action:JourneyAction)=>journeyRequest<JourneyActionResult>(owner,"action",action);
+/** A cached plan is a shortcut, never the authority for the next quest. */
+export async function prepareNextQuest(owner:string,profile:Profile):Promise<JourneyActionResult>{
+ let cached=nextCachedLesson(owner,profile);
+ if(cached?.type==="mission"){
+  const mission=missionProgress(profile);
+  const expected=await plannedQuestId(owner,"mission",mission.cycle,mission.attempts,todayStr());
+  if(cached.id!==expected)cached=null;
+ }
+ if(cached){
+  if(!navigator.onLine)return {profile,quest:cached};
+  try{
+   const result=await journeyRequest<JourneyActionResult>(owner,"lessons",{key:readJourneyCache(owner)?.pack?.key,questId:cached.id});
+   if(result.quest?.status==="active")return result;
+  }catch(error){
+   // Learning, skips, retries or another session can supersede a saved pack.
+   // Authentication, connectivity and service failures still reach the caller.
+   if(!(error instanceof JourneyRequestError)||![404,409].includes(error.status))throw error;
+  }
+ }
+ return sendJourneyAction(owner,{kind:"generate"});
+}
 export const sendCompletion=(owner:string,questId:string,responseText:string)=>journeyRequest<CompletionResponse>(owner,"complete",{questId,responseText});

@@ -24,3 +24,9 @@ Completed checks: TypeScript and lint; disposable desktop/mobile browser checks 
 The final additional browser run for the new mobile reading dialog, real two-touch pinch, concise lesson end-to-end completion and richer populated states was **explicitly waived by the owner** after automatic approval review timed out twice before execution. It is not reported as passed. Later small visual refinements and the SVG share target correction rely on source review and the production build. Native OS share sheets, physical microphone transcription, device vibration and audible playback remain device-specific manual checks. No production user records were changed by preview verification. No database migration is needed.
 
 Roadmap completion stays 70%; this UI release does not award extra weighted milestone points.
+
+## 7 November 2026 — Quest follow-up recovery
+
+Removed the four stage tabs from Overview; travel controls remain on Mark Map. Next-quest preparation now falls back to the authoritative plan when a saved lesson pack is obsolete (404/409) or returns a resolved quest, and validates cached mission identity against the current cycle/attempt. Authentication and service failures remain errors. Overview waits until reward presentation finishes before generating another quest; stale preparation errors cannot hide a ready quest or replace the completed-day state. Error responses retain their actionable reason.
+
+Focused cache regression checks, TypeScript and changed-file lint passed. No production accounts or database schema were changed.

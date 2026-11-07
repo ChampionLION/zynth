@@ -6,7 +6,7 @@ import {getCurrentUser} from "./auth";
 import {loadAccountJourney,loadOnboardingDraft,saveProfile,saveActiveQuest,clearQuestDraft,ensurePlannedQuest,saveEditableProfile,retireQuest} from "./db";
 import type {EditableProfile} from "./appearance";
 import type {PipelineResult} from "./engines/pipeline";
-import {sendJourneyAction,sendCompletion,journeyRequest} from "./journey-client";
+import {sendJourneyAction,sendCompletion,journeyRequest,prepareNextQuest} from "./journey-client";
 import {outcomePresentation,type JourneyAction,type JourneyActionResult,type PendingOutcome} from "./journey-contract";
 import {notifyNativeQuestCompleted} from "./native-focus";
 import {cachedSessionUser} from "./supabase";
@@ -81,14 +81,11 @@ export const useZynth=create<ZynthStore>((set,get)=>({
     }
     if(input.kind==="daily_question")return {profile:get().profile,quest:get().activeQuest,question:null};
    }
-   const cached=input.kind==="generate"&&get().profile?nextCachedLesson(owner,get().profile!):null;
-   if(cached&&!get().activeQuest){
-    if(navigator.onLine)result=await journeyRequest(owner,"lessons",{key:readJourneyCache(owner)?.pack?.key,questId:cached.id});
-    else result={profile:get().profile,quest:cached};
-   }else result=await sendJourneyAction(owner,input);
+   if(input.kind==="generate"&&get().profile&&!get().activeQuest)result=await prepareNextQuest(owner,get().profile!);
+   else result=await sendJourneyAction(owner,input);
    if(epoch!==authEpoch||get().user?.id!==owner)throw new Error("Your account changed. Please sign in again.");
    if(result.profile&&result.profile.user_id!==owner)throw new Error("Please sign in again.");
-   set(state=>({profile:result.profile,onboardingDraft:result.profile?null:state.onboardingDraft,activeQuest:input.kind==="skip"?null:result.quest?{...result.quest,draft:result.quest.id===state.activeQuest?.id?state.activeQuest.draft:result.quest.draft}:state.activeQuest}));
+   set(state=>({profile:result.profile,onboardingDraft:result.profile?null:state.onboardingDraft,activeQuest:input.kind==="skip"?null:result.quest?{...result.quest,draft:result.quest.id===state.activeQuest?.id?state.activeQuest.draft:result.quest.draft}:input.kind==="generate"?null:state.activeQuest}));
    const journeyCache=readJourneyCache(owner);if(journeyCache&&result.profile)saveJourneyCache({...journeyCache,profile:result.profile,activeQuest:get().activeQuest});
    return result;
  },
