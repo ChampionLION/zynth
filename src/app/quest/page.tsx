@@ -190,7 +190,7 @@ export default function QuestPage() {
       <main className="flex min-h-dvh flex-col items-center justify-center">
         <motion.div
           animate={{ scale: [1, 1.15, 1] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
+          transition={{ repeat: Infinity, duration: 0.2 }}
           className="h-14 w-14 rounded-full border-2 border-edge border-t-amber"
           style={{ animation: "spin 1.2s linear infinite" }}
         />
@@ -218,7 +218,7 @@ export default function QuestPage() {
               ? setBackConfirm(true)
               : router.back()
           }
-          className="text-xl text-muted"
+          className="text-xl text-muted" data-disabled-reason="Requirements not met"
         >
           ←
         </button>
@@ -230,7 +230,7 @@ export default function QuestPage() {
       {/* HEADER */}
       <div className="mt-3">
         <div className="flex items-center gap-3">
-          <span className="rounded-full border border-edge px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
+          <span className="rounded-full border border-edge px-2 py-0.5 text-xs uppercase tracking-wider text-muted">
             {activeQuest.learning?"Learn & practise":activeQuest.type}
           </span>
           <DifficultyPips difficulty={activeQuest.difficulty} />
@@ -288,7 +288,7 @@ export default function QuestPage() {
           {activeQuest.skills_targeted.map((s) => (
             <span
               key={s}
-              className="rounded-full bg-amber/10 px-2.5 py-0.5 text-[11px] text-amber"
+              className="rounded-full bg-amber/10 px-2.5 py-0.5 text-xs text-amber"
             >
               {display(s)}
             </span>
@@ -328,7 +328,7 @@ export default function QuestPage() {
         <button
           onClick={() => setSkipConfirm(true)}
           disabled={profile.tokens < 1||voiceBusy}
-          className="rounded-lg border border-edge px-4 py-3 text-sm text-muted disabled:opacity-30"
+          className="rounded-lg border border-edge px-4 py-3 text-sm text-muted disabled:opacity-30" data-disabled-reason="Requirements not met"
         >
           Skip ◈{profile.tokens}
         </button>
@@ -336,7 +336,7 @@ export default function QuestPage() {
           <button
             onClick={submit}
             disabled={!response.trim()||voiceBusy}
-            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30"
+            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30" data-disabled-reason="Requirements not met"
           >
             {activeQuest.learning?"Check understanding →":isMultiStep ? "Complete Mission →" : "Submit →"}
           </button>
@@ -344,7 +344,7 @@ export default function QuestPage() {
           <button
             onClick={nextStep}
             disabled={!response.trim()||voiceBusy}
-            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30"
+            className="quest-primary-action rounded-lg bg-amber px-4 py-3 font-semibold text-black transition-opacity disabled:opacity-30" data-disabled-reason="Requirements not met"
           >
             Next Step →
           </button>
@@ -368,7 +368,7 @@ export default function QuestPage() {
               className="w-full rounded-t-2xl border-t border-edge bg-surface p-6 pb-10"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="text-[10px] tracking-widest text-dim">HINT</p>
+              <p className="text-xs tracking-widest text-dim">HINT</p>
               <p className="mt-2 text-sm text-primary">{activeQuest.hint}</p>
             </motion.div>
           </motion.div>

@@ -92,7 +92,7 @@ export default function OnboardingPage() {
       <div className="onboarding-progress" aria-label={`Step ${step+1} of 5`}>{ONBOARDING_QUESTIONS.map((question,i)=><span key={question.id} className={i<=step?"reached":""}/>)}</div>
       <form onSubmit={next}>
         <AnimatePresence mode="wait" onExitComplete={()=>heading.current?.focus()}>
-          <motion.div key={q.id} initial={reducedMotion?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={reducedMotion?{}:{opacity:0,y:-8}} transition={{duration:.18}}>
+          <motion.div key={q.id} initial={reducedMotion?false:{opacity:0,y:12}} animate={{opacity:1,y:0}} exit={reducedMotion?{}:{opacity:0,y:-8}} transition={{duration: 0.2}}>
             <p className="eyebrow">{q.chapter}</p>
             <h2 ref={heading} tabIndex={-1} className="onboarding-question" id="question-heading">{q.prompt}</h2>
             <p className="onboarding-context" id="question-context">{q.context}</p>
@@ -108,7 +108,7 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
         {error && <p role="alert" className="onboarding-error">{error}</p>}
-        <div className="onboarding-actions"><button type="button" className="onboarding-back" disabled={step===0} onClick={()=>{setError(null);setStep(step-1);}}>← Back</button><button type="submit" className="onboarding-next" disabled={!canContinue}>{step===4?"Find my starting point":"Continue"} <span>→</span></button></div>
+        <div className="onboarding-actions"><button type="button" className="onboarding-back" disabled={step===0} onClick={()=>{setError(null);setStep(step-1);}} data-disabled-reason="Choose an answer first">← Back</button><button type="submit" className="onboarding-next" disabled={!canContinue} data-disabled-reason="Choose an answer first">{step===4?"Find my starting point":"Continue"} <span>→</span></button></div>
         <p className="onboarding-purpose" role="status">{syncStatus}</p>
       </form>
     </section>

@@ -28,7 +28,7 @@ export function LeaderboardJoin({owner,onChange}:{owner:string;onChange:(value:L
   finally{lock.current=false;setBusy(false);}
  };
  return <>
-  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted"><Link className="text-amber" href="/settings">Settings</Link><button disabled={loading} className="text-amber" onClick={()=>{setError("");setOpen(true);}}>{loading?"Loading…":member?.choice==="regional"?"Manage regions":"Regions"}</button></div>
+  <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted"><Link className="text-amber" href="/settings">Settings</Link><button disabled={loading} className="text-amber" onClick={()=>{setError("");setOpen(true);}} data-disabled-reason={loading?"Please wait…":"Requirements not met"}>{loading?"Loading…":member?.choice==="regional"?"Manage regions":"Regions"}</button></div>
   {!open&&error&&<p role="alert" className="mt-2 text-xs text-muted">{error} <button className="text-amber" onClick={()=>setRetry(value=>value+1)}>Try again</button></p>}
   {open&&<Dialog title="Regional rankings" onClose={()=>{if(!busy)setOpen(false);}}>
 
@@ -39,7 +39,7 @@ export function LeaderboardJoin({owner,onChange}:{owner:string;onChange:(value:L
     {choice==="regional"&&<div className="leaderboard-area-fields">{(["country","state","city"] as const).map(field=><label key={field}>{field==="state"?"State / province":field==="city"?"City / general area":"Country"}<input disabled={busy} maxLength={80} autoComplete="off" value={area[field]} onChange={event=>setArea({...area,[field]:event.target.value})}/></label>)}</div>}
     {error&&<p role="alert" className="text-sm text-fail">{error}</p>}
 
-    <div className="settings-actions"><button disabled={busy} autoFocus onClick={()=>setOpen(false)}>Decide later</button><button className="settings-save" disabled={busy} onClick={()=>void save()}>{busy?"Saving…":choice==="global"?"Keep Global only":"Save regional choice"}</button></div>
+    <div className="settings-actions"><button disabled={busy} autoFocus onClick={()=>setOpen(false)} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>Decide later</button><button className="settings-save" disabled={busy} onClick={()=>void save()} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>{busy?"Saving…":choice==="global"?"Keep Global only":"Save regional choice"}</button></div>
   </Dialog>}
  </>;
 }

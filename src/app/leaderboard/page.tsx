@@ -112,7 +112,7 @@ export default function LeaderboardPage() {
             key={c.key}
             onClick={() => {setCategory(c.key);setOffset(0);}}
             aria-pressed={category===c.key}
-            className={`shrink-0 rounded-full px-3 py-1 text-[11px] transition-colors ${
+            className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors ${
               category === c.key
                 ? "bg-amber text-black"
                 : "border border-edge text-muted"
@@ -149,9 +149,9 @@ export default function LeaderboardPage() {
                   <p className={`mt-1 text-lg font-black ${isFirst ? "text-gold" : "text-muted"}`}>
                     {r.rank}
                   </p>
-                  <p className="max-w-full truncate text-[11px]">{r.display_name}</p>
-                  <p className="text-[10px] text-dim">Lv {r.level}</p>
-                  <p className="text-[11px] font-semibold text-amber">
+                  <p className="max-w-full truncate text-xs">{r.display_name}</p>
+                  <p className="text-xs text-dim">Lv {r.level}</p>
+                  <p className="text-xs font-semibold text-amber">
                     {r.score.toLocaleString()}
                   </p>
                 </motion.div>
@@ -175,10 +175,10 @@ export default function LeaderboardPage() {
                 <ProfilePicture owner={r.is_user?profile.user_id:undefined} appearance={r.appearance} name={r.display_name}/>
                 <span className="flex-1 truncate text-sm">
                   {r.display_name}
-                  {r.is_user && <span className="ml-1 text-[10px] text-amber">you</span>}
+                  {r.is_user && <span className="ml-1 text-xs text-amber">you</span>}
                 </span>
                 <span
-                  className="rounded-full px-2 py-0.5 text-[9px]"
+                  className="rounded-full px-2 py-0.5 text-xs"
                   style={{
                     background: domainColor(r.domain,.13),
                     color: DOMAIN_COLORS[r.domain],
@@ -211,7 +211,7 @@ export default function LeaderboardPage() {
           {userRank===0&&participation==="not_verified"&&<p className="mt-6 text-center text-xs text-dim">Confirm your email to join the rankings.</p>}
         </>
       )}
-      {!loading&&!error&&total>0&&<div role="navigation" aria-label="Leaderboard pages" className="mt-5 mb-4 flex items-center justify-between gap-3 text-xs text-muted"><span>{offset+1}–{offset+rows.length} of {total.toLocaleString()}</span><div className="flex gap-4"><button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-25))}>← Previous</button><button disabled={offset+rows.length>=total} onClick={()=>setOffset(value=>value+25)}>Next →</button></div></div>}
+      {!loading&&!error&&total>0&&<div role="navigation" aria-label="Leaderboard pages" className="mt-5 mb-4 flex items-center justify-between gap-3 text-xs text-muted"><span>{offset+1}–{offset+rows.length} of {total.toLocaleString()}</span><div className="flex gap-4"><button disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-25))} data-disabled-reason="No further page">← Previous</button><button disabled={offset+rows.length>=total} onClick={()=>setOffset(value=>value+25)} data-disabled-reason="No further page">Next →</button></div></div>}
       <BottomNav />
     </main>
   );

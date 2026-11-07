@@ -74,7 +74,7 @@ export function CountUp({
   );
 }
 
-export function Particles({ count = 10, color = "#C87D2F" }: { count?: number; color?: string }) {
+export function Particles({ count = 10, color = "var(--text-muted)" }: { count?: number; color?: string }) {
   const [seeds] = useState(() =>
     Array.from({ length: count }, (_, i) => ({
       left: (i * 37 + 13) % 100,

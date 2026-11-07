@@ -1,0 +1,32 @@
+/* Atlas · canonical UI tokens. RGB compatibility aliases are generated from these. */
+:root, [data-atlas-theme="light"] {
+ --bg:#F6F3EC; --surface:#FFFDF8; --border:#E3DED2;
+ --text:#1C2420; --text-muted:#5B665F;
+ --primary:#9A5B2B; --primary-hover:#7F4A22; --primary-tint:#F3E7DA; --on-primary:#FFFFFF;
+ --atlas-deep:#0F1B18; --atlas-mid:#1F3A30; --atlas-light:#2F5846; --glow:#E2A458; --atlas-paper:#FFFDF8;
+ --progress:#5B4BB7; --progress-tint:#ECE9F8;
+ --success:#3F7D58; --warning:#C98A1B; --error:#B3402E;
+ --cat-technical:#3E6FA8; --cat-creative:#B5527A; --cat-analytical:#2F8F8A; --cat-social:#D0793A; --cat-strategic:#6B5BB5;
+ --type-display:3.5rem; --type-h1:2.5rem; --type-h2:1.5rem; --type-body:1rem; --type-small:.875rem; --type-label:.75rem;
+ --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px;
+ --radius-card:12px; --radius-control:8px; --radius-chip:999px;
+ --shadow-raised:0 8px 24px color-mix(in srgb,var(--atlas-deep) 12%,transparent);
+ --ease-ui:cubic-bezier(0,0,.2,1); --duration-ui:200ms; --duration-celebration:800ms;
+ color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0F1714; --surface:#17221E; --border:#26332D; --text:#EDE8DC; --text-muted:#A3ADA5; --primary:#C98450;
+ --primary-hover:#D99866; --primary-tint:#30271F; --on-primary:#0F1714; --progress:#B9ADF4; --progress-tint:#29233D; --success:#8DC69E; --error:#F39B8B;
+ color-scheme:dark;
+}}
+:root[data-theme="dark"], [data-atlas-theme="dark"] {
+ --bg:#0F1714; --surface:#17221E; --border:#26332D; --text:#EDE8DC; --text-muted:#A3ADA5; --primary:#C98450;
+ --primary-hover:#D99866; --primary-tint:#30271F; --on-primary:#0F1714; --progress:#B9ADF4; --progress-tint:#29233D; --success:#8DC69E; --error:#F39B8B;
+ color-scheme:dark;
+}
+@media(max-width:640px){:root{--type-display:2.5rem;--type-h1:2rem}}
+@media(prefers-reduced-motion:reduce){:root{--duration-ui:0ms;--duration-celebration:0ms}}
+
+:root,[data-atlas-theme="light"]{--color-bg:246 243 236;--color-surface:255 253 248;--color-edge:227 222 210;--color-primary:28 36 32;--color-muted:91 102 95;--color-dim:91 102 95;--color-amber:154 91 43;--domain-technical:28 36 32;--domain-creative:28 36 32;--domain-analytical:28 36 32;--domain-social:28 36 32;--domain-strategic:28 36 32;--grade-excellent:var(--text);--grade-good:var(--success);--grade-basic:var(--text-muted);--grade-bad:var(--text);--grade-fail:var(--error);--text-primary:var(--text)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--color-bg:15 23 20;--color-surface:23 34 30;--color-edge:38 51 45;--color-primary:237 232 220;--color-muted:163 173 165;--color-dim:163 173 165;--color-amber:201 132 80;--domain-technical:237 232 220;--domain-creative:237 232 220;--domain-analytical:237 232 220;--domain-social:237 232 220;--domain-strategic:237 232 220;}}
+:root[data-theme="dark"],[data-atlas-theme="dark"]{--color-bg:15 23 20;--color-surface:23 34 30;--color-edge:38 51 45;--color-primary:237 232 220;--color-muted:163 173 165;--color-dim:163 173 165;--color-amber:201 132 80;--domain-technical:237 232 220;--domain-creative:237 232 220;--domain-analytical:237 232 220;--domain-social:237 232 220;--domain-strategic:237 232 220;}

@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useRequireProfile } from "@/components/useRequireProfile";
 import { BottomNav } from "@/components/BottomNav";
 import { GRADE_COLORS, formatDate, display } from "@/lib/ui";
+import {Tabs} from "@/components/ui/Atlas";
 
 const COMMUNITY_SAMPLES = [
   {
@@ -54,26 +55,7 @@ export default function ChroniclePage() {
     <main className="app-page collection-page">
       <h1 className="text-xl font-bold">Chronicle</h1>
 
-      <div className="mt-4 flex gap-2">
-        {(
-          [
-            ["mine", "My Chronicle"],
-            ["community", "Examples"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-              tab === key
-                ? "bg-amber text-black"
-                : "border border-edge text-muted"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs label="Chronicle" items={[{id:"mine",label:"My Chronicle"},{id:"community",label:"Examples"}]} value={tab} onChange={value=>setTab(value as "mine"|"community")}/>
 
       {tab === "mine" ? (
         <div className="mt-5 space-y-3">
@@ -113,7 +95,7 @@ export default function ChroniclePage() {
                 {q.skills_targeted.map((s) => (
                   <span
                     key={s}
-                    className="rounded-full bg-amber/10 px-2 py-0.5 text-[10px] text-amber"
+                    className="rounded-full bg-amber/10 px-2 py-0.5 text-xs text-amber"
                   >
                     {display(s)}
                   </span>
@@ -146,7 +128,7 @@ export default function ChroniclePage() {
                 <button
                   key={d}
                   onClick={() => setDomainFilter(d)}
-                  className={`rounded-full px-3 py-1 text-[11px] capitalize transition-colors ${
+                  className={`rounded-full px-3 py-1 text-xs capitalize transition-colors ${
                     domainFilter === d
                       ? "bg-amber text-black"
                       : "border border-edge text-muted"
@@ -163,7 +145,7 @@ export default function ChroniclePage() {
                 key={i}
                 className="rounded-xl border border-edge bg-surface p-4"
               >
-                <span className="text-[10px] tracking-widest text-muted">
+                <span className="text-xs tracking-widest text-muted">
                   {c.domain}
                 </span>
                 <p className="mt-2 text-sm italic leading-relaxed text-primary/90">

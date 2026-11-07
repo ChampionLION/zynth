@@ -1,0 +1,67 @@
+/* Atlas primitives and compatibility skin. Layout, handlers and copy are preserved. */
+html,body{background:var(--bg);color:var(--text);font-size:16px;line-height:1.6}
+body{background-image:none}*,*::before,*::after{box-sizing:border-box}
+button,a,input,textarea,select{transition:background-color var(--duration-ui) var(--ease-ui),color var(--duration-ui) var(--ease-ui),border-color var(--duration-ui) var(--ease-ui),box-shadow var(--duration-ui) var(--ease-ui)}
+button{font-size:var(--type-small);min-height:44px;border-radius:var(--radius-control)}
+button:disabled{opacity:1!important;cursor:not-allowed;color:var(--text-muted);background:var(--bg);border-color:var(--text-muted)}
+button:disabled::after{content:attr(data-disabled-reason);display:block;font-size:var(--type-label);line-height:1.5;font-weight:400;letter-spacing:0}
+:is(button,a,input,textarea,select,summary,[tabindex]):focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+input,textarea,select{border-radius:var(--radius-control);border-color:var(--text-muted);color:var(--text);background:var(--surface);font-size:var(--type-body);min-height:44px}
+input::placeholder,textarea::placeholder{color:var(--text-muted);opacity:1}
+h1{font-size:var(--type-h1);line-height:1.2}h2,h3{font-size:var(--type-h2);line-height:1.3}p{font-size:var(--type-small);line-height:1.6}small,label,summary{font-size:var(--type-label);line-height:1.5}
+:is(.eyebrow,.site-eyebrow,.workspace-header,.nav-caption,.nav-version,.site-demo-overline,.voice-badge,.suggestion-label){font-size:var(--type-label);color:var(--text-muted);font-style:normal;letter-spacing:.12em}
+:is(.quest-lesson,.quest-case,.quest-check,.quest-learning-intro,.voice-description,.world-detail-feedback) p,:is(.quest-worked-example p,.quest-check-options span){font-size:var(--type-body);line-height:1.6;max-width:65ch}
+:is(.quest-feature,.identity-card,.resource-card,.journey-card,.settings-panel,.world-detail,.account-card,.onboarding-content,.cosmetic-inventory,.atlas-panel,.quest-lesson,.quest-case,.voice-reply){background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-card);padding:var(--space-6);background-image:none}
+:is(.overview-strip,.collection-page .rounded-xl,.collection-page .rounded-2xl){border-radius:var(--radius-card)}
+:is(.dashboard-grid,.settings-grid,.profile-development){gap:var(--space-8)}
+:is(.dashboard-page .overview-strip,.dashboard-page .identity-card,.dashboard-page .resource-card,.dashboard-page .grid-cols-2>div,.dashboard-page .journey-card){background:var(--surface)}
+.text-muted,.text-dim,[class*="text-amber"],.text-gold,.text-bad,.quiet-link,.resource-card strong,.brand>span,.profile-development .font-mono{color:var(--text)}
+.text-purple,.text-progress{color:var(--progress)}.text-fail{color:var(--error)}.text-teal{color:var(--success)}
+.bg-amber{background:var(--primary);color:var(--on-primary)}.bg-purple{background:var(--progress);color:var(--surface)}
+:is(.bg-amber,.site-button,.settings-save,.onboarding-next,.quest-primary-action,.world-detail-action,.btn-primary,.voice-record):not(:disabled){background:var(--primary);color:var(--on-primary);border:1px solid var(--primary);border-radius:var(--radius-control);min-height:44px;box-shadow:none}
+:is(.bg-amber,.site-button,.settings-save,.onboarding-next,.quest-primary-action,.world-detail-action,.btn-primary,.voice-record):not(:disabled):hover{background:var(--primary-hover);color:var(--on-primary)}
+button:not(:disabled):active,.site-button:active{transform:translateY(1px)}
+:is(.nav-item.active,.atlas-panel button[aria-pressed=true],.avatar-customize-sections button[aria-pressed=true],.inventory-filters button[aria-pressed=true],.account-tabs a[aria-current=page]){color:var(--text);background:var(--primary-tint);border-color:var(--text-muted);box-shadow:none}
+:is(.quiet-link,.site-text-link,.site-signin){min-height:44px;display:inline-flex;align-items:center;color:var(--text);text-decoration-color:var(--text-muted)}
+.site-hero h1,.site-hero-copy h1,.account-intro h1{font-size:var(--type-display)}
+em{font-family:Georgia,"Times New Roman",serif}.site-hero-description strong{color:var(--text)}
+.quest-feature>p.italic{font-family:inherit;font-style:normal}.quest-worked-example{border-color:var(--text-muted)}.quest-worked-example>span{color:var(--text-muted)}
+.atlas-button{display:inline-flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--space-2);min-height:44px;padding:var(--space-3) var(--space-4);border:1px solid transparent;border-radius:var(--radius-control);font-size:var(--type-small);font-weight:600;line-height:1.5}
+.atlas-button-primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}.atlas-button-primary:hover:not(:disabled){background:var(--primary-hover)}
+.atlas-button-secondary{border-color:var(--text-muted);background:var(--surface);color:var(--text)}.atlas-button-ghost{color:var(--text);background:transparent}.atlas-button-secondary:hover:not(:disabled),.atlas-button-ghost:hover:not(:disabled){background:var(--primary-tint)}
+.atlas-button:disabled{border:1px solid var(--text-muted);background:var(--bg);color:var(--text-muted)}.atlas-button:disabled::after{flex-basis:100%}
+.atlas-card{padding:var(--space-6);border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface);color:var(--text)}.atlas-card-raised{box-shadow:var(--shadow-raised)}.atlas-card-highlighted{border-color:var(--text-muted);background:var(--primary-tint)}
+.atlas-chip{display:inline-flex;align-items:center;gap:var(--space-2);border-radius:var(--radius-chip);padding:var(--space-1) var(--space-3);border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:var(--type-label);line-height:1.5}.atlas-chip-progress{background:var(--progress-tint);color:var(--progress)}
+.atlas-chip:is(.atlas-chip-technical,.atlas-chip-creative,.atlas-chip-analytical,.atlas-chip-social,.atlas-chip-strategic)::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--chip-color);outline:1px solid var(--text-muted)}
+.atlas-chip-technical{--chip-color:var(--cat-technical)}.atlas-chip-creative{--chip-color:var(--cat-creative)}.atlas-chip-analytical{--chip-color:var(--cat-analytical)}.atlas-chip-social{--chip-color:var(--cat-social)}.atlas-chip-strategic{--chip-color:var(--cat-strategic)}
+.atlas-progress{height:8px;background:var(--progress-tint);border:1px solid var(--progress);border-radius:var(--radius-chip);overflow:hidden;margin-top:var(--space-2)}.atlas-progress>span{display:block;height:100%;background:var(--progress);transition:width var(--duration-ui) var(--ease-ui)}
+.atlas-empty{text-align:center;padding:var(--space-8);color:var(--text);display:grid;justify-items:center;gap:var(--space-4)}.atlas-empty svg{width:120px;height:88px;fill:var(--bg);stroke:var(--text-muted);stroke-width:2}.atlas-empty p{max-width:65ch}.atlas-empty h2{font-size:var(--type-h2)}
+.atlas-tabs{display:flex;flex-wrap:wrap;gap:var(--space-2);border-bottom:1px solid var(--border);padding:var(--space-2)}.atlas-tabs [aria-pressed=true]{background:var(--primary-tint);box-shadow:inset 0 -2px var(--text);color:var(--text)}.atlas-segmented{border:1px solid var(--text-muted);border-radius:var(--radius-control);background:var(--bg)}
+.atlas-toast{padding:var(--space-4);border:1px solid var(--text-muted);border-radius:var(--radius-control);background:var(--surface);color:var(--text);box-shadow:var(--shadow-raised)}.atlas-toast-error{border-color:var(--error)}
+.zynth-dialog{background:var(--surface);color:var(--text);border:1px solid var(--text-muted);border-radius:var(--radius-card);padding:var(--space-6);box-shadow:var(--shadow-raised);max-height:calc(100dvh - 32px);overflow:auto}.zynth-dialog::backdrop{background:color-mix(in srgb,var(--atlas-deep) 65%,transparent)}
+.app-download-alert,.site-app-download{background:var(--atlas-deep);color:var(--surface);border:1px solid var(--atlas-light)}.app-download-alert strong,.site-app-download h2,.site-app-download p{color:var(--surface)}.app-download-alert a,.app-download-alert button,.site-app-download .quiet-link{color:var(--glow)}
+.world-map-frame,.world-map-legend{background:var(--atlas-deep);color:var(--glow)}.world-map-legend :is(span,p){color:var(--glow)}.map-region-labels{fill:var(--glow);opacity:1}.map-coordinate-label{fill:var(--glow)}.route-completed{stroke:var(--glow)}.checkpoint-disc{color:var(--glow);border-color:var(--glow);background:var(--atlas-mid)}.checkpoint-caption,.checkpoint-current .checkpoint-caption{color:var(--glow);font-size:var(--type-label)}.checkpoint-completed .checkpoint-disc{background:var(--glow);border-color:var(--glow);color:var(--atlas-deep)}.checkpoint-beacon{border-color:var(--glow)}
+.overview-world-background{opacity:.08}.world-map-art text{font-size:var(--type-label)}
+.atlas-celebration{background:var(--atlas-deep);color:var(--glow);border-radius:var(--radius-card)}
+@media(min-width:701px){.workspace-nav{position:fixed;top:0;bottom:0;left:0;height:100dvh;max-height:100dvh;overflow-y:auto;background:var(--surface);border-right:1px solid var(--border);transform:none}.workspace-nav .brand{flex-shrink:0}.nav-item{min-height:44px;color:var(--text-muted)}.nav-item.active{color:var(--text)}.nav-footer{padding-top:var(--space-6);margin-top:auto}.nav-note{background:var(--bg);border-color:var(--border)}.nav-note small,.nav-version,.brand small{color:var(--text-muted)}}
+@media(max-width:700px){.workspace-nav{background:var(--surface);border-color:var(--text-muted)}.nav-item{min-width:0;font-size:var(--type-label);color:var(--text-muted)}.nav-item.active{color:var(--text);background:var(--primary-tint)}.app-page{padding:var(--space-6) var(--space-4) 112px}.section-label{flex-wrap:wrap}.atlas-card,:is(.quest-feature,.identity-card,.resource-card,.journey-card,.settings-panel,.world-detail,.account-card,.cosmetic-inventory,.atlas-panel,.quest-lesson,.quest-case,.voice-reply){padding:var(--space-4)}.zynth-dialog{padding:var(--space-4)}.dashboard-grid,.settings-grid{gap:var(--space-6)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.checkpoint-beacon{opacity:1;transform:none}}
+:root[data-motion=reduced] *{animation:none!important;transition:none!important}
+.app-download-alert,.site-app-download{color:var(--atlas-paper)}.app-download-alert strong,.site-app-download h2,.site-app-download p{color:var(--atlas-paper)}.site-app-download>a:last-child{color:var(--glow)}
+.bg-purple{color:var(--bg)}.site-app-download h2{font-family:inherit}
+.atlas-celebration :is(p,h1,h2,span,small){color:var(--atlas-paper)}.atlas-celebration .text-gold{color:var(--glow)}
+.atlas-celebration .bg-amber{color:var(--on-primary)}
+.atlas-panel button{border-color:var(--text-muted)}.atlas-panel button[aria-pressed=true]{color:var(--text);background:var(--primary-tint);border-color:var(--text)}
+.atlas-progress+.text-dim{color:var(--text-muted)}
+.quest-feature::before{color:var(--text-muted)}
+.overview-world-background{opacity:.035}
+.atlas-panel [data-disabled-reason="Locked"]::after{content:none}
+.site-demo,.auth-story{color:var(--atlas-paper)}.site-demo :is(h2,h3,p,span,small,a),.auth-story :is(h2,p,footer,em){color:var(--atlas-paper)}.site-demo .site-demo-level{color:var(--glow)}
+.site-demo-quest{background:var(--atlas-mid)}.site-demo-quest a{color:var(--glow)}
+@media(min-width:1151px){body:has(.workspace-nav){background-image:linear-gradient(to right,var(--surface) 0 232px,var(--bg) 232px)}}
+@media(min-width:701px) and (max-width:1150px){body:has(.workspace-nav){background-image:linear-gradient(to right,var(--surface) 0 200px,var(--bg) 200px)}}
+.art-mark-completed{fill:var(--glow);stroke:var(--glow)}.art-mark-completed text{fill:var(--atlas-deep)}
+.site-return-action>.site-button{background:var(--surface);color:var(--text);border-color:var(--text-muted)}
+.site-app-download .site-button{background:var(--atlas-mid);color:var(--atlas-paper);border-color:var(--atlas-paper)}
+.site-demo .site-demo-level{color:var(--progress-tint)}
+.atlas-tabs .atlas-button{min-height:44px}

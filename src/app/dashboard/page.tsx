@@ -13,6 +13,7 @@ import { BottomNav } from "@/components/BottomNav";
 import {AvatarPortrait} from "@/components/AvatarPortrait";
 import {StreakRecovery} from "@/components/StreakRecovery";
 import {WorldAtlas} from "@/components/WorldAtlas";
+import {ProgressBar,Chip} from "@/components/ui/Atlas";
 import { DifficultyPips, Particles } from "@/components/effects";
 import { display } from "@/lib/ui";
 import { resolveQuestPlan, todayStr, daysSince } from "@/lib/engines/quest";
@@ -169,12 +170,12 @@ export default function DashboardPage() {
       {/* TOP BAR */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-purple px-3 py-1 text-xs font-bold">
+          <Chip kind="progress">
             Lv {profile.level}
-          </span>
+          </Chip>
           <span className="text-sm text-amber">{profile.title}</span>
           {profile.prestige > 0 && (
-            <span className="rounded-full border border-gold px-2 py-0.5 text-[10px] text-gold">
+            <span className="rounded-full border border-gold px-2 py-0.5 text-xs text-gold">
               P{profile.prestige}
             </span>
           )}
@@ -191,14 +192,8 @@ export default function DashboardPage() {
         </div>
       </div>
       {/* EXP bar */}
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-purple/30">
-        <motion.div
-          animate={{ width: `${expPct}%` }}
-          transition={{ type: "spring", stiffness: 60, damping: 15 }}
-          className="h-full rounded-full bg-amber"
-        />
-      </div>
-      <p className="mt-1 text-right text-[10px] text-dim">
+      <ProgressBar value={expPct} label="EXP"/>
+      <p className="mt-1 text-right text-xs text-dim">
         {profile.exp} / {profile.exp_to_next} EXP
       </p>
 
@@ -239,7 +234,7 @@ export default function DashboardPage() {
               {activeQuest.skills_targeted.map((s) => (
                 <span
                   key={s}
-                  className="rounded-full bg-amber/10 px-2.5 py-0.5 text-[11px] text-amber"
+                  className="rounded-full bg-amber/10 px-2.5 py-0.5 text-xs text-amber"
                 >
                   {display(s)}
                 </span>
@@ -268,7 +263,7 @@ export default function DashboardPage() {
           ] as [string, number][]
         ).map(([name, value],index) => (
           <div key={index} className="rounded-xl border border-edge bg-surface px-4 py-3">
-            <dt className="text-[11px] text-muted">{display(name)}</dt>
+            <dt className="text-xs text-muted">{display(name)}</dt>
             <dd className="text-xl font-bold">{value}</dd>
           </div>
         ))}
@@ -277,7 +272,7 @@ export default function DashboardPage() {
 <section className="journey-card"><p className="eyebrow">EVERY MARK MATTERS</p><h2>A little further, every day.</h2><p>Your journey is built one deliberate action at a time.</p><button className="quiet-link" onClick={()=>router.push("/markmap")}>Explore your Mark Map →</button></section></section><aside className="dashboard-aside"><section className="identity-card"><div className="section-label"><h2>Your synthesis</h2><span>● {display(characterState)}</span></div>      {/* CHARACTER AREA */}
       <div className="relative mt-4 flex h-44 items-center justify-center">
         {(characterState === "peak" || characterState === "streak") && (
-          <Particles count={8} color={characterState === "peak" ? "#FFD700" : "#C87D2F"} />
+          <Particles count={8} color={characterState === "peak" ? "var(--text-muted)" : "var(--text-muted)"} />
         )}
         <AvatarPortrait key={profile.user_id} owner={profile.user_id}/>
         <span className="absolute bottom-0 font-mono text-xs text-amber">
@@ -303,7 +298,7 @@ export default function DashboardPage() {
             >
               {popupStage === "energy" ? (
                 <>
-                  <button disabled={dailyBusy} onClick={()=>{setDailyError("");setPopupStage("done");}} className="mb-4 block ml-auto text-xs text-muted">Not now ×</button><p className="text-center text-sm text-muted">
+                  <button disabled={dailyBusy} onClick={()=>{setDailyError("");setPopupStage("done");}} className="mb-4 block ml-auto text-xs text-muted" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}>Not now ×</button><p className="text-center text-sm text-muted">
                     Before anything — how&apos;s your energy today?
                   </p>
                   {!dailyBusy&&<div className="mt-5 flex justify-center gap-3">
@@ -318,7 +313,7 @@ export default function DashboardPage() {
                         key={key}
                         disabled={dailyBusy}
                         onClick={() => answerEnergy(key)}
-                        className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-edge bg-bg py-4 transition-colors hover:border-amber"
+                        className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-edge bg-bg py-4 transition-colors hover:border-amber" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
                       >
                         <span className="text-2xl">{icon}</span>
                         <span className="text-xs text-muted">{label}</span>
@@ -328,7 +323,7 @@ export default function DashboardPage() {
                 </>
               ) : dailyQ ? (
                 <>
-                  <p className="text-center text-[10px] tracking-widest text-dim">
+                  <p className="text-center text-xs tracking-widest text-dim">
                     A QUICK ONE
                   </p>
                   <p className="mt-2 text-center text-sm font-medium">
@@ -340,7 +335,7 @@ export default function DashboardPage() {
                         key={o.key}
                         disabled={dailyBusy}
                         onClick={() => answerDaily(o.key)}
-                        className="w-full rounded-lg border border-edge bg-bg px-4 py-3 text-left text-sm text-muted transition-colors hover:border-amber hover:text-primary"
+                        className="w-full rounded-lg border border-edge bg-bg px-4 py-3 text-left text-sm text-muted transition-colors hover:border-amber hover:text-primary" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
                       >
                         {o.label}
                       </button>
@@ -349,7 +344,7 @@ export default function DashboardPage() {
                   <button
                     disabled={dailyBusy}
                     onClick={() => answerDaily(null)}
-                    className="mt-3 w-full text-center text-xs text-dim"
+                    className="mt-3 w-full text-center text-xs text-dim" data-disabled-reason={dailyBusy?"Please wait…":"Requirements not met"}
                   >
                     skip
                   </button></>}

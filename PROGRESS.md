@@ -286,3 +286,8 @@ Mark Map and Overview share permanent spring/grove/bridge/beacon layers. The atl
 Focused world and SQL checks passed: locks, connected travel, independent restoration, repeated requests, save/reload, account isolation, forged-input rejection and old-state compatibility. TypeScript and changed-component lint passed. Full browser accessibility, long-history performance and production acceptance remain in M11.
 
 M5: 8/8; M6: 7/7. Overall: 70/100 (70%), 30 points remaining. Next: M7 Chronicles runtime.
+
+
+## 7 November 2026 — Atlas UI foundation
+
+Established canonical Atlas tokens, light/dark themes, six-size typography, shared controls/cards/chips/progress/tabs/modals/toasts/empty-state primitives and a token-only compatibility skin across existing screens. Improved disabled-control reasons, readable map captions, indigo XP, copper actions, dark Android-banner contrast and the full-height sidebar. Existing copy, routes, data and progression behavior are preserved. Standalone light/dark style guide and literal-color exception report: docs/design/ATLAS.md. TypeScript, lint, 12 focused token contrast checks and 1440/390 responsive/theme checks passed. Roadmap completion remains 70%.

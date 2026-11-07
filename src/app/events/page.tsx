@@ -26,7 +26,7 @@ export default function EventsPage() {
 
   const advance = async () => {if(busy)return;setBusy(true);setError("");try{await ackEvent();}catch{setError("We couldn’t save your place. Please try again.");}finally{setBusy(false);}};
 
-  if (!current) return <main className="min-h-dvh" />;
+  if (!current) return <main className="atlas-celebration min-h-dvh" />;
 
   return (
     <AnimatePresence mode="wait">
@@ -63,7 +63,7 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
     case "level_up":
       return (
         <>
-          <Particles count={12} color="#534AB7" />
+          <Particles count={12} color="var(--glow)" />
           <p className="text-xs tracking-[0.3em] text-purple">LEVEL UP</p>
           <div className="mt-6 flex items-end gap-4">
             <motion.span
@@ -118,7 +118,7 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
           <motion.p
             initial={{ opacity: 1 }}
             animate={{ opacity: 0.3 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
             className="mt-8 font-mono text-lg text-muted line-through"
           >
             {display(event.oldName)}
@@ -126,7 +126,7 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
           <motion.p
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.3, duration: 0.5 }}
+            transition={{ delay: 1.3, duration: 0.8 }}
             className="mt-3 font-mono text-3xl font-bold text-teal"
           >
             {display(event.newName)}
@@ -214,9 +214,9 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
         <>
           <motion.div
             animate={{ opacity: [0.2, 0.6, 0.2] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
             className="pointer-events-none absolute inset-0"
-            style={{ boxShadow: "inset 0 0 80px rgba(200,125,47,0.4)" }}
+            style={{ boxShadow: "inset 0 0 80px color-mix(in srgb,var(--glow) 40%,transparent)" }}
           />
           <p className="text-xs tracking-[0.3em] text-amber">PATTERN BROKEN</p>
           <p className="mt-8 font-mono text-sm text-dim line-through">
@@ -248,7 +248,7 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
     case "achievement":
       return (
         <>
-          <Particles count={10} color="#FFD700" />
+          <Particles count={10} color="var(--glow)" />
           <p className="text-xs tracking-[0.3em] text-muted">ACHIEVEMENT</p>
           <motion.div
             initial={{ scale: 0, rotate: -30 }}
@@ -270,7 +270,7 @@ function EventScreen({ event, onContinue }: { event: ZynthEvent; onContinue: () 
     case "profession_evolution":
       return (
         <>
-          <Particles count={12} color="#C87D2F" />
+          <Particles count={12} color="var(--glow)" />
           <p className="text-xs tracking-[0.3em] text-amber">PROFESSION EVOLUTION</p>
           <p className="mt-8 text-lg text-dim line-through">{event.from}</p>
           <motion.p

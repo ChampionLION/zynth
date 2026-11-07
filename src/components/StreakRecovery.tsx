@@ -5,6 +5,7 @@ import {useZynth} from "@/lib/store";
 import {restoreStreak,streakRecovery,type StreakRecovery as Recovery} from "@/lib/engines/streak";
 import {TOKEN_MAX} from "@/lib/engines/economy";
 import {Dialog} from "./Dialog";
+import {Button} from "./ui/Atlas";
 
 export function StreakRecovery({profile}:{profile:Profile}){
  const {mode,journeyAction,setProfile}=useZynth();
@@ -28,6 +29,6 @@ export function StreakRecovery({profile}:{profile:Profile}){
   <p>Use {quote.cost} Skip Token{quote.cost===1?"":"s"} to restore your {quote.streak}-day streak?</p>
   <p className="text-sm text-muted mt-2">{profile.tokens} Skip Token{profile.tokens===1?"":"s"} available</p>
   {error&&<p role="alert" className="mt-3 text-sm">{error}</p>}
-  <div className="mt-5 flex gap-3"><button className="btn-primary" disabled={busy||profile.tokens<quote.cost} onClick={()=>void restore()}>{busy?"Restoring…":"Restore streak"}</button><button className="quiet-link" disabled={busy} onClick={()=>setQuote(null)}>Cancel</button></div>
+  <div className="mt-5 flex gap-3"><Button variant="primary" disabled={busy||profile.tokens<quote.cost} disabledReason={busy?"Restoring…":"Not enough Skip Tokens"} onClick={()=>void restore()}>{busy?"Restoring…":"Restore streak"}</Button><Button variant="ghost" disabled={busy} disabledReason="Restoring…" onClick={()=>setQuote(null)}>Cancel</Button></div>
  </Dialog>}</>;
 }

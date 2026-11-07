@@ -84,7 +84,7 @@ export default function RevealPage() {
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(value / 10) * 100}%` }}
-                    transition={{ delay: i * 0.12 + 0.1, duration: 0.5, ease: "easeOut" }}
+                    transition={{ delay: i * 0.12 + 0.1, duration: 0.8, ease: "easeOut" }}
                     className="h-full rounded-full"
                     style={{ background: color }}
                   />
@@ -97,7 +97,7 @@ export default function RevealPage() {
 
         {phase >= 3 && (
           <div className="mt-8 text-center">
-            <p className="text-[10px] tracking-widest text-dim">BEHAVIOR SIGNATURE</p>
+            <p className="text-xs tracking-widest text-dim">BEHAVIOR SIGNATURE</p>
             <p className="mt-1 font-mono text-lg text-amber">
               <Typewriter text={display(profile.behavior_signature)} speed={40} />
             </p>

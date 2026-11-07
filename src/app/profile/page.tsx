@@ -41,7 +41,7 @@ export default function ProfilePage() {
             <div key={s.name} className="rounded-xl border border-edge bg-surface p-4">
               <div className="flex items-center justify-between">
                 <span className="font-mono text-sm text-amber">{display(s.name)}</span>
-                <span className="rounded-full border border-edge px-2 py-0.5 text-[10px] text-muted">
+                <span className="rounded-full border border-edge px-2 py-0.5 text-xs text-muted">
                   Tier {tier.tier} · {tier.name}
                 </span>
               </div>
@@ -55,7 +55,7 @@ export default function ProfilePage() {
                 <span className="text-xs font-semibold">Lv {s.level}</span>
               </div>
               {(s.evolutions?.length ?? 0) > 0 && (
-                <p className="mt-1.5 text-[10px] text-dim">
+                <p className="mt-1.5 text-xs text-dim">
                   evolved from {s.evolutions!.map(display).join(" → ")}
                 </p>
               )}
@@ -102,11 +102,11 @@ export default function ProfilePage() {
       <div className="mt-4 flex gap-2">
         <div className="flex-1 rounded-xl border border-edge bg-surface px-4 py-3 text-center">
           <p className="text-lg font-bold text-amber">◈ {profile.tokens}</p>
-          <p className="text-[10px] text-muted">Skip Tokens</p>
+          <p className="text-xs text-muted">Skip Tokens</p>
         </div>
         <div className="flex-1 rounded-xl border border-edge bg-surface px-4 py-3 text-center">
           <p className="text-lg font-bold text-teal">⬡ {profile.xp_cards}</p>
-          <p className="text-[10px] text-muted">XP Cards</p>
+          <p className="text-xs text-muted">XP Cards</p>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-edge bg-surface px-3 py-3">
       <p className="text-sm font-semibold">{value}</p>
-      <p className="text-[10px] text-muted">{label}</p>
+      <p className="text-xs text-muted">{label}</p>
     </div>
   );
 }
@@ -202,7 +202,7 @@ function RadarChart({
             textAnchor="middle"
             dominantBaseline="middle"
             className="profile-radar-label"
-            fontSize="10"
+            fontSize="var(--type-label)"
           >
             {display(name)} {v}
           </text>

@@ -37,7 +37,7 @@ export default function PrestigePage() {
   if (done) {
     return (
       <main className="relative flex min-h-dvh flex-col items-center justify-center px-8">
-        <Particles count={14} color="#FFD700" />
+        <Particles count={14} color="var(--glow)" />
         <motion.p
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -106,7 +106,7 @@ export default function PrestigePage() {
               </button>
               <button disabled={busy}
                 onClick={doPrestige}
-                className="flex-1 rounded-lg bg-gold py-3 text-sm font-bold text-black"
+                className="flex-1 rounded-lg bg-gold py-3 text-sm font-bold text-black" data-disabled-reason={busy?"Please wait…":"Requirements not met"}
               >
                 Prestige ✦
               </button>

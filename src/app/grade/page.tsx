@@ -120,7 +120,7 @@ export default function GradeRevealPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15 }}
-                className="rounded-full border border-teal/40 bg-teal/10 px-3 py-1 text-[11px] text-teal"
+                className="rounded-full border border-teal/40 bg-teal/10 px-3 py-1 text-xs text-teal"
               >
                 {s}
               </motion.span>
@@ -136,7 +136,7 @@ export default function GradeRevealPage() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15 }}
-                className="rounded-full border border-amber/40 bg-amber/10 px-3 py-1 text-[11px] text-amber"
+                className="rounded-full border border-amber/40 bg-amber/10 px-3 py-1 text-xs text-amber"
               >
                 {s}
               </motion.span>

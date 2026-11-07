@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "@/styles/atlas-tokens.css";
+import "@/styles/atlas-components.css";
 import { AccountProvider } from "@/components/AccountProvider";
 import {AppearanceProvider} from "@/components/AppearanceProvider";
 import {BRAND_NAME,BRAND_TITLE,BRAND_DESCRIPTION,BRAND_URL,BRAND_SLOGAN,BRAND_EXPLANATION} from "@/lib/brand";
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0D0D14",
+  themeColor: "#F6F3EC",
   width: "device-width",
   initialScale: 1,
 
