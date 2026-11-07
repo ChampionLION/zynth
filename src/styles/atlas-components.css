@@ -65,3 +65,5 @@ em{font-family:Georgia,"Times New Roman",serif}.site-hero-description strong{col
 .site-app-download .site-button{background:var(--atlas-mid);color:var(--atlas-paper);border-color:var(--atlas-paper)}
 .site-demo .site-demo-level{color:var(--progress-tint)}
 .atlas-tabs .atlas-button{min-height:44px}
+.profile-development [class~="h-1.5"]{background:var(--progress-tint);outline:1px solid var(--progress)}
+.profile-development .h-full.bg-amber{background:var(--progress)}
