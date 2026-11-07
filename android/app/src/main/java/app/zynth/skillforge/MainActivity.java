@@ -21,7 +21,7 @@ public final class MainActivity extends Activity {
             }
             return insets;
         });
-        host = new WebHost(this, web, false); host.load(getIntent().getStringExtra("path") == null ? "/" : getIntent().getStringExtra("path"));
+        host = new WebHost(this, web, false); host.load(getIntent().getStringExtra("path") == null ? "/dashboard" : getIntent().getStringExtra("path"));
     }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); host.load(intent.getStringExtra("path") == null ? "/dashboard" : intent.getStringExtra("path")); }
     @Override protected void onResume() { super.onResume(); QuestScheduler.schedule(this); if (host != null) host.view.evaluateJavascript("window.dispatchEvent(new Event('zynth-native-resume'))", null); }

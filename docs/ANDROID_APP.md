@@ -75,3 +75,8 @@ These checks do not establish real Android alarm delivery, OEM battery behavior,
 Before release, verify on a physical phone: grant and deny each permission; deny overlays and receive repeat notifications; select Pause today; submit a quest; type an unfinished reply and let focus expire; change the device time zone; reboot; sign out/change accounts; and revoke access while focus is active. Confirm the emergency exit remains reachable in portrait, landscape and with the keyboard open.
 
 Reference: [Android alarm scheduling](https://developer.android.com/develop/background-work/services/alarms), [foreground service background-start restrictions](https://developer.android.com/develop/background-work/services/fgs/restrictions-bg-start), and [origin-scoped WebView messaging](https://developer.android.com/reference/androidx/webkit/WebViewCompat).
+
+
+## 7 November 2026 ? Android 0.1.3
+
+Version code 4 enlarges the launcher Z using the existing brand silhouette, removing the white margins and tiny wordmark from the adaptive foreground. Native startup opens /dashboard; existing account restoration routes remembered users directly into their journey and sends signed-out users to sign-in. Remembered accounts arriving at / also resume automatically. Alarm/deep-link paths remain supported. Build and focused web lint passed; physical launcher-mask checks remain manual. Download: public/downloads/zynth-0.1.3.apk. SHA-256: 1c2774382436bc51df6af4ab46aef43fa35785c1e1398cc33ec3b9276b502cc1.

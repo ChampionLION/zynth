@@ -16,7 +16,7 @@ export function AppDownloadAlert(){
  const dismiss=()=>{setVisible(false);try{localStorage.setItem(DISMISSED,"1");}catch{/* Keep the current page unobstructed. */}};
  if(!visible)return null;
  return <aside role="alert" aria-label="Android app download" className={`app-download-alert${pathname==="/"?" on-home":""}`}>
-  <div><strong>Get Zynth for Android</strong><a href="/downloads/zynth-0.1.2.apk" download="Zynth-0.1.2.apk" onClick={dismiss}>Download app <span aria-hidden="true">↓</span></a></div>
+  <div><strong>Get Zynth for Android</strong><a href="/downloads/zynth-0.1.3.apk" download="Zynth-0.1.3.apk" onClick={dismiss}>Download app <span aria-hidden="true">↓</span></a></div>
   <button type="button" aria-label="Dismiss app download" onClick={dismiss}>×</button>
  </aside>;
 }
