@@ -1,6 +1,6 @@
 # Learning-first quests and provided mission cases
 
-Owner revision: 3 November 2026 (Africa/Lagos).
+Owner revision: 7 November 2026 (Africa/Lagos).
 
 ## Product rule
 
@@ -9,6 +9,20 @@ Daily quests teach useful knowledge toward the chosen direction. They should not
 In every assessment, **Zynth supplies the problem**: a scenario, sample data, constraints and any test inputs needed. The learner diagnoses, solves and checks that problem. The task must not be to invent a problem and then invent its solution. No outside research, software, publishing or personal disclosure is required.
 
 This supersedes the old single-prompt-only daily format and the historical v1 statement that the product is not a learning platform, specifically for quest delivery. The original blueprint remains preserved. Existing numerical progression, accounts and historical records remain applicable.
+
+## Weak-area targeting and open-ended practice — 7 November 2026
+
+New lessons prioritize lower skill mastery and recent corrections/struggles, with exposure as a tie breaker. Both live generation and authored fallback use this priority; authored units are matched to the selected skill rather than attaching an arbitrary rotating skill name. The compressed profile supplies explicit priority skills and the two lowest of all six attributes. Generation validation requires the primary skill and stat; worked examples include a supportive method for the selected attribute. No strength is reduced, and existing issued drafts are retained.
+
+Three correctly reinforced learning quests targeting an attribute support a one-point improvement, including the two named domain attributes. Existing behavioral signals still contribute; a simultaneous positive behavioral change is not counted twice for the same attribute. The old rounded-down weakness modifier no longer turns every single-point improvement into zero. Skill progress on a lesson is limited to its actual targeted skills.
+
+There is no daily lesson cap. After completing a quest, the next lesson or readiness-based mission is prepared, including immediately on the same day. Prepared lessons are sequential rather than date locked, with three upcoming definitions cached and refilled after completion/when connected. This does not remove brief request-rate limits or create an infinite disconnected content supply.
+
+The first completed learning quest of each UTC day uses its normal EXP. Each extra completed learning quest adds **2 bonus EXP**. One Skip Token is awarded after each pair of extras: lessons **3, 5, 7, ...** that day. Counts use distinct saved lesson IDs with recorded teaching and a Basic/Good/Excellent outcome; skips, missions, Swift Mode and retests do not count toward extra-lesson rewards. Lesson-earned tokens can be banked beyond the passive five-token award ceiling so the earned pair reward is not discarded. Existing passive grants retain their ceiling. Awarded bonuses/tokens are recorded on the completion history and shown in feedback; replays cannot award again.
+
+A completed formative check with correction feedback counts as learning. Streaks grow once per learning day, regardless of how many lessons are taken; a same-day skip cannot swallow the real completion's streak increment. New-day bonus counts reset. Offline projections use the same pipeline, then reconcile against authoritative completion; the server continues to own XP, token balances and streaks. Existing UTC day boundaries and mission readiness rules remain in use. No migration is needed.
+
+Focused checks: lesson-growth, five-domain learning content, cache/reconnect regression, authoritative same-day generation/completion/replay, TypeScript and changed-file lint. The legacy mission fixture was updated from a superseded seven-credit assumption to taught concept coverage so it tests current readiness.
 
 ## Learning format
 

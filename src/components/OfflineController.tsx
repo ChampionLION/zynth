@@ -10,9 +10,9 @@ export function OfflineController(){
  useEffect(()=>{if(process.env.NODE_ENV==="production"&&"serviceWorker" in navigator)void navigator.serviceWorker.register("/sw.js",{scope:"/",updateViaCache:"none"}).catch(()=>{});},[]);
  useEffect(()=>{if(!user||!profile||!hydrated)return;try{saveJourneyCache({user,profile,activeQuest,mode,pendingOutcome,pack:readJourneyCache(user.id)?.pack??null});}catch{/* Keep the current page usable if device storage is full. */}},[user,profile,activeQuest,mode,pendingOutcome,hydrated]);
  useEffect(()=>{
-  if(!owner||!hydrated)return;let disposed=false;
+  if(!owner||!hydrated)return;let disposed=false,again=false;
   const sync=async()=>{
-   if(disposed||running.current||!navigator.onLine)return;running.current=true;
+   if(disposed||!navigator.onLine)return;if(running.current){again=true;return;}running.current=true;
    try{
     void import("@/lib/avatar-db").then(avatar=>{const pending=avatar.pendingAvatar(owner);if(pending)return avatar.saveAvatar(owner,pending);}).catch(()=>{/* Cosmetic retry never blocks lesson synchronization. */});
     const energy=localStorage.getItem(`zynth:energy:${owner}`);if(energy){await journeyRequest(owner,"action",JSON.parse(energy));localStorage.removeItem(`zynth:energy:${owner}`);}
@@ -41,13 +41,14 @@ export function OfflineController(){
     const latest=useZynth.getState();if(disposed||latest.user?.id!==owner||!latest.profile)return;
     saveJourneyCache({user:latest.user,profile:latest.profile,activeQuest:latest.activeQuest,mode:latest.mode,pendingOutcome:latest.pendingOutcome,pack});
     void import("@/lib/engines/leaderboard").then(engine=>engine.getLeaderboard(latest.profile!,"global","all")).catch(()=>{});
-   }catch{/* Keep queued work and the last complete snapshot; retry on return. */}finally{running.current=false;}
+   }catch{/* Keep queued work and the last complete snapshot; retry on return. */}finally{running.current=false;if(again&&!disposed){again=false;void sync();}}
   };
   const visible=()=>{if(document.visibilityState==="visible")void sync();};const retry=()=>void sync();
   void sync();const timer=setInterval(retry,60000);
-  window.addEventListener("online",retry);window.addEventListener("zynth-native-resume",retry);document.addEventListener("visibilitychange",visible);
-  return()=>{disposed=true;clearInterval(timer);window.removeEventListener("online",retry);window.removeEventListener("zynth-native-resume",retry);document.removeEventListener("visibilitychange",visible);};
+  window.addEventListener("online",retry);window.addEventListener("zynth-native-resume",retry);window.addEventListener("zynth-lesson-completed",retry);document.addEventListener("visibilitychange",visible);
+  return()=>{disposed=true;clearInterval(timer);window.removeEventListener("online",retry);window.removeEventListener("zynth-native-resume",retry);window.removeEventListener("zynth-lesson-completed",retry);document.removeEventListener("visibilitychange",visible);};
  },[owner,hydrated]);
+ useEffect(()=>{if(profile?.quest_history.length)window.dispatchEvent(new Event("zynth-lesson-completed"));},[profile?.user_id,profile?.quest_history.length]);
  useEffect(()=>{const navigate=(event:MouseEvent)=>{if(navigator.onLine||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>("a[href]"):null;if(!link||link.target==="_blank"||link.hasAttribute("download"))return;const url=new URL(link.href);if(url.origin!==location.origin||url.pathname===location.pathname)return;event.preventDefault();event.stopPropagation();location.assign(url.href);};document.addEventListener("click",navigate,true);return()=>document.removeEventListener("click",navigate,true);},[]);
  return null;
 }

@@ -80,6 +80,7 @@ export const QuestLearningSchema = z.object({
 }).refine(content=>new Set(content.lessons.map(lesson=>lesson.title.toLowerCase())).size===content.lessons.length,"Teach distinct lessons");
 
 export const QuestResultSchema = z.object({
+  stats_targeted:z.array(z.enum(["focus","consistency","adaptability","execution","stat_5","stat_6"])).min(1).max(2).optional(),
   learning: QuestLearningSchema.optional(),
   scenario: z.string().trim().min(80).max(3000).optional(),
   assessment_topics: z.array(z.string().trim().min(2).max(120)).max(14).optional(),

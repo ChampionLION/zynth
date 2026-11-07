@@ -3,7 +3,7 @@ import type {AccountUser} from "../account-flow";
 import type {DailyQuestion,LLMProfileResult,Profile,Quest} from "../types";
 import {buildProfile,validateOnboardingAnswers} from "../engines/onboarding";
 import {resolveQuestPlan,todayStr} from "../engines/quest";
-import {missionProgress,plannedQuestId} from "../engines/quest-cycle";
+import {missionProgress,plannedQuestId,dailyQuestAttempt} from "../engines/quest-cycle";
 import {detectUserState} from "../engines/adaptive";
 import {spendToken,spendXPCards,XP_CARD_COSTS} from "../engines/economy";
 import {applyPrestige} from "../engines/progression";
@@ -46,11 +46,9 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
  let key:string=action.kind;
  if(action.kind==="generate"){
   const p=required(profile),m=missionProgress(p);
-  if(p.last_quest_date===day&&!m.eligible)return {profile:p,quest:null};
   const working=structuredClone(p);working.current_adaptive_state=detectUserState(p).state;
   const planned=resolveQuestPlan(working);
-  const skips=new Set(p.memory.milestones.filter(mark=>mark.type==="quest_skipped"&&mark.date.slice(0,10)===day).map(mark=>mark.quest_id)).size;
-  const attempt=planned.questType==="mission"?m.attempts:p.quest_history.filter(q=>q.completed_at.slice(0,10)===day&&q.quest_type!=="mission").length+skips;
+  const attempt=planned.questType==="mission"?m.attempts:dailyQuestAttempt(p,day);
   const questId=await plannedQuestId(owner,planned.questType,m.cycle,attempt,day);
   plan={...planned,questId,day,cycle:m.cycle,attempt,adaptive:working.current_adaptive_state,provenance:planned.questType==="mission"&&await repo.verifiedCredits(owner)<Math.max(2,m.readyChecks)?"legacy":"server"};key=`generate:${questId}`;
  }else if(action.kind==="onboard"){
@@ -93,7 +91,10 @@ export async function runJourneyAction(user:AccountUser,input:unknown,repo:Journ
     const existing=await repo.activeQuest(owner);if(existing){quest=existing;}else{
      const m=missionProgress(p);
      if(generated!.type==="mission"&&(m.cycle!==plan.cycle||m.attempts!==plan.attempt||!m.eligible))throw new JourneyError("Your mission plan changed. Reopen your journey.",409);
-     if(generated!.type!=="mission"&&p.last_quest_date===day)throw new JourneyError("Today's challenge is already resolved.",409);
+     if(generated!.type!=="mission"){
+      const nextAttempt=dailyQuestAttempt(p,day);
+      if(nextAttempt!==plan.attempt)throw new JourneyError("Your lesson plan changed. Reopen your journey.",409);
+     }
      quest=generated;p.current_adaptive_state=plan.adaptive as Profile["current_adaptive_state"];p.adaptive_state_updated_at=new Date().toISOString();
     }
    }else if(action.kind==="energy"){

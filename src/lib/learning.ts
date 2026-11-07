@@ -1,5 +1,6 @@
 import type {GradeResult,Profile,Quest,QuestType} from "./types";
 import {QuestResultSchema} from "./llm/schemas";
+import {learningFocus} from "./learning-focus";
 
 export function lessonCount(profile:Profile,type:QuestType):1|2 {
   if(type==="calibration"||type==="weakness"||["returning","burned_out","struggling"].includes(profile.current_adaptive_state)||(profile.energy_today==="low"&&profile.energy_date===new Date().toISOString().slice(0,10)))return 1;
@@ -21,6 +22,11 @@ export function generatedQuest(raw:unknown,profile:Profile,type:QuestType,diffic
     if(result.assessment_topics?.some(topic=>!taught.has(topic)))throw new Error("Assess recorded taught topics, or supply a reference for legacy learning.");
   }else if(!result.learning||result.learning.lessons.length!==lessonCount(profile,type)||result.steps.length)throw new Error("Teach the planned short lessons before a single reinforcement check.");
   else if(asksForInventedProblem.test(result.learning.check.question))throw new Error("Supply the reinforcement problem.");
+  if(type!=="mission"){
+    const focus=learningFocus(profile);
+    if(focus.skills.length&&!result.skills_targeted.includes(focus.skills[0]))throw new Error("Teach the priority skill rather than repeating only strengths.");
+    if(!result.stats_targeted?.includes(focus.stats[0]))throw new Error("Build practice around the priority attribute.");
+  }
   return {...result,type,difficulty};
 }
 

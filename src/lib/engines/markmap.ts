@@ -1,5 +1,4 @@
 import type { Profile, QuestHistoryEntry } from "../types";
-import { todayStr } from "./quest";
 import {missionProgress} from "./quest-cycle";
 
 /** Rendering segments are not narrative chapters. Alias retained for old clients. */
@@ -38,9 +37,8 @@ export function activeWorldSegment(profile: Profile): number {
 /** @deprecated This is a visual segment, not a narrative chapter. */
 export const activeWorldChapter=activeWorldSegment;
 
-export function buildWorldMarks(profile: Profile, chapter = activeWorldChapter(profile), today = todayStr()): WorldMark[] {
+export function buildWorldMarks(profile: Profile, chapter = activeWorldChapter(profile)): WorldMark[] {
   const marks = completedMarks(profile);
-  const dayDone = profile.last_quest_date === today;
   const missionDue=missionProgress(profile).eligible;
   const safeChapter = Math.max(0, Math.floor(chapter));
   return WORLD_POINTS.map(([x,y], index) => {
@@ -48,7 +46,7 @@ export function buildWorldMarks(profile: Profile, chapter = activeWorldChapter(p
     const completed = marks[overall];
     return {
       number: overall + 1, x, y,
-      state: completed ? "completed" : overall === marks.length ? dayDone&&!missionDue ? "tomorrow" : "current" : "future",
+      state: completed ? "completed" : overall === marks.length ? "current" : "future",
       isMission: completed?.entry.quest_type === "mission" || (overall===marks.length&&missionDue),
       entry: completed?.entry ?? null,
       exp: completed?.exp ?? 0,

@@ -1,5 +1,6 @@
 import type {Domain,Profile,Quest,QuestLesson,QuestType} from "./types";
 import {lessonCount} from "./learning";
+import {learningFocus,practiceScaffold} from "./learning-focus";
 
 interface Unit {
   title:string; lessons:[QuestLesson,QuestLesson]; question:string;
@@ -60,10 +61,25 @@ export const LEARNING_UNITS:Record<Domain,Unit[]>={
 };
 
 type Content=Omit<Quest,"id"|"status"|"created_at"|"date">;
+const SKILL_TOPICS:Record<Domain,[RegExp,number[]][]>={
+ TECHNICAL:[[/decompos|problem|debug/i,[0,1,3,6]],[/system|architect/i,[1,4,5]],[/logic|construct|cod|program/i,[0,2,3,6]],[/writ|document|communicat/i,[1,5,6]]],
+ ANALYTICAL:[[/critical|reason/i,[0,3,4,6]],[/data|interpret|statist/i,[1,2,5]],[/pattern/i,[2,3,4]],[/structur/i,[0,4,6]]],
+ CREATIVE:[[/idea|concept|origin/i,[3,4,6]],[/visual|design/i,[0,1,2]],[/narrat|story|writ/i,[0,2,5]],[/develop/i,[3,4,6]]],
+ SOCIAL:[[/communicat|writ/i,[0,2,6]],[/listen/i,[1,3,5]],[/persua|fram/i,[2,4,6]],[/empath|read/i,[1,3,5]]],
+ STRATEGIC:[[/fram|strateg/i,[0,2,6]],[/decision|map/i,[1,3,5]],[/priorit/i,[1,2,4]],[/scenario|plan|risk/i,[3,4,5,6]]],
+};
 export function authoredLearningQuest(profile:Profile,type:QuestType,difficulty:number):Content {
  const count=profile.quest_history.filter(q=>q.quest_type!=="mission"&&["Basic","Good","Excellent"].includes(q.grade)).length;
- const index=type==="calibration"?0:count%LEARNING_UNITS[profile.domain].length;
+ const focus=learningFocus(profile),skill=profile.skills.find(s=>s.name===focus.skills[0]);
+ const names=[skill?.name,...skill?.evolutions??[]].join(" ");
+ const bank=LEARNING_UNITS[profile.domain];
+ const matching=[...new Set(SKILL_TOPICS[profile.domain].filter(([pattern])=>pattern.test(names)).flatMap(([,indices])=>indices))];
+ const candidates=matching.length?matching:bank.map((_,i)=>i);
+ const exposure=(index:number)=>profile.quest_history.filter(q=>q.learning_topics?.includes(bank[index].title));
+ const recentCorrection=(index:number)=>exposure(index).slice(-1).some(q=>["Basic","Bad","Fail"].includes(q.grade));
+ const index=[...candidates].sort((a,b)=>Number(recentCorrection(b))-Number(recentCorrection(a))||exposure(a).length-exposure(b).length||a-b)[0];
  const topic=LEARNING_UNITS[profile.domain][index],number=lessonCount(profile,type);
+ const lessons=topic.lessons.slice(0,number).map((lesson,i)=>i===0?{...lesson,explanation:`${lesson.explanation} ${practiceScaffold(focus.stats[0])}`}:lesson);
  const labels=[topic.answer,...topic.alternatives],offset=(index+count)%3;
  const options=labels.map((_,i)=>({key:"ABC"[i],label:labels[(i+offset)%3]}));
  const goal=profile.aspiration&&profile.aspiration.toLowerCase()!=="still exploring"?profile.aspiration:profile.profession;
@@ -71,10 +87,10 @@ export function authoredLearningQuest(profile:Profile,type:QuestType,difficulty:
   quest_title:type==="calibration"?`First steps: ${topic.title}`:topic.title,
   description:`${number===2?"Two short lessons":"One short lesson"}, then one small check using the example provided. You can revisit the lessons while answering.`,
   type,difficulty:type==="calibration"?1:difficulty,estimated_time:number===2?"8–12 min":"4–7 min",
-  skills_targeted:profile.skills.length?[profile.skills[index%profile.skills.length].name]:[],
+  skills_targeted:focus.skills.slice(0,1),stats_targeted:focus.stats,
   success_criteria:"Use the lesson to choose a solution for the supplied problem. A short answer is enough; feedback will explain the reasoning.",
   hint:`Review the worked example for “${topic.title}”. The check uses the same principle.`,flavor_text:"A useful idea becomes a step you can take.",grading_type:"reinforcement",steps:[],
-  learning:{version:1,objective:`${topic.title}: a useful foundation for your path toward “${goal}”.`,lessons:topic.lessons.slice(0,number),check:{question:topic.question,options,correct_option:options.find(o=>o.label===topic.answer)!.key,explanation:topic.explanation}},
+  learning:{version:1,objective:`${topic.title}: a useful foundation for your path toward “${goal}”.`,lessons,check:{question:topic.question,options,correct_option:options.find(o=>o.label===topic.answer)!.key,explanation:topic.explanation}},
  };
 }
 
@@ -93,5 +109,5 @@ export function authoredMission(profile:Profile,difficulty:number):Content {
  const references:Record<Domain,string>={TECHNICAL:"Validate values before using them. Total is quantity multiplied by price. Connected parts must agree on field names. A retry keeps its operation identifier, so an already saved operation is returned rather than applied again.",ANALYTICAL:"A rate is the event count divided by its group total. The mean is the sum divided by the count; the median is the middle sorted value. An association alone does not establish a cause. Missing comparison data limits the conclusion.",CREATIVE:"Hierarchy determines the order of emphasis. Contrast should make important details readable. Repetition creates recognisable structure. Judge a revision against the audience need and supplied brief, separating observed problems from suggested fixes.",SOCIAL:"Clear updates identify the current action, place and time. A paraphrase checks stated meaning without assuming motives. A correction replaces the old instruction explicitly. A handover names each action, its owner and its deadline.",STRATEGIC:"A flow is limited by its lowest-capacity required step. A feasible plan fits the resource budget. An activity is not proof of an outcome. Measure the relevant before-and-after result, and connect each response trigger to an observable condition."};
  const reference=topics.length<3?`\n\nReference for this case: ${references[profile.domain]}`:"";
  return {quest_title:c.title,description:"Apply what you have practised to the case below. The problem, evidence and constraints are supplied; your task is to work out and justify a solution.",scenario:c.scenario+reference,assessment_topics:topics,
- type:"mission",difficulty,estimated_time:"20–30 min",skills_targeted:profile.skills.slice(0,2).map(s=>s.name),success_criteria:"Solve the provided case using its facts, respect its constraints and check your solution against the stated outcomes. Do not invent a different problem or missing evidence.",hint:"Separate the given facts, the rule you are applying and the result your solution should produce.",flavor_text:"Bring the ideas together where the details matter.",grading_type:"llm",steps:c.steps.map((prompt,i)=>({step_number:i+1,title:["Understand the case","Work out the solution","Check your reasoning"][i],prompt,estimated_time:"5–10 min",success_criteria:"Answer this part of the supplied case with specific reasoning grounded in its facts and constraints."}))};
+ type:"mission",difficulty,estimated_time:"20–30 min",skills_targeted:learningFocus(profile).skills,success_criteria:"Solve the provided case using its facts, respect its constraints and check your solution against the stated outcomes. Do not invent a different problem or missing evidence.",hint:"Separate the given facts, the rule you are applying and the result your solution should produce.",flavor_text:"Bring the ideas together where the details matter.",grading_type:"llm",steps:c.steps.map((prompt,i)=>({step_number:i+1,title:["Understand the case","Work out the solution","Check your reasoning"][i],prompt,estimated_time:"5–10 min",success_criteria:"Answer this part of the supplied case with specific reasoning grounded in its facts and constraints."}))};
 }

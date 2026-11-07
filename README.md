@@ -20,11 +20,11 @@ See [ENGINE_STATUS.md](ENGINE_STATUS.md) for all 13 engine connections and remai
 
 Onboarding v2 starts with a written aspiration, followed by four ordinary scenarios. Question definitions and signal mappings are shared by local classification and live prompts. Existing profiles remain valid. Existing Supabase databases need the nullable column migration in `supabase/migrations/20261014_onboarding_aspiration.sql` before new profiles are saved.
 
-Mark Map is a landscape of fourteen checkpoints per rendering segment. Mission landmarks reflect actual mission progress; narrative chapters are separate. It uses successful quest days, groups same-day retries, and excludes failed attempts. The same artwork and progression appear behind Overview. Seven qualifying quests unlock a playable mission independently of streaks.
+Mark Map is a landscape of fourteen checkpoints per rendering segment. Mission landmarks reflect actual mission progress; narrative chapters are separate. It uses successful quest days, groups same-day activity, and excludes failed attempts. The next learning step remains available immediately. Missions unlock through taught concept coverage and recent successful checks, independently of streaks or a fixed number of days.
 
 ## Learning quests and missions
 
-New quests teach through one or two short lessons and worked examples, then offer one small reinforcement check. Missions supply the actual problem, facts and constraints for the user to solve. Short practice replies receive corrective feedback; existing saved quests and drafts remain usable. Both authored fallback content and model generation follow this format. See [learning-first quest behavior and checks](docs/LEARNING_QUESTS.md).
+New quests teach through one or two short lessons and worked examples, then offer one small reinforcement check. Lessons prioritize weaker skills, recent corrections and lower attributes across all six stats. There is no daily lesson quota: each extra completed lesson earns 2 bonus EXP, with a Skip Token after every two extras. Streaks count once per completed learning day. Missions supply the actual problem, facts and constraints for the user to solve. Short practice replies receive corrective feedback; existing saved quests and drafts remain usable. Both authored fallback content and model generation follow this format. See [learning-first quest behavior and checks](docs/LEARNING_QUESTS.md).
 
 ## Expansion branch
 

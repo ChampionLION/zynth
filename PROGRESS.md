@@ -1,6 +1,6 @@
 # Progress update
 
-Updated: 6 November 2026 (Africa/Lagos).
+Updated: 7 November 2026 (Africa/Lagos).
 
 <!-- ZEC_PROGRESS_START -->
 ## Current completion: 70%
@@ -296,3 +296,8 @@ Established canonical Atlas tokens, light/dark themes, six-size typography, shar
 ## 7 November 2026 — Explorer’s journal screen redesign
 
 Redesigned Overview, lesson/mission workspace, Mark Map, Profile, Chronicle, Leaderboard, reward/feedback screens, navigation, onboarding and Home using Atlas tokens. Added compact voice tools, draft review/checklist, focus, touch map controls, shareable cards, actual reward cues and real product previews. Stored progression/grading/authorization rules are unchanged. Scope, truthful reward boundaries, completed focused checks and the owner-waived final browser run are documented in docs/design/JOURNEY_REDESIGN.md. Overall remains 70%.
+
+
+## 7 November 2026 — Weak-area learning and unlimited lessons
+
+Implemented weaker-skill/recent-correction targeting and support for all six stats across generated/authored lessons. Removed same-day generation and cached future-date locks. Extra completed lessons earn +2 EXP; each pair of extras earns a bankable Skip Token (lessons 3, 5, 7, ...). Corrective practice continues the daily streak without counting multiple same-day lessons as extra days. Reward replay remains idempotent; three upcoming lessons refill after learning/reconnection. Focused content, reward, cache and trusted transaction checks, TypeScript and changed-file lint passed. No database migration or production account rewrite is required. See docs/LEARNING_QUESTS.md. Overall remains 70%.

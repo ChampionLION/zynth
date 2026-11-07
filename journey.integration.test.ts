@@ -79,9 +79,9 @@ export async function runJourneyChecks(db:TestDatabase){
  assert.equal((await value<PendingOutcome>("SELECT public.pending_journey_outcome($1) AS value",[user.id]))?.gradeSeen,completed.result.events.length>0?true:undefined);
  for(let i=1;i<=completed.result.events.length;i++)await db.query("SELECT public.ack_journey_outcome($1,$2,true,$3)",[user.id,quest.id,i]);
  assert.equal(await value("SELECT public.pending_journey_outcome($1) AS value",[user.id]),null,"Presentation acknowledges durably without granting again");
- // Prepare a fixture day; no production state or user records are used.
- await db.query("UPDATE public.profiles SET last_quest_date=NULL WHERE user_id=$1",[user.id]);
+ // A second lesson is available immediately after a real same-day completion.
  const next=await action({kind:"generate"});assert.ok(next.quest);const tokens=next.profile!.tokens;
+ assert.notEqual(next.quest!.id,quest.id,"Unlimited lessons retain distinct reward/replay identities");
  await action({kind:"skip",questId:next.quest!.id});await action({kind:"skip",questId:next.quest!.id});
  assert.equal((await repo.profile(user.id))?.tokens,tokens-1,"Repeated skip consumes exactly one token");assert.equal((await repo.quest(user.id,next.quest!.id))?.status,"skipped");
  // Generation failure releases the lease but preserves its exact stored plan.
@@ -124,7 +124,7 @@ export async function runJourneyChecks(db:TestDatabase){
  assert.equal((await repo.profile(user.id))?.exploit_flags.length,beforeRejected!.exploit_flags.length+1);assert.equal((await repo.profile(user.id))?.cumulative_exp,beforeRejected?.cumulative_exp);
  // Legacy credits keep old missions playable but never become verified credit.
  await db.query("UPDATE public.quests SET status='skipped' WHERE user_id=$1 AND status='active'",[user.id]);
- const missionProfile=await repo.profile(user.id);const legacyHistory=Array.from({length:7},(_,i)=>({quest_id:`30000000-0000-4000-8000-${String(i+1).padStart(12,"0")}`,quest_title:"Preserved old quest",quest_type:"daily",grade:"Good",exp_earned:5,skills_targeted:[],completed_at:new Date(Date.now()-86400000+i*1000).toISOString()}));
+ const missionProfile=await repo.profile(user.id);const legacyHistory=Array.from({length:3},(_,i)=>({quest_id:`30000000-0000-4000-8000-${String(i+1).padStart(12,"0")}`,quest_title:"Preserved old lesson",quest_type:"daily",grade:"Good",exp_earned:5,skills_targeted:[],learning_topics:[`Preserved concept ${i}`],completed_at:new Date(Date.now()-86400000+i*1000).toISOString()}));
  await db.query("UPDATE public.profiles SET quest_history=$2 WHERE user_id=$1",[user.id,JSON.stringify([...legacyHistory,...missionProfile!.quest_history])]);
  const verifiedBefore=await repo.verifiedCredits(user.id);const mission=await action({kind:"generate"});assert.equal(mission.quest?.type,"mission");
  await db.query("UPDATE public.quests SET created_at=now()-interval '3 minutes' WHERE id=$1",[mission.quest!.id]);
@@ -158,6 +158,16 @@ export async function runJourneyChecks(db:TestDatabase){
  assert.deepEqual(checked.profile.quest_history.at(-1)?.learning_topics,lesson.learning!.lessons.map(l=>l.title));
  const checkedAgain=await completeStoredQuest(user.id,{questId:lesson.id,responseText:`Option ${lesson.learning!.check.correct_option}`},completion,doNotGrade);
  assert.equal(checkedAgain.replayed,true);assert.equal(checkedAgain.profile.cumulative_exp,checked.profile.cumulative_exp);
+ for(let i=2;i<=3;i++){
+  const nextLesson=await runJourneyAction(user,{kind:"generate"},repo,{...models,generate:async(p,t,d)=>mockGenerateQuest(p,t,d)});
+  assert.ok(nextLesson.quest?.learning,"More learning is available on the same day");
+  const answer=`Option ${nextLesson.quest!.learning!.check.correct_option}`;
+  const earned=await completeStoredQuest(user.id,{questId:nextLesson.quest!.id,responseText:answer},completion,doNotGrade);
+  assert.equal(earned.profile.quest_history.at(-1)?.bonus_exp,2);assert.equal(earned.profile.streak,checked.profile.streak);
+  assert.equal(earned.profile.tokens,checked.profile.tokens+(i===3?1:0));
+  const replay=await completeStoredQuest(user.id,{questId:nextLesson.quest!.id,responseText:answer},completion,doNotGrade);
+  assert.equal(replay.profile.tokens,earned.profile.tokens);assert.equal(replay.profile.cumulative_exp,earned.profile.cumulative_exp);
+ }
  console.log("Trusted journey checks passed: authoritative onboarding, stored generation, daily inputs, completion replay/recovery, token debit, prestige, conservative legacy archive, budgets, column/RLS isolation and saved formative feedback/topic history.");
 }
 async function main(){const db=new PGlite();try{await setupJourneyDatabase(db);await runJourneyChecks(db);}finally{await db.close();}}

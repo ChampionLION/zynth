@@ -4,6 +4,11 @@ import type {Grade,Memory,Profile,Quest,QuestHistoryEntry,QuestType} from "../ty
 /** Concept coverage, not a count of days or quests. */
 export const MISSION_QUEST_REQUIREMENT = 3;
 export const MISSION_POLICY_VERSION = 2;
+export function dailyQuestAttempt(profile:Pick<Profile,"quest_history"|"memory">,day:string):number{
+ const completed=new Set(profile.quest_history.filter(q=>q.quest_type!=="mission"&&q.completed_at.slice(0,10)===day).map(q=>q.quest_id));
+ const skipped=new Set(profile.memory.milestones.filter(m=>m.type==="quest_skipped"&&m.date.slice(0,10)===day).map(m=>m.quest_id));
+ return new Set([...completed,...skipped]).size;
+}
 const eligibleTypes = new Set<QuestType>(["calibration","daily","challenge","hidden","weakness","prestige"]);
 const passingGrades = new Set<Grade>(["Basic","Good","Excellent"]);
 export function isSuccessfulChallenge(entry: Pick<QuestHistoryEntry,"grade">): boolean {

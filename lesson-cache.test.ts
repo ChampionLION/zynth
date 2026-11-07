@@ -16,7 +16,7 @@ const profile=buildProfile(user.id,user.name,mockClassifyOnboarding({Q1:["Design
 const quest={...mockGenerateQuest(profile,"daily",1),id:"00000000-0000-4000-8000-000000000002",date:new Date().toISOString().slice(0,10),created_at:new Date().toISOString(),status:"active" as const};
 const token=[Buffer.from('{"alg":"HS256"}').toString('base64url'),Buffer.from(JSON.stringify({sub:user.id,exp:Math.floor(Date.now()/1000)+3600})).toString('base64url'),"fixture"].join('.');
 data.set("sb-cache-test-auth-token",JSON.stringify({access_token:token,refresh_token:"fixture",expires_at:Math.floor(Date.now()/1000)+3600,user,token_type:"bearer"}));
-saveJourneyCache({user,profile,activeQuest:quest,mode:"trusted",pendingOutcome:null,pack:{key:"lesson-pack:test",lessons:[{quest,ordinal:0}]}});
+saveJourneyCache({user,profile,activeQuest:quest,mode:"trusted",pendingOutcome:null,pack:{key:"lesson-pack:test",policy:3,lessons:[{quest,ordinal:0}]}});
 assert.equal(nextCachedLesson(user.id,profile)?.id,quest.id);assert.equal(nextCachedLesson("another-account",profile),null);
 let cloudReads=0;
 const original=globalThis.fetch;globalThis.fetch=async input=>{const path=String(input);if(path==="/api/journey/state"){cloudReads++;return Response.json({mode:"trusted",profile,activeQuest:quest});}if(path.endsWith('/auth/v1/user'))return Response.json(user);throw new Error(`Unexpected fixture request ${path}`);};
@@ -48,7 +48,7 @@ void(async()=>{try{
  const oldMission={...quest,type:"mission" as const,id:await plannedQuestId(user.id,"mission",1,0,day)};
  ready.memory.milestones.push({type:"mission_skipped",date:`${day}T04:00:00Z`,quest_id:oldMission.id,cycle:1});
  assert.equal(missionProgress(ready).attempts,1);
- saveJourneyCache({user,profile:ready,activeQuest:null,mode:"trusted",pendingOutcome:null,pack:{key:"lesson-pack:old",lessons:[],mission:oldMission}});
+ saveJourneyCache({user,profile:ready,activeQuest:null,mode:"trusted",pendingOutcome:null,pack:{key:"lesson-pack:old",policy:3,lessons:[],mission:oldMission}});
  requests.length=0;cacheStatus=409;
  assert.equal((await prepareNextQuest(user.id,ready)).quest?.id,fresh.id);
  assert.deepEqual(requests,["/api/journey/action"],"A skipped mission changes its attempt; its old cached plan must not block the retry");

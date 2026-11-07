@@ -1,7 +1,9 @@
 import type {Profile,Quest} from "./types";
 import {calculateFinalEXP} from "./engines/progression";
+import {lessonRewards} from "./engines/lesson-rewards";
+import {todayStr} from "./engines/quest";
 export function attributes(p:Profile):[string,number][]{return [["Focus",p.stats.focus],["Consistency",p.stats.consistency],["Adaptability",p.stats.adaptability],["Execution",p.stats.execution],[p.stats.stat_5.name,p.stats.stat_5.value],[p.stats.stat_6.name,p.stats.stat_6.value]];}
-export function rewardPreview(p:Profile,q:Quest){return `Up to +${calculateFinalEXP("Excellent",p.streak+1,p.prestige_exp_bonus,q.type)} EXP · Skill practice`;}
+export function rewardPreview(p:Profile,q:Quest){const extra=lessonRewards(p,q,"Good",todayStr()),streak=p.quest_history.some(h=>h.grade!=="Fail"&&h.completed_at.slice(0,10)===todayStr())?p.streak:p.streak+1;return `Up to +${calculateFinalEXP(q.learning?"Good":"Excellent",streak,p.prestige_exp_bonus,q.type)+extra.bonusExp} EXP${extra.skipTokens?' · +1 Skip Token':' · Skill practice'}`;}
 export function caseBlocks(text:string){
  const [caseText,...reference]=text.split(/(?:Reference for this case|Reference material|Reference):?\s*/i);
  const lines=caseText.split(/\n+/).map(s=>s.trim()).filter(Boolean);

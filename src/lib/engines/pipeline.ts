@@ -42,6 +42,8 @@ import { getDiscoveryMessage, getEvolvedSkillName, getBehaviorSummary } from "..
 import { daysSince, todayStr } from "./quest";
 import { detectUserState } from "./adaptive";
 import {isSuccessfulChallenge} from "./quest-cycle";
+import {lessonRewards} from "./lesson-rewards";
+import {applyLearningStatPractice} from "../learning-focus";
 
 export interface PipelineResult {
   profile: Profile;
@@ -85,7 +87,7 @@ export async function runPostGradePipeline(args: {
   // hitting today; blueprint orders streak after EXP but computes the
   // multiplier from the streak *including today's completion*)
   const wasBreak = daysSince(profile.last_active) >= 3;
-  const alreadyCountedToday = profile.last_quest_date === today;
+  const alreadyCountedToday = profile.quest_history.some(q=>q.grade!=="Fail"&&q.completed_at.slice(0,10)===today);
   let streakMilestoneHit: number | null = null;
   let tokenAwarded = false;
   if (grade !== "Fail" && !alreadyCountedToday) {
@@ -119,13 +121,18 @@ export async function runPostGradePipeline(args: {
   }
 
   // Steps 2–3: exploit penalty + EXP calculation
+  const extraLearning=args.swiftModeUsed?{bonusExp:0,skipTokens:0}:lessonRewards(profile,quest,grade,today);
+  const bonusExp=Math.max(0,Math.round(extraLearning.bonusExp*exploit.expPenalty));
   const expEarned = calculateFinalEXP(
     grade,
     profile.streak,
     profile.prestige_exp_bonus,
     quest.type,
     exploit.expPenalty
-  );
+  )+bonusExp;
+  // Effort-earned tokens remain bankable even when passive token grants are full.
+  const tokensEarned=exploit.expPenalty===1?extraLearning.skipTokens:0;
+  profile.tokens+=tokensEarned;
 
   // Step 4: level-up check
   const beforeLevel = profile.level;
@@ -181,6 +188,7 @@ export async function runPostGradePipeline(args: {
   // Steps 7–8: stat engine + apply with floor
   const deltas = runStatEngine(profile.behavior_log, profile.weakness_signal, streakMilestoneHit);
   const changedStats = applyStatDeltas(profile, deltas);
+  if(!args.swiftModeUsed)changedStats.push(...applyLearningStatPractice(profile,quest,grade,changedStats));
 
   // Step 9: skill EXP from LLM signals
   const firstExcellentEver =
@@ -188,6 +196,7 @@ export async function runPostGradePipeline(args: {
     !profile.quest_history.some((q) => q.grade === "Excellent");
   const creditedSkills = new Set<string>();
   for (const sp of gradeResult.skill_progress) {
+    if(quest.learning&&!quest.skills_targeted.includes(sp.name))continue;
     if (creditedSkills.has(sp.name)) continue;
     creditedSkills.add(sp.name);
     const skill = profile.skills.find((s) => s.name === sp.name);
@@ -242,6 +251,8 @@ export async function runPostGradePipeline(args: {
 
   // Quest history entry (needed before achievements)
   profile.quest_history.push({
+    ...(quest.stats_targeted?{stats_targeted:quest.stats_targeted}:{}),
+    ...(bonusExp?{bonus_exp:bonusExp}:{}),...(tokensEarned?{tokens_earned:tokensEarned}:{}),
       ...(quest.learning?{learning_topics:quest.learning.lessons.map(lesson=>lesson.title)}:{}),
     quest_id: quest.id,
     quest_title: quest.quest_title,

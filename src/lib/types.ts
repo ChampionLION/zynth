@@ -74,6 +74,7 @@ export interface Stats {
   stat_5: DomainStat;
   stat_6: DomainStat;
 }
+export type StatKey = keyof Stats;
 
 export interface BehaviorLogEntry {
   date: string;
@@ -89,6 +90,9 @@ export interface BehaviorLogEntry {
 }
 
 export interface QuestHistoryEntry {
+  stats_targeted?: StatKey[];
+  bonus_exp?: number;
+  tokens_earned?: number;
   learning_topics?: string[];
   quest_id: string;
   quest_title: string;
@@ -239,6 +243,7 @@ export interface QuestLearning {
 }
 
 export interface Quest {
+  stats_targeted?: StatKey[];
   learning?: QuestLearning;
   scenario?: string;
   assessment_topics?: string[];

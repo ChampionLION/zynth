@@ -110,6 +110,7 @@ export const useZynth=create<ZynthStore>((set,get)=>({
    if(epoch!==authEpoch||get().user?.id!==owner||response.profile.user_id!==owner)throw new Error("Your account changed. Please sign in again.");
    const pendingOutcome={questId,result:response.result,gradeSeen:false,eventCursor:0};const presentation=outcomePresentation(pendingOutcome);
    set({profile:response.profile,activeQuest:null,pendingOutcome,gradeReveal:presentation.gradeReveal,eventQueue:presentation.events});
+   const cache=readJourneyCache(owner);if(cache)saveJourneyCache({...cache,profile:response.profile,activeQuest:null,pendingOutcome});
    clearQuestDraft(owner,questId);
    notifyNativeQuestCompleted(owner,questId);
  },

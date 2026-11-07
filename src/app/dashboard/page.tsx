@@ -19,7 +19,7 @@ import { resolveQuestPlan, todayStr } from "@/lib/engines/quest";
 import { detectUserState, STATE_PROMPT_INJECTIONS } from "@/lib/engines/adaptive";
 import { generateQuest, getDailyQuestion } from "@/lib/llm/client";
 import type { DailyQuestion, Quest } from "@/lib/types";
-import {missionProgress,plannedQuestId} from "@/lib/engines/quest-cycle";
+import {missionProgress,plannedQuestId,dailyQuestAttempt} from "@/lib/engines/quest-cycle";
 import {JourneyRequestError} from "@/lib/journey-client";
 
 
@@ -75,7 +75,6 @@ export default function DashboardPage() {
     if (!profile || generationLock.current) return;
     const current=useZynth.getState();
     if(current.profile?.user_id!==profile.user_id||current.activeQuest||current.gradeReveal||current.eventQueue.length)return;
-    if(current.profile.last_quest_date===todayStr()&&!missionProgress(current.profile).eligible)return;
     generationLock.current = true;
     setGenerationError(null);
     setGenerating(true);
@@ -94,7 +93,7 @@ export default function DashboardPage() {
     );
     const quest: Quest = {
       ...generated,
-      id: await plannedQuestId(p.user_id,questType,missionProgress(p).cycle,questType==="mission"?missionProgress(p).attempts:p.quest_history.filter(q=>q.completed_at.slice(0,10)===todayStr()&&q.quest_type!=="mission").length,todayStr()),
+      id: await plannedQuestId(p.user_id,questType,missionProgress(p).cycle,questType==="mission"?missionProgress(p).attempts:dailyQuestAttempt(p,todayStr()),todayStr()),
       status: "active",
       created_at: new Date().toISOString(),
       date: todayStr(),
@@ -104,7 +103,7 @@ export default function DashboardPage() {
     await createPlannedQuest(quest,p.user_id);
     } catch(error) {
       const latest=useZynth.getState();
-      if(latest.profile?.user_id===profile.user_id&&!latest.activeQuest&&(latest.profile.last_quest_date!==todayStr()||missionProgress(latest.profile).eligible)){
+      if(latest.profile?.user_id===profile.user_id&&!latest.activeQuest){
         setGenerationError(error instanceof JourneyRequestError?error.message:"We couldn’t prepare your quest. Please try again.");
       }
     } finally { generationLock.current = false; setGenerating(false); }
@@ -116,8 +115,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!profile || !hydrated) return;
     if (!dailyChecked || generationError || gradeReveal || eventQueue.length) return;
-    const doneToday = profile.last_quest_date === todayStr();
-    if (!activeQuest && (!doneToday||missionProgress(profile).eligible) && !generating) {
+    if (!activeQuest && !generating) {
       void generateTodaysQuest();
     }
     // Keep unfinished challenges and their drafts, including missions after a break.
@@ -126,8 +124,6 @@ export default function DashboardPage() {
   if (!hydrated || !profile) return null;
 
 
-  const doneToday = profile.last_quest_date === todayStr();
-  const mission=missionProgress(profile,activeQuest);
 
   const answerEnergy = async (level: "high" | "mid" | "low") => {
     if(dailyLock.current)return;dailyLock.current=true;setDailyBusy(true);setDailyError("");
@@ -166,7 +162,7 @@ export default function DashboardPage() {
    <div className="overview-main-grid"><section className="overview-work">
     <div className="overview-progress"><LevelStrip profile={profile}/></div>
     <article className="today-mission" id="today-mission"><p className="eyebrow">{activeQuest?.learning?"TODAY’S LESSON":"TODAY’S MISSION"}</p>
-     {doneToday&&!activeQuest&&!mission.eligible?<><h2>A mark made. A little further.</h2><p>Today’s lesson is complete. Come back when you’re ready for your next step.</p><Button onClick={()=>router.push('/markmap')}>See your mark →</Button></>:generationError&&!activeQuest?<><h2>Your next step is still here.</h2><p role="alert">{generationError}</p><Button variant="primary" onClick={()=>void generateTodaysQuest()}>Try again →</Button></>:!activeQuest?<><h2>Preparing your next chapter…</h2><div className="shimmer h-8 rounded"/><p role="status">Finding a useful place to begin.</p></>:<>
+     {generationError&&!activeQuest?<><h2>Your next step is still here.</h2><p role="alert">{generationError}</p><Button variant="primary" onClick={()=>void generateTodaysQuest()}>Try again →</Button></>:!activeQuest?<><h2>Preparing your next chapter…</h2><div className="shimmer h-8 rounded"/><p role="status">Finding a useful place to begin.</p></>:<>
       <h2>{activeQuest.quest_title}</h2><p className="mission-summary">{activeQuest.learning?.objective??activeQuest.description}</p>
       <div className="mission-meta"><span>◷ {activeQuest.estimated_time}</span><DifficultyPips difficulty={activeQuest.difficulty}/><span className="reward-preview">{rewardPreview(profile,activeQuest)}</span></div>
       <div className="mission-skills">{activeQuest.skills_targeted.map(s=><Chip key={s}>{display(s)}</Chip>)}</div>

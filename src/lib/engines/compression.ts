@@ -1,6 +1,7 @@
 // ─── Engine 8: Context Compression ───────────────────────────────
 
 import type { Profile } from "../types";
+import {learningFocus} from "../learning-focus";
 
 function compressStats(stats: Profile["stats"]): Record<string, number> {
   return {
@@ -59,6 +60,7 @@ export function buildCompressedContext(
     return {
       ...base,
       skills: compressSkills(profile.skills),
+      learning_focus:learningFocus(profile),
       hidden_skills_discovered: profile.hidden_skills
         .filter((s) => s.discovered)
         .map((s) => s.name),

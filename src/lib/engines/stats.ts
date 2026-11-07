@@ -71,7 +71,7 @@ export function runStatEngine(
   // Weakness modifier: breaking your pattern is harder than building a new one
   const weaknessStat = WEAKNESS_MAP[weaknessSignal];
   if (weaknessStat && deltas[weaknessStat] > 0) {
-    deltas[weaknessStat] = Math.floor(deltas[weaknessStat] * 0.75);
+    deltas[weaknessStat] = Math.max(1,Math.floor(deltas[weaknessStat] * 0.75));
   }
 
   return deltas;

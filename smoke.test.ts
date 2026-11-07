@@ -200,7 +200,7 @@ dayProfile.quest_history.push({...dayProfile.quest_history[0],quest_id:"same-day
 dayProfile.quest_history.push({...dayProfile.quest_history[0],quest_id:"failed-day",grade:"Fail",completed_at:"2000-01-01T12:00:00Z"});
 check("attempts and same-day retries do not add marks",completedMarks(dayProfile).length===1);
 const doneMap=buildWorldMarks(dayProfile,0);
-check("completed day fills checkpoint and opens next tomorrow",doneMap[0].state==="completed" && doneMap[1].state==="tomorrow");
+check("completed day fills checkpoint and leaves the next lesson available",doneMap[0].state==="completed" && doneMap[1].state==="current");
 check("checkpoint retains quest detail",doneMap[0].entry?.quest_title===quest.quest_title);
 const longJourney=structuredClone(profile);
 longJourney.quest_history=Array.from({length:14},(_,i)=>({...result.profile.quest_history[0],quest_id:String(i),completed_at:new Date(Date.UTC(2020,0,i+1,12)).toISOString()}));
