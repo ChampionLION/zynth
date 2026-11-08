@@ -19,7 +19,7 @@ INSERT INTO public.cosmetic_catalog(id,version,slot,name,description,rarity,requ
 ON CONFLICT(id) DO NOTHING;
 DROP POLICY read_cosmetic_catalog ON public.cosmetic_catalog;
 CREATE POLICY read_cosmetic_catalog ON public.cosmetic_catalog FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.cosmetic_grants g WHERE g.item_id=cosmetic_catalog.id AND g.user_id=(select auth.uid())));
-CREATE OR REPLACE FUNCTION public.sync_cosmetic_inventory(p_user_id uuid) RETURNS jsonb
+CREATE OR REPLACE FUNCTION public.sync_atelier_inventory(p_user_id uuid) RETURNS jsonb
 LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 DECLARE snapshot jsonb;
 BEGIN
@@ -72,10 +72,10 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.equip_cosmetic(p_user_id uuid,p_slot text,p_item_id text) RETURNS jsonb
+CREATE OR REPLACE FUNCTION public.equip_atelier_cosmetic(p_user_id uuid,p_slot text,p_item_id text) RETURNS jsonb
 LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 BEGIN
- PERFORM public.sync_cosmetic_inventory(p_user_id);
+ PERFORM public.sync_atelier_inventory(p_user_id);
  IF p_slot NOT IN ('outfit','accessory','aura','headwear','eyes','hands','feet','back','neck') OR p_slot IS NULL THEN
   RAISE EXCEPTION 'Invalid equipment slot' USING ERRCODE='22023';
  END IF;
@@ -89,7 +89,7 @@ BEGIN
   INSERT INTO public.cosmetic_equipment(user_id,slot,item_id) VALUES(p_user_id,p_slot,p_item_id)
   ON CONFLICT(user_id,slot) DO UPDATE SET item_id=excluded.item_id;
  END IF;
- RETURN public.sync_cosmetic_inventory(p_user_id);
+ RETURN public.sync_atelier_inventory(p_user_id);
 END;
 $$;
 
@@ -101,11 +101,25 @@ CREATE OR REPLACE FUNCTION public.sanitize_public_avatar(p_avatar jsonb) RETURNS
 'outfit',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'outfit' IN ('wayfarer-coat','studio-knit','field-jacket') THEN p_avatar->>'outfit' ELSE 'wayfarer-coat' END,
 'palette',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'palette' IN ('moss','ochre','slate','plum','cream','rust') THEN p_avatar->>'palette' ELSE 'moss' END,
 'background',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'background' IN ('atrium','grove','workshop') THEN p_avatar->>'background' ELSE 'atrium' END,
+'accessory',NULL,'aura',NULL) || CASE WHEN p_avatar ? 'face' THEN jsonb_build_object(
 'face',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'face' IN ('oval','round','angular','heart') THEN p_avatar->>'face' ELSE 'oval' END,
 'build',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'build' IN ('slim','balanced','sturdy') THEN p_avatar->>'build' ELSE 'balanced' END,
 'stature',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'stature' IN ('short','average','tall') THEN p_avatar->>'stature' ELSE 'average' END,
 'eyes',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'eyes' IN ('brown','hazel','green','blue','grey') THEN p_avatar->>'eyes' ELSE 'brown' END,
 'beard',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'beard' IN ('clean','stubble','trimmed','full') THEN p_avatar->>'beard' ELSE 'clean' END,
-'expression',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'expression' IN ('gentle','bright','thoughtful') THEN p_avatar->>'expression' ELSE 'gentle' END,'accessory',NULL,'aura',NULL) $$;
+'expression',CASE WHEN p_avatar->'version'='1'::jsonb AND p_avatar->>'expression' IN ('gentle','bright','thoughtful') THEN p_avatar->>'expression' ELSE 'gentle' END) ELSE '{}'::jsonb END $$;
 
 REVOKE ALL ON FUNCTION public.sanitize_public_avatar(jsonb) FROM PUBLIC,anon,authenticated;
+
+-- Original endpoints retain their bounded v1 shape while the 3D app is staged.
+CREATE OR REPLACE FUNCTION public.sync_cosmetic_inventory(p_user_id uuid) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+DECLARE value jsonb; BEGIN
+ value:=public.sync_atelier_inventory(p_user_id);
+ RETURN value||jsonb_build_object('items',coalesce((SELECT jsonb_agg(item) FROM jsonb_array_elements(value->'items') item WHERE item->>'id' IN ('wayfarer-coat','studio-knit','field-jacket','trail-scarf','mission-satchel','scholar-coat','sharp-pin','focus-halo')),'[]'::jsonb),'equipment',coalesce((SELECT jsonb_object_agg(key,val) FROM jsonb_each(value->'equipment') AS eq(key,val) WHERE key IN ('outfit','accessory','aura')),'{}'::jsonb));
+END $$;
+CREATE OR REPLACE FUNCTION public.equip_cosmetic(p_user_id uuid,p_slot text,p_item_id text) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$ BEGIN
+ IF p_slot NOT IN ('outfit','accessory','aura') OR (p_item_id IS NOT NULL AND p_item_id NOT IN ('wayfarer-coat','studio-knit','field-jacket','trail-scarf','mission-satchel','scholar-coat','sharp-pin','focus-halo')) THEN RAISE EXCEPTION 'Item is not available' USING ERRCODE='22023'; END IF;
+ PERFORM public.equip_atelier_cosmetic(p_user_id,p_slot,p_item_id);RETURN public.sync_cosmetic_inventory(p_user_id);
+END $$;
+REVOKE ALL ON FUNCTION public.sync_atelier_inventory(uuid),public.equip_atelier_cosmetic(uuid,text,text) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.sync_atelier_inventory(uuid),public.equip_atelier_cosmetic(uuid,text,text) TO service_role;

@@ -366,3 +366,8 @@ Reopened M3 and M4 for the approved 3D direction. Local foundation: real Three.j
 M4 local work filters unearned items from UI, cache and API responses. A prepared migration adds 12 pieces across nine total slots, hides unowned catalog rows with RLS, preserves verified grant/replay rules and expands public appearance whitelisting. Production application requires the separately requested owner approval; it has not been applied.
 
 Focused appearance boundary, TypeScript/lint, local SQL ownership/discovery/replay/isolation and browser WebGL/save/cancel/mobile checks passed. The actual procedural character is a functional prototype and does NOT yet match the approved concept-art fidelity: final sculpted character assets, hair/garment finishing, detailed atelier art, performance/physical-device acceptance and production rollout remain OPEN. No new completion points are claimed; 70% remains the historical accepted baseline, not acceptance of this rework. The live site is unchanged.
+
+
+### 8 November 2026 — Approved database expansion applied
+
+The owner-approved storybook_atelier_inventory migration is applied to Zynth as version 20261108060454. Expanded equipment uses versioned sync_atelier_inventory/equip_atelier_cosmetic endpoints; old endpoints retain their original bounded item/slot shape while the new renderer is staged. Old appearance records keep their previous public shape; newly expanded records are whitelisted. Added 12 catalog pieces (20 total), six new wearable slots, ownership-only catalog visibility and verified progression grants. Production permission/catalog/appearance checks passed without changing existing user progress. The 3D frontend remains local and visual acceptance is still open.

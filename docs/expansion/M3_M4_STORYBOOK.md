@@ -22,3 +22,8 @@ Focused appearance boundary, TypeScript/lint, local SQL ownership/discovery/repl
 - [ ] Reviewed release.
 
 The new migration does not change XP, skills, levels or existing cosmetic ownership. It expands existing catalog/check constraints and replaces inventory projection/equip logic; grants remain server-owned and tied to verified completion evidence. New pieces can reconcile from existing verified learning. The application uses 1024-square procedural surface maps as prototype materials; these are not scanned 4K artist textures, and the preview images are not represented as runtime screenshots.
+
+
+### 8 November 2026 — Approved database expansion applied
+
+The owner-approved storybook_atelier_inventory migration is applied to Zynth as version 20261108060454. Expanded equipment uses versioned sync_atelier_inventory/equip_atelier_cosmetic endpoints; old endpoints retain their original bounded item/slot shape while the new renderer is staged. Old appearance records keep their previous public shape; newly expanded records are whitelisted. Added 12 catalog pieces (20 total), six new wearable slots, ownership-only catalog visibility and verified progression grants. Production permission/catalog/appearance checks passed without changing existing user progress. The 3D frontend remains local and visual acceptance is still open.
