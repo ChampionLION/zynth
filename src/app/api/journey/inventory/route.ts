@@ -5,7 +5,7 @@ import {journeyAuth,journeyBody,journeyReply,journeyFailure,trustedClient} from 
 export async function GET(req:NextRequest){try{
  const {user,url}=await journeyAuth(req),client=await trustedClient(url);
  const {data,error}=await client.rpc("sync_cosmetic_inventory",{p_user_id:user.id});if(error)throw error;
- return journeyReply(data);
+ return journeyReply({...data,items:(data.items??[]).filter((item:{owned:boolean})=>item.owned)});
 }catch(error){return journeyFailure(error);}}
 export async function POST(req:NextRequest){try{
  const {user,url}=await journeyAuth(req),client=await trustedClient(url);

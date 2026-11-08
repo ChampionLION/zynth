@@ -1,6 +1,6 @@
 # Project milestones
 
-Updated: 6 November 2026 (Africa/Lagos).
+Updated: 8 November 2026 (Africa/Lagos).
 
 ## Current roadmap snapshot — 70%
 
@@ -357,3 +357,12 @@ Implemented weaker-skill/recent-correction targeting and support for all six sta
 Implemented one randomly selected optional game after each Basic/Good/Excellent quest clear, on the feedback screen. The pool contains 300 deterministic puzzle configurations across ten mechanics: pairs, sliding tiles, lights, memory sequence, paths, target sums, ordering, word reconstruction, number patterns and odd-symbol search. A clear offers Play or Skip; there is no game browser, reroll or next-game chain. Continue learning can leave immediately. Account/quest-scoped device receipts keep the same selection and retain skip/completed status across reloads. No XP, currency or ownership is granted by game play. All content is bundled for the shared web/Android application; physical-device acceptance and cross-device receipt synchronization remain outside this local receipt implementation.
 
 Checks: all 300 configurations for solvability/invariants and deterministic regeneration, receipt isolation/skip/completion preservation, TypeScript and changed-file lint. Browser acceptance is recorded separately. Overall roadmap remains 70%; no new weighted points were assigned.
+
+
+## 8 November 2026 ? M3/M4 storybook rebuild IN PROGRESS
+
+Reopened M3 and M4 for the approved 3D direction. Local foundation: real Three.js geometry/materials, interactive full-screen atelier with rotate/zoom/recenter, male/female choices with 14 hairstyles, six skin tones, five hair and eye colours, six garment palettes, four face shapes, three builds/heights/expressions and four facial-hair choices. Existing appearance metadata defaults remain compatible. Snapshot portraits share the same 3D scene across identity/overview/rankings, using a shared renderer to avoid a WebGL context per ranking row; profile sharing now reads the rendered image.
+
+M4 local work filters unearned items from UI, cache and API responses. A prepared migration adds 12 pieces across nine total slots, hides unowned catalog rows with RLS, preserves verified grant/replay rules and expands public appearance whitelisting. Production application requires the separately requested owner approval; it has not been applied.
+
+Focused appearance boundary, TypeScript/lint, local SQL ownership/discovery/replay/isolation and browser WebGL/save/cancel/mobile checks passed. The actual procedural character is a functional prototype and does NOT yet match the approved concept-art fidelity: final sculpted character assets, hair/garment finishing, detailed atelier art, performance/physical-device acceptance and production rollout remain OPEN. No new completion points are claimed; 70% remains the historical accepted baseline, not acceptance of this rework. The live site is unchanged.

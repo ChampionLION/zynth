@@ -17,14 +17,15 @@ export function answerChecks(answer:string,scenario:string,criteria:string){
  return {words,checks:[{label:"Your answer has started",done:words>0},{label:"20-word reflection",done:words>=20},...dates.map(value=>({label:`References ${value}`,done:answer.toLowerCase().includes(value.toLowerCase())})),{label:criteria,done:false,manual:true}]};
 }
 /** Export a card using only the current user's visible facts. No account identifiers. */
-export async function shareCard(title:string,lines:string[],avatar?:SVGSVGElement|null){
+export async function shareCard(title:string,lines:string[],avatar?:SVGSVGElement|HTMLImageElement|HTMLCanvasElement|null){
  const canvas=document.createElement("canvas");canvas.width=1200;canvas.height=630;const ctx=canvas.getContext("2d");if(!ctx)throw new Error("Image export is unavailable.");
  const css=getComputedStyle(document.documentElement),color=(key:string)=>css.getPropertyValue(key).trim();
  ctx.fillStyle=color("--atlas-deep");ctx.fillRect(0,0,1200,630);ctx.fillStyle=color("--glow");ctx.font="600 26px system-ui";ctx.fillText("ZYNTH / KEEP BECOMING",64,86);
  ctx.fillStyle=color("--atlas-paper");ctx.font="600 48px system-ui";
  const words=title.split(/\s+/);let line="",y=180;for(const word of words){if(ctx.measureText(line+word).width>760){ctx.fillText(line,64,y);y+=60;line="";}line+=word+" ";}ctx.fillText(line,64,y);
  ctx.font="26px system-ui";lines.slice(0,5).forEach((line,i)=>ctx.fillText(line.slice(0,64),64,y+72+i*42));
- if(avatar){try{const clone=avatar.cloneNode(true) as SVGSVGElement;const nodes=[avatar,...Array.from(avatar.querySelectorAll('*'))],copies=[clone,...Array.from(clone.querySelectorAll('*'))];nodes.forEach((node,i)=>{const c=getComputedStyle(node);for(const prop of ['fill','stroke','color'])copies[i].setAttribute(prop,c.getPropertyValue(prop));});const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}));try{const img=new Image();await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=reject;img.src=url;});ctx.drawImage(img,880,190,260,260);}finally{URL.revokeObjectURL(url);}}catch{/* The fact card remains exportable without an illustration. */}}
+ if(avatar instanceof HTMLImageElement||avatar instanceof HTMLCanvasElement){try{ctx.drawImage(avatar,880,190,260,260);}catch{/* Sharing remains available while a portrait loads. */}}
+ else if(avatar){try{const clone=avatar.cloneNode(true) as SVGSVGElement;const nodes=[avatar,...Array.from(avatar.querySelectorAll('*'))],copies=[clone,...Array.from(clone.querySelectorAll('*'))];nodes.forEach((node,i)=>{const c=getComputedStyle(node);for(const prop of ['fill','stroke','color'])copies[i].setAttribute(prop,c.getPropertyValue(prop));});const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}));try{const img=new Image();await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=reject;img.src=url;});ctx.drawImage(img,880,190,260,260);}finally{URL.revokeObjectURL(url);}}catch{/* The fact card remains exportable without an illustration. */}}
  const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Image export failed.")),"image/png"));
  const file=new File([blob],"zynth-journey.png",{type:"image/png"});
  if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title});return;}
