@@ -16,6 +16,7 @@ export function AvatarIdentity({profile}:{profile:Profile}){
  const inventory=useInventory(owner);
  const [value,setValue]=useState<Avatar>(()=>pendingAvatar(owner)??cachedAvatar(owner)),[draft,setDraft]=useState(value);
  const [editing,setEditing]=useState(false),[busy,setBusy]=useState(false),[status,setStatus]=useState(""),[error,setError]=useState("");
+ const [category,setCategory]=useState("character");
  const [section,setSection]=useState<"appearance"|"inventory">("appearance");
  const version=useRef(0),saving=useRef(false),mounted=useRef(true),editingRef=useRef(false);
  editingRef.current=editing;
@@ -34,7 +35,7 @@ export function AvatarIdentity({profile}:{profile:Profile}){
  useEffect(()=>{if(editing)try{localStorage.setItem(draftKey(owner),JSON.stringify(draft));}catch{/* Preview remains usable. */}},[draft,editing,owner]);
  const open=()=>{
   let restored:Avatar|null=null;try{const parsed=AvatarSchema.safeParse(JSON.parse(localStorage.getItem(draftKey(owner))??"null"));if(parsed.success)restored=parsed.data;}catch{/* Open with the saved character. */}
-  setDraft(restored??value);setError("");setSection("appearance");setEditing(true);
+  setDraft(restored??value);setError("");setSection("appearance");setCategory("character");setEditing(true);
  };
  const close=()=>{if(busy)return;setEditing(false);setDraft(value);setError("");try{localStorage.removeItem(draftKey(owner));}catch{/* Cancel still discards the active preview. */}};
  const save=async()=>{
@@ -52,8 +53,8 @@ export function AvatarIdentity({profile}:{profile:Profile}){
    <div className="avatar-stage"><AvatarArt value={value} equipment={inventory?.equipment} name={profile.character_name||profile.display_name}/><div className="avatar-stage-label"><span>YOUR WAYFARER</span></div></div>
    <div className="avatar-identity-copy"><p className="eyebrow">STILL BECOMING</p><div className="avatar-identity-meta"><span>{profile.title}</span>{profile.prestige>0&&<span>Prestige {profile.prestige}</span>}</div><h1>{profile.character_name||profile.display_name}</h1><p className="avatar-profession">{profile.profession}</p>{profile.aspiration&&<p className="avatar-direction">{profile.aspiration}</p>}<span className="avatar-domain">{label(profile.domain.toLowerCase())} · {display(profile.behavior_signature)}</span><LevelStrip profile={profile}/><div className="profile-header-actions"><button onClick={open} aria-label="Customize appearance">✎ Customize</button><ShareButton profile={profile}/></div>{status&&<p className="settings-status" role="status">{status} {status.includes("pending")&&<button type="button" className="underline" onClick={()=>void retry()}>Retry save</button>}</p>}</div>
   </section>
-  {editing&&<Dialog title="The Atelier" className="avatar-editor atelier-world" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>×</button><nav className="avatar-customize-sections" aria-label="Customize sections"><button type="button" aria-pressed={section==="appearance"} onClick={()=>setSection("appearance")}>Appearance</button><button type="button" aria-pressed={section==="inventory"} onClick={()=>setSection("inventory")}>Inventory</button></nav><div hidden={section!=="appearance"}><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} equipment={inventory?.equipment} name="Appearance preview" interactive/><p>PREVIEW</p></div><div className="avatar-options"><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
-   <Choices name="Avatar gender" selected={draft.gender} options={["male","female"] as const} onChange={gender=>setDraft({...draft,gender})}/>
+  {editing&&<Dialog title="The Atelier" className="avatar-editor atelier-world" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>×</button><nav className="avatar-customize-sections" aria-label="Customize sections"><button type="button" aria-pressed={section==="appearance"} onClick={()=>setSection("appearance")}>Appearance</button><button type="button" aria-pressed={section==="inventory"} onClick={()=>setSection("inventory")}>Inventory</button></nav><div hidden={section!=="appearance"}><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} equipment={inventory?.equipment} name="Appearance preview" interactive/><p>PREVIEW</p></div><div className="avatar-options"><nav className="atelier-option-tabs" aria-label="Appearance categories">{["character","hair","wardrobe","setting"].map(id=><button key={id} type="button" aria-pressed={category===id} onClick={()=>setCategory(id)}>{label(id)}</button>)}</nav><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
+   <div hidden={category!=="character"}><Choices name="Avatar gender" selected={draft.gender} options={["male","female"] as const} onChange={gender=>setDraft({...draft,gender})}/>
    <Choices name="Face shape" selected={draft.face} options={["oval","round","angular","heart"] as const} onChange={face=>setDraft({...draft,face})}/>
 <Choices name="Build" selected={draft.build} options={["slim","balanced","sturdy"] as const} onChange={build=>setDraft({...draft,build})}/>
 <Choices name="Height" selected={draft.stature} options={["short","average","tall"] as const} onChange={stature=>setDraft({...draft,stature})}/>
@@ -61,13 +62,13 @@ export function AvatarIdentity({profile}:{profile:Profile}){
 <Choices name="Eyes" selected={draft.eyes} options={["brown","hazel","green","blue","grey"] as const} onChange={eyes=>setDraft({...draft,eyes})}/>
 <Choices name="Facial hair" selected={draft.beard} options={["clean","stubble","trimmed","full"] as const} onChange={beard=>setDraft({...draft,beard})}/>
 <Swatches name="Skin tone" selected={draft.skin} colors={SKIN_COLORS} onChange={skin=>setDraft({...draft,skin})}/>
-   <Choices name="Hair style" selected={draft.hair} options={["crop","waves","coils","shaved","bob","long","pixie","undercut","braids","locs","ponytail","bun","twists","afro"] as const} onChange={hair=>setDraft({...draft,hair})}/>
+   </div><div hidden={category!=="hair"}><Choices name="Hair style" selected={draft.hair} options={["crop","waves","coils","shaved","bob","long","pixie","undercut","braids","locs","ponytail","bun","twists","afro"] as const} onChange={hair=>setDraft({...draft,hair})}/>
    <Swatches name="Hair color" selected={draft.hairColor} colors={HAIR_COLORS} onChange={hairColor=>setDraft({...draft,hairColor})}/>
-   {inventory?.equipment.outfit&&<p className="avatar-note">Your inventory outfit is equipped. Remove it in your inventory to change your base outfit.</p>}
+</div><div hidden={category!=="wardrobe"}>{inventory?.equipment.outfit&&<p className="avatar-note">Your inventory outfit is equipped. Remove it in your inventory to change your base outfit.</p>}
    <fieldset disabled={!!inventory?.equipment.outfit}><legend className="sr-only">Base outfit</legend><Choices name="Outfit" selected={draft.outfit} options={FREE_OUTFITS.map(o=>o.id)} onChange={outfit=>setDraft(equipAvatar(draft,"outfit",outfit))}/></fieldset>
    <Swatches name="Outfit color" selected={draft.palette} colors={OUTFIT_COLORS} onChange={palette=>setDraft({...draft,palette})}/>
-   <Choices name="Backdrop" selected={draft.background} options={["atrium","grove","workshop"] as const} onChange={background=>setDraft({...draft,background})}/>
-
+   </div><div hidden={category!=="setting"}><Choices name="Backdrop" selected={draft.background} options={["atrium","grove","workshop"] as const} onChange={background=>setDraft({...draft,background})}/>
+</div>
   </fieldset></div></div>{error&&<p role="alert" className="account-error">{error}</p>}<div className="avatar-editor-actions"><button type="button" disabled={busy} onClick={()=>setDraft({...DEFAULT_AVATAR})} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>Reset preview</button><div><button type="button" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>Cancel</button><button type="button" className="settings-save" disabled={busy} onClick={()=>void save()} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>{busy?"Saving…":"Save appearance"}</button></div></div></div><div hidden={section!=="inventory"}><InventoryPanel owner={owner} appearance={draft} inventory={inventory}/></div></Dialog>}
  </>;
 }

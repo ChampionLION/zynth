@@ -322,3 +322,27 @@ Focused appearance boundary, TypeScript/lint, local SQL ownership/discovery/repl
 ### 8 November 2026 — Approved database expansion applied
 
 The owner-approved storybook_atelier_inventory migration is applied to Zynth as version 20261108060454. Expanded equipment uses versioned sync_atelier_inventory/equip_atelier_cosmetic endpoints; old endpoints retain their original bounded item/slot shape while the new renderer is staged. Old appearance records keep their previous public shape; newly expanded records are whitelisted. Added 12 catalog pieces (20 total), six new wearable slots, ownership-only catalog visibility and verified progression grants. Production permission/catalog/appearance checks passed without changing existing user progress. The 3D frontend remains local and visual acceptance is still open.
+
+## 8 November 2026 — M3/M4 image presentation replacement
+
+Progress: **70% historical baseline**. The requested renderer replacement is implemented locally; final M3/M4 art/device acceptance stays open.
+
+- Replaced the active model renderer with layered, textured image artwork: male/female clothing and faces, 14 hairstyles, visible equipped gear, three atmospheric rooms, soft depth/shadows and full/close-up controls.
+- Preserved all 3D progress, including unpublished refinements, in `archive/m3-m4-3d/2026-11-08/`. Original renderer and scene sources remain present and inactive; archive hashes match.
+- Kept saved appearance, drafts, equipment ownership, privacy, shared portraits and progress rules intact. Added exact artwork prompts and asset documentation. No database migration.
+- Focused TypeScript/lint, 1440px/390px editor save/cancel, 28 gender/hair combinations, six earned-outfit render paths, equipment composition and no-WebGL probe passed. Broader/physical-device testing remains deferred.
+- This image replacement has not been pushed or deployed. The preceding 3D/database foundation was deployed at `84311b4`. Earlier local-only notes refer to that older checkpoint.
+
+### Full-avatar cohesion — 8 November 2026
+
+Matched free and earned body art to the storybook faces, corrected wool-only palette changes, feathered the neck/collar join and added hair contact shading. The floor shadow now travels with the figure; view controls no longer cover the feet. Appearance saves and the preserved 3D checkpoint remain intact. Focused 1440px/390px editor checks and a twelve-look visual probe passed. Local, unpublished UI refinement; roadmap stays at the 70% historical baseline.
+
+## 9 November 2026 — Restored 3D atelier release
+
+Progress: **70% historical roadmap baseline**. The requested restoration and pending refinement are complete and passed release checks; no additional roadmap points are claimed.
+
+- Restored real 3D avatars across the shared avatar entry point. Preserved the image experiment and the original 3D checkpoint.
+- Refined hair/face construction, hands/boots, garment silhouettes, fabric finish, lighting and equipment alignment. Knitwear, coats, vests, shirts, cloaks and aprons now have distinct construction.
+- Reused the editor's rendering context, added accessible zoom/recenter controls, kept mobile controls beside the character and retained the categorized appearance editor.
+- Production build/types/lint and focused 1440px/390px save/reopen/cancel, stable canvas and camera-control checks passed. No new database migration or progress change.
+- Release target: existing Zynth production project, GitHub master branch, zynth-skillforge.vercel.app. Final deployment readiness is reported from Vercel in the release handoff. Detailed art/device acceptance remains separate from this refinement delivery.

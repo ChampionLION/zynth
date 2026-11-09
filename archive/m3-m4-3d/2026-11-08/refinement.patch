@@ -1,0 +1,228 @@
+diff --git a/src/components/Avatar3D.tsx b/src/components/Avatar3D.tsx
+index 1687ea4..043c768 100644
+--- a/src/components/Avatar3D.tsx
++++ b/src/components/Avatar3D.tsx
+@@ -3,11 +3,14 @@ import Image from 'next/image';
+ import {useEffect,useRef,useState} from 'react';
+ import * as T from 'three';
+ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
++import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
+ import {buildAvatarScene} from '@/lib/avatar-scene';
+ import type {Avatar} from '@/lib/avatar';
+ import type {Equipment} from '@/lib/inventory';
+ let snapshotRenderer:T.WebGLRenderer|undefined;
+ const snapshots=new Map<string,string>();
++const lighting=new WeakMap<T.WebGLRenderer,T.WebGLRenderTarget>();
++function illuminate(r:T.WebGLRenderer,scene:T.Scene){let target=lighting.get(r);if(!target){const environment=new RoomEnvironment(),pmrem=new T.PMREMGenerator(r);target=pmrem.fromScene(environment,.05);lighting.set(r,target);environment.dispose();pmrem.dispose();}scene.environment=target.texture;scene.environmentIntensity=.45;}
+ function renderer(){const r=new T.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true,powerPreference:'low-power'});r.outputColorSpace=T.SRGBColorSpace;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;return r;}
+ export default function Avatar3D({value,equipment={},name,portrait=false,interactive=false}:{value:Avatar;equipment?:Equipment;name:string;portrait?:boolean;interactive?:boolean}){
+  const host=useRef<HTMLDivElement>(null),controls=useRef<OrbitControls|null>(null),[image,setImage]=useState(''),[failed,setFailed]=useState(false);
+@@ -19,13 +22,13 @@ export default function Avatar3D({value,equipment={},name,portrait=false,interac
+   const timer=window.setTimeout(()=>{try{
+    if(!interactive&&snapshots.has(key)){setImage(snapshots.get(key)!);return;}
+    world=buildAvatarScene(value,equipment,portrait);
+-   if(!interactive){snapshotRenderer??=renderer();r=snapshotRenderer;r.setPixelRatio(1);r.setSize(portrait?192:600,portrait?192:600,false);r.render(world.scene,world.camera);const url=r.domElement.toDataURL('image/png');if(snapshots.size>=96)snapshots.delete(snapshots.keys().next().value!);snapshots.set(key,url);if(!disposed)setImage(url);world.dispose();world=undefined;return;}
+-   r=renderer();r.setPixelRatio(Math.min(window.devicePixelRatio,1.5));element.appendChild(r.domElement);
++   if(!interactive){snapshotRenderer??=renderer();r=snapshotRenderer;illuminate(r,world.scene);r.setPixelRatio(1);r.setSize(portrait?192:600,portrait?192:600,false);r.render(world.scene,world.camera);const url=r.domElement.toDataURL('image/png');if(snapshots.size>=96)snapshots.delete(snapshots.keys().next().value!);snapshots.set(key,url);if(!disposed)setImage(url);world.dispose();world=undefined;return;}
++   r=renderer();illuminate(r,world.scene);r.setPixelRatio(Math.min(window.devicePixelRatio,1.5));element.appendChild(r.domElement);
+    const orbit=new OrbitControls(world.camera,r.domElement);controls.current=orbit;orbit.target.set(0,1.6,0);orbit.enablePan=false;orbit.minDistance=3;orbit.maxDistance=9;orbit.maxPolarAngle=Math.PI*.54;orbit.minPolarAngle=Math.PI*.2;orbit.update();
+    const draw=()=>{if(world&&r)r.render(world.scene,world.camera);};orbit.addEventListener('change',draw);
+    const resize=()=>{if(!world||!r)return;const w=element.clientWidth,h=element.clientHeight;if(!w||!h)return;r.setSize(w,h,false);world.camera.aspect=w/h;world.camera.updateProjectionMatrix();draw();};observer=new ResizeObserver(resize);observer.observe(element);resize();
+   }catch{if(!disposed)setFailed(true);}},0);
+-  return()=>{disposed=true;clearTimeout(timer);observer?.disconnect();controls.current?.dispose();controls.current=null;world?.dispose();if(interactive&&r){r.dispose();r.forceContextLoss();r.domElement.remove();}};
++  return()=>{disposed=true;clearTimeout(timer);observer?.disconnect();controls.current?.dispose();controls.current=null;world?.dispose();if(interactive&&r){lighting.get(r)?.dispose();lighting.delete(r);r.dispose();r.forceContextLoss();r.domElement.remove();}};
+  },[key,interactive]); // eslint-disable-line react-hooks/exhaustive-deps
+  return <div className={`avatar-3d ${interactive?'avatar-3d-interactive':''}`} aria-label={name} role={interactive?'group':'img'}>
+   <div className="avatar-3d-canvas" ref={host}>{image&&<Image src={image} alt="" width={portrait?192:600} height={portrait?192:600} unoptimized/>}{failed&&<span className="avatar-3d-unavailable" role="status">3D view unavailable on this device</span>}{!image&&!interactive&&!failed&&<span className="avatar-3d-loading" aria-hidden="true">✦</span>}</div>
+diff --git a/src/components/AvatarIdentity.tsx b/src/components/AvatarIdentity.tsx
+index 9ac8033..d140731 100644
+--- a/src/components/AvatarIdentity.tsx
++++ b/src/components/AvatarIdentity.tsx
+@@ -16,6 +16,7 @@ export function AvatarIdentity({profile}:{profile:Profile}){
+  const inventory=useInventory(owner);
+  const [value,setValue]=useState<Avatar>(()=>pendingAvatar(owner)??cachedAvatar(owner)),[draft,setDraft]=useState(value);
+  const [editing,setEditing]=useState(false),[busy,setBusy]=useState(false),[status,setStatus]=useState(""),[error,setError]=useState("");
++ const [category,setCategory]=useState("character");
+  const [section,setSection]=useState<"appearance"|"inventory">("appearance");
+  const version=useRef(0),saving=useRef(false),mounted=useRef(true),editingRef=useRef(false);
+  editingRef.current=editing;
+@@ -34,7 +35,7 @@ export function AvatarIdentity({profile}:{profile:Profile}){
+  useEffect(()=>{if(editing)try{localStorage.setItem(draftKey(owner),JSON.stringify(draft));}catch{/* Preview remains usable. */}},[draft,editing,owner]);
+  const open=()=>{
+   let restored:Avatar|null=null;try{const parsed=AvatarSchema.safeParse(JSON.parse(localStorage.getItem(draftKey(owner))??"null"));if(parsed.success)restored=parsed.data;}catch{/* Open with the saved character. */}
+-  setDraft(restored??value);setError("");setSection("appearance");setEditing(true);
++  setDraft(restored??value);setError("");setSection("appearance");setCategory("character");setEditing(true);
+  };
+  const close=()=>{if(busy)return;setEditing(false);setDraft(value);setError("");try{localStorage.removeItem(draftKey(owner));}catch{/* Cancel still discards the active preview. */}};
+  const save=async()=>{
+@@ -52,8 +53,8 @@ export function AvatarIdentity({profile}:{profile:Profile}){
+    <div className="avatar-stage"><AvatarArt value={value} equipment={inventory?.equipment} name={profile.character_name||profile.display_name}/><div className="avatar-stage-label"><span>YOUR WAYFARER</span></div></div>
+    <div className="avatar-identity-copy"><p className="eyebrow">STILL BECOMING</p><div className="avatar-identity-meta"><span>{profile.title}</span>{profile.prestige>0&&<span>Prestige {profile.prestige}</span>}</div><h1>{profile.character_name||profile.display_name}</h1><p className="avatar-profession">{profile.profession}</p>{profile.aspiration&&<p className="avatar-direction">{profile.aspiration}</p>}<span className="avatar-domain">{label(profile.domain.toLowerCase())} · {display(profile.behavior_signature)}</span><LevelStrip profile={profile}/><div className="profile-header-actions"><button onClick={open} aria-label="Customize appearance">✎ Customize</button><ShareButton profile={profile}/></div>{status&&<p className="settings-status" role="status">{status} {status.includes("pending")&&<button type="button" className="underline" onClick={()=>void retry()}>Retry save</button>}</p>}</div>
+   </section>
+-  {editing&&<Dialog title="The Atelier" className="avatar-editor atelier-world" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>×</button><nav className="avatar-customize-sections" aria-label="Customize sections"><button type="button" aria-pressed={section==="appearance"} onClick={()=>setSection("appearance")}>Appearance</button><button type="button" aria-pressed={section==="inventory"} onClick={()=>setSection("inventory")}>Inventory</button></nav><div hidden={section!=="appearance"}><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} equipment={inventory?.equipment} name="Appearance preview" interactive/><p>PREVIEW</p></div><div className="avatar-options"><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
+-   <Choices name="Avatar gender" selected={draft.gender} options={["male","female"] as const} onChange={gender=>setDraft({...draft,gender})}/>
++  {editing&&<Dialog title="The Atelier" className="avatar-editor atelier-world" onClose={close}><button type="button" className="avatar-editor-close" aria-label="Close appearance editor" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>×</button><nav className="avatar-customize-sections" aria-label="Customize sections"><button type="button" aria-pressed={section==="appearance"} onClick={()=>setSection("appearance")}>Appearance</button><button type="button" aria-pressed={section==="inventory"} onClick={()=>setSection("inventory")}>Inventory</button></nav><div hidden={section!=="appearance"}><div className="avatar-editor-grid"><div className="avatar-preview"><AvatarArt value={draft} equipment={inventory?.equipment} name="Appearance preview" interactive/><p>PREVIEW</p></div><div className="avatar-options"><nav className="atelier-option-tabs" aria-label="Appearance categories">{["character","hair","wardrobe","setting"].map(id=><button key={id} type="button" aria-pressed={category===id} onClick={()=>setCategory(id)}>{label(id)}</button>)}</nav><fieldset disabled={busy}><legend className="sr-only">Appearance choices</legend>
++   <div hidden={category!=="character"}><Choices name="Avatar gender" selected={draft.gender} options={["male","female"] as const} onChange={gender=>setDraft({...draft,gender})}/>
+    <Choices name="Face shape" selected={draft.face} options={["oval","round","angular","heart"] as const} onChange={face=>setDraft({...draft,face})}/>
+ <Choices name="Build" selected={draft.build} options={["slim","balanced","sturdy"] as const} onChange={build=>setDraft({...draft,build})}/>
+ <Choices name="Height" selected={draft.stature} options={["short","average","tall"] as const} onChange={stature=>setDraft({...draft,stature})}/>
+@@ -61,13 +62,13 @@ export function AvatarIdentity({profile}:{profile:Profile}){
+ <Choices name="Eyes" selected={draft.eyes} options={["brown","hazel","green","blue","grey"] as const} onChange={eyes=>setDraft({...draft,eyes})}/>
+ <Choices name="Facial hair" selected={draft.beard} options={["clean","stubble","trimmed","full"] as const} onChange={beard=>setDraft({...draft,beard})}/>
+ <Swatches name="Skin tone" selected={draft.skin} colors={SKIN_COLORS} onChange={skin=>setDraft({...draft,skin})}/>
+-   <Choices name="Hair style" selected={draft.hair} options={["crop","waves","coils","shaved","bob","long","pixie","undercut","braids","locs","ponytail","bun","twists","afro"] as const} onChange={hair=>setDraft({...draft,hair})}/>
++   </div><div hidden={category!=="hair"}><Choices name="Hair style" selected={draft.hair} options={["crop","waves","coils","shaved","bob","long","pixie","undercut","braids","locs","ponytail","bun","twists","afro"] as const} onChange={hair=>setDraft({...draft,hair})}/>
+    <Swatches name="Hair color" selected={draft.hairColor} colors={HAIR_COLORS} onChange={hairColor=>setDraft({...draft,hairColor})}/>
+-   {inventory?.equipment.outfit&&<p className="avatar-note">Your inventory outfit is equipped. Remove it in your inventory to change your base outfit.</p>}
++</div><div hidden={category!=="wardrobe"}>{inventory?.equipment.outfit&&<p className="avatar-note">Your inventory outfit is equipped. Remove it in your inventory to change your base outfit.</p>}
+    <fieldset disabled={!!inventory?.equipment.outfit}><legend className="sr-only">Base outfit</legend><Choices name="Outfit" selected={draft.outfit} options={FREE_OUTFITS.map(o=>o.id)} onChange={outfit=>setDraft(equipAvatar(draft,"outfit",outfit))}/></fieldset>
+    <Swatches name="Outfit color" selected={draft.palette} colors={OUTFIT_COLORS} onChange={palette=>setDraft({...draft,palette})}/>
+-   <Choices name="Backdrop" selected={draft.background} options={["atrium","grove","workshop"] as const} onChange={background=>setDraft({...draft,background})}/>
+-
++   </div><div hidden={category!=="setting"}><Choices name="Backdrop" selected={draft.background} options={["atrium","grove","workshop"] as const} onChange={background=>setDraft({...draft,background})}/>
++</div>
+   </fieldset></div></div>{error&&<p role="alert" className="account-error">{error}</p>}<div className="avatar-editor-actions"><button type="button" disabled={busy} onClick={()=>setDraft({...DEFAULT_AVATAR})} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>Reset preview</button><div><button type="button" disabled={busy} onClick={close} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>Cancel</button><button type="button" className="settings-save" disabled={busy} onClick={()=>void save()} data-disabled-reason={busy?"Please wait…":"Requirements not met"}>{busy?"Saving…":"Save appearance"}</button></div></div></div><div hidden={section!=="inventory"}><InventoryPanel owner={owner} appearance={draft} inventory={inventory}/></div></Dialog>}
+  </>;
+ }
+diff --git a/src/lib/avatar-scene.ts b/src/lib/avatar-scene.ts
+index d789e9c..6838adc 100644
+--- a/src/lib/avatar-scene.ts
++++ b/src/lib/avatar-scene.ts
+@@ -7,18 +7,19 @@ const surfaceMaps=new Map<string,T.CanvasTexture>();
+ function surface(kind:'cloth'|'wood'|'stone'|'leather'){
+  const cached=surfaceMaps.get(kind);if(cached)return cached;
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=1024;const c=canvas.getContext('2d')!;
+- c.fillStyle='#888888';c.fillRect(0,0,1024,1024);let seed=27;
++ c.fillStyle='#eeeeee';c.fillRect(0,0,1024,1024);let seed=27;
+  const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+- for(let i=0;i<42000;i++){const x=rand()*1024,y=rand()*1024,v=Math.floor(80+rand()*100);c.fillStyle=`rgb(${v},${v},${v})`;c.fillRect(x,y,kind==='wood'?rand()*50:1+rand()*3,kind==='wood'?1:1+rand()*3);}
+- if(kind==='cloth'){for(let i=0;i<1024;i+=5){c.fillStyle=i%10?'#999999':'#666666';c.fillRect(i,0,1,1024);c.fillRect(0,i,1024,1);}}
++ for(let i=0;i<42000;i++){const x=rand()*1024,y=rand()*1024,v=Math.floor(200+rand()*48);c.fillStyle=`rgb(${v},${v},${v})`;c.fillRect(x,y,kind==='wood'?rand()*50:1+rand()*3,kind==='wood'?1:1+rand()*3);}
++ if(kind==='cloth'){for(let i=0;i<1024;i+=5){c.fillStyle=i%10?'#f8f8f8':'#d8d8d8';c.fillRect(i,0,1,1024);c.fillRect(0,i,1024,1);}}
+  const map=new T.CanvasTexture(canvas);map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(3,3);map.anisotropy=4;map.colorSpace=T.SRGBColorSpace;surfaceMaps.set(kind,map);return map;
+ }
+ export function buildAvatarScene(input:Avatar,equipment:Equipment={},portrait=false){
+- const a=parseAvatar(input),scene=new T.Scene();scene.background=new T.Color(a.background==='grove'?'#182d25':a.background==='workshop'?'#392e26':'#d2c5aa');
++ const a=parseAvatar(input),scene=new T.Scene();scene.background=new T.Color(a.background==='grove'?'#182d25':a.background==='workshop'?'#292e27':'#bcb9a8');
+  scene.fog=new T.Fog(scene.background,9,24);
+  const textures={cloth:surface('cloth'),wood:surface('wood'),stone:surface('stone'),leather:surface('leather')};
+- const mat=(color:string,kind?:keyof typeof textures,metalness=0):Material=>new T.MeshStandardMaterial({color,roughness:metalness?.34:.85,metalness,map:kind?textures[kind]:null,bumpMap:kind?textures[kind]:null,bumpScale:kind==='cloth'?.025:.05});
++ const mat=(color:string,kind?:keyof typeof textures,metalness=0):Material=>new T.MeshStandardMaterial({color,roughness:metalness?.34:.85,metalness,map:kind?textures[kind]:null,bumpMap:kind?textures[kind]:null,bumpScale:kind==='cloth'?.007:.013});
+  const skin=mat(SKIN_COLORS[a.skin]),hair=mat(HAIR_COLORS[a.hairColor]),cloth=mat(OUTFIT_COLORS[a.palette],'cloth'),dark=mat('#34352f','cloth'),leather=mat('#65442d','leather'),gold=mat('#bf9153',undefined,.8),cream=mat('#e5d6b7','cloth'),stone=mat('#978b73','stone'),wood=mat('#5a4029','wood');
++ skin.roughness=.67;hair.roughness=.58;
+  const character=new T.Group();scene.add(character);
+  const mesh=(parent:T.Object3D,geometry:T.BufferGeometry,m:Material,x=0,y=0,z=0)=>{const o=new T.Mesh(geometry,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;};
+  const ell=(p:T.Object3D,m:Material,x:number,y:number,z:number,sx:number,sy:number,sz:number)=>{const o=mesh(p,new T.SphereGeometry(1,40,32),m,x,y,z);o.scale.set(sx,sy,sz);return o;};
+@@ -44,8 +45,8 @@ export function buildAvatarScene(input:Avatar,equipment:Equipment={},portrait=fa
+   const handMat=equipment.hands?leather:skin;ell(upper,handMat,side*.51,1.16,.015,.105,.16,.085);
+   ell(upper,handMat,side*.43,1.17,.08,.04,.09,.04);
+   for(let n=0;n<3;n++)tube(upper,gold,[[side*.35,1.27+n*.016,.07],[side*.57,1.27+n*.016,.07]],.004);
+-  // Lapels, pockets, stitching and warm metal buttons.
+-  tube(upper,cream,[[side*.16,1.98,.16],[side*.29,1.82,.2],[side*.08,1.58,.22]],.025);
++  // Tailored lapels have thickness and folds rather than rope-like outlines.
++  const lapelShape=new T.Shape();lapelShape.moveTo(side*.1,1.98);lapelShape.lineTo(side*.24,1.94);lapelShape.lineTo(side*.28,1.78);lapelShape.lineTo(side*.09,1.63);lapelShape.lineTo(side*.16,1.82);lapelShape.closePath();const lapel=mesh(upper,new T.ExtrudeGeometry(lapelShape,{depth:.025,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.008,bevelThickness:.008}),cloth,0,0,.21);lapel.rotation.y=side*.08;
+   box(upper,cloth,side*.2,1.17,.23,.17,.17,.025);tube(upper,gold,[[side*.28,1.25,.25],[side*.12,1.25,.25]],.007);
+  }
+  for(let n=0;n<5;n++)ell(upper,gold,.04,1.62-n*.16,.24,.022,.022,.012);
+@@ -57,30 +58,32 @@ export function buildAvatarScene(input:Avatar,equipment:Equipment={},portrait=fa
+  const head=new T.Group();head.scale.setScalar(.82);head.position.y=.43;upper.add(head);
+  const face=ell(head,skin,0,2.48,.01,a.face==='round'?.32:a.face==='angular'?.28:.295,a.face==='round'?.34:.385,.28);
+  const positions=face.geometry.attributes.position;
+- for(let i=0;i<positions.count;i++){const y=positions.getY(i);if(y<-.2){const taper=a.face==='heart'?.76:a.face==='angular'?.94:.85;positions.setX(i,positions.getX(i)*taper);}}face.geometry.computeVertexNormals();
++ for(let i=0;i<positions.count;i++){const y=positions.getY(i);if(y<-.2){const taper=a.face==='heart'?.76:a.face==='angular'?.94:.85;positions.setX(i,positions.getX(i)*(1-(1-taper)*T.MathUtils.smoothstep(-y,.08,.95)));}}face.geometry.computeVertexNormals();
+  for(const side of [-1,1]){
+   ell(head,skin,side*.299,2.46,0,.064,.105,.045);
+   ell(head,mat('#f6eee1'),side*.115,2.5,.242,.061,.032,.025);
+   const eyes={brown:'#4a2b1c',hazel:'#8c7545',green:'#496b4f',blue:'#577887',grey:'#78817b'};
+   ell(head,mat(eyes[a.eyes]),side*.115,2.5,.265,.025,.026,.01);ell(head,mat('#171c18'),side*.115,2.5,.274,.012,.016,.006);ell(head,mat('#ffffff'),side*.115-.009,2.513,.281,.008,.008,.004);
+   tube(head,hair,[[side*.19,2.59,.25],[side*.115,2.61+(a.expression==='thoughtful'&&side===1?.025:0),.28],[side*.055,2.59,.26]],.012);
+-  ell(head,mat(SKIN_COLORS[a.skin]),side*.17,2.38,.24,.075,.045,.022);
++
+  }
+- ell(head,skin,0,2.43,.285,.045,.075,.06);ell(head,skin,0,2.405,.32,.06,.033,.027);
+- const lip=mat('#985c4e');tube(head,lip,[[-.075,2.305,.247],[0,2.29+(a.expression==='bright'?-.015:0),.277],[.075,2.305,.247]],.009);
++ ell(head,skin,0,2.43,.265,.027,.067,.035);ell(head,skin,0,2.405,.294,.038,.024,.025);
++ const lip=mat('#985c4e');tube(head,lip,[[-.075,2.305,.263],[0,2.29+(a.expression==='bright'?-.015:0),.272],[.075,2.305,.263]],.007);
+  if(a.expression==='bright')ell(head,mat('#f6eee1'),0,2.29,.27,.053,.015,.012);
+  if(a.beard!=='clean'){
+   const beard=ell(head,hair,0,2.25,.13,a.beard==='full'?.25:.23,a.beard==='full'?.19:.11,.17);beard.scale.z=a.beard==='stubble'?.6:1;
+   for(let i=0;i<24;i++){const x=(i/23-.5)*.35;tube(head,hair,[[x,2.29,.265],[x*.85,2.17-(a.beard==='full'?.07:0),.23]],.006);}
+  }
+  if(a.hair!=='shaved'){
+-  const cap=mesh(head,new T.SphereGeometry(.307,40,24,0,Math.PI*2,0,Math.PI*.52),hair,0,2.54,-.01);cap.scale.y=1.05;
++  const capGeo=new T.SphereGeometry(1,48,32,0,Math.PI*2,0,Math.PI*.4);
++  const cap=mesh(head,capGeo,hair,0,2.49,.01);cap.scale.set(.311,.397,.30);
+   const curly=['coils','afro'].includes(a.hair),longHair=['long','braids','locs','bob','twists'].includes(a.hair);
+-  if(curly){for(let i=0;i<70;i++){const ang=i*2.39996,y=2.63+Math.sin(i*1.7)*.15,r=a.hair==='afro'?.36:.28;ell(head,hair,Math.cos(ang)*r,y,Math.sin(ang)*r-.03,.07,.075,.07);}}
+-  else if(longHair){for(let i=0;i<32;i++){const theta=.35+i/31*(Math.PI*2-.7),x=Math.sin(theta)*.285,z=Math.cos(theta)*-.26,len=a.hair==='bob'?.45:.75;const points=[[x,2.73,z],[x*1.1,2.49,z*1.1],[x*1.12,2.73-len,z*1.18]];tube(head,hair,points,a.hair==='braids'||a.hair==='locs'?.029:.023);if(a.hair==='braids')for(let n=0;n<6;n++)ell(head,hair,x*1.1+Math.sin(n)*.013,2.6-n*.09,z*1.1,.025,.035,.025);}}
+-  else{for(let i=0;i<27;i++){const x=(i%9-4)*.06,z=(Math.floor(i/9)-1)*.085;const length=a.hair==='pixie'?.035:a.hair==='crop'?.055:a.hair==='undercut'?.18:.12;tube(head,hair,[[x,2.74,z],[x+.025,2.82+length,z-.05],[x+.09,2.78,z-.12]],.024);}}
+-  if(a.hair==='bun')ell(head,hair,0,2.86,-.14,.13,.13,.13);
+-  if(a.hair==='ponytail'){tube(head,hair,[[0,2.7,-.26],[.04,2.45,-.38],[.08,2.12,-.32]],.095);ring(head,gold,0,2.68,-.29,.08).rotation.x=Math.PI/2;}
++  if(['braids','locs','twists'].includes(a.hair)){for(let n=0;n<11;n++){const x=(n-5)*.045;const points=[[x,2.68,.23],[x*.9,2.85,.09],[x*.8,2.86,-.12],[x*.85,2.67,-.265]];tube(head,hair,points,a.hair==='locs'?.023:.016);}}
++  if(curly){for(let i=0;i<100;i++){const phi=Math.acos(1-(i+.5)/100),ang=i*2.39996,r=a.hair==='afro'?1.22:1.02;const x=Math.cos(ang)*Math.sin(phi)*.30*r,y=2.49+Math.cos(phi)*.39*r,z=Math.sin(ang)*Math.sin(phi)*.28*r;const curl=ell(head,hair,x,y,z,.045*r,.055*r,.043*r);curl.rotation.z=ang;}}
++  else if(longHair){const braided=a.hair==='braids'||a.hair==='twists',count=braided?18:26;for(let i=0;i<count;i++){const theta=-1.7+i/(count-1)*3.4,x=Math.sin(theta)*.29,z=-Math.cos(theta)*.27,len=a.hair==='bob'?.43:.78;const path=[[x*.5,2.80,z*.5],[x,2.62,z],[x*1.08,2.40,z*1.1],[x*1.05,2.80-len,z*1.12]];tube(head,hair,path,a.hair==='locs'?.033:braided?.023:.019);if(braided)for(let strand=0;strand<2;strand++){const points=Array.from({length:16},(_,n)=>[x*1.05+Math.sin(n*1.6+strand*Math.PI)*.013,2.65-n*(len-.15)/15,z*1.1+Math.cos(n*1.6+strand*Math.PI)*.013]);tube(head,hair,points,.011);}}}
++  else{const count=a.hair==='crop'?35:48;for(let i=0;i<count;i++){const x=(i/(count-1)-.5)*.55;const pts=Array.from({length:10},(_,n)=>{const z=.23-n*.052;const y=2.49+Math.sqrt(Math.max(.03,1-(x/.31)**2-(z/.29)**2))*.39;return [x+Math.sin(n*.55)*.01,y+(a.hair==='waves'?Math.sin(n*.9+i*.2)*.022:a.hair==='undercut'?.045:0),z];});tube(head,hair,pts,a.hair==='crop'?.012:.017);}}
++  if(a.hair==='bun'){for(let n=0;n<10;n++){const angle=n*.63;tube(head,hair,[[Math.sin(angle)*.08,2.83+Math.cos(angle)*.08,-.18],[Math.sin(angle)*.12,2.88,-.28],[Math.sin(angle)*.08,2.83-Math.cos(angle)*.08,-.34]],.024);}}
++  if(a.hair==='ponytail'){for(let n=0;n<9;n++){const x=(n-4)*.014;tube(head,hair,[[x,2.73,-.27],[x+.04,2.48,-.38],[x+.09,2.15,-.34]],.023);}ring(head,gold,0,2.68,-.29,.075).rotation.x=Math.PI/2;}
+  }
+  // Each earned piece has real geometry, not a painted overlay.
+  if(equipment.accessory==='trail-scarf'){const scarf=mesh(upper,new T.TorusGeometry(.17,.052,10,48),mat('#c69c65','cloth'),0,2.02,0);scarf.rotation.x=Math.PI/2;box(upper,mat('#c69c65','cloth'),.16,1.78,.24,.12,.43,.035);}
+@@ -95,26 +98,37 @@ export function buildAvatarScene(input:Avatar,equipment:Equipment={},portrait=fa
+  if(equipment.aura){for(let n=0;n<2;n++){const orbit=ring(upper,gold,0,2.92+n*.08,0,.45+n*.09,.008);orbit.rotation.x=1.1;orbit.rotation.y=n*.7;}}
+  // A walk-in diorama: actual three-dimensional architecture and scene dressing.
+  const floor=mesh(scene,new T.CylinderGeometry(4,4,.18,80),stone,0,-.15,0);
+- floor.receiveShadow=true;mesh(scene,new T.CylinderGeometry(.95,1,.14,80),stone,0,-.02,0);
+- const wallMat=mat(a.background==='workshop'?'#3f4738':'#b5a387','stone');
++ floor.receiveShadow=true;mesh(scene,new T.CylinderGeometry(.95,1,.14,80),stone,0,.005,0);
++ const wallMat=mat(a.background==='workshop'?'#435047':'#d4c9b0','stone');
+  if(!portrait){
+   if(a.background==='grove'){
+    for(let i=0;i<7;i++){const ang=i*.8,x=Math.cos(ang)*3,z=-2-Math.sin(ang)*1.3;mesh(scene,new T.CylinderGeometry(.12,.24,3.8,14),wood,x,1.7,z);for(let n=0;n<4;n++)ell(scene,mat(n%2?'#304c31':'#496342','cloth'),x+Math.sin(n)*.5,3+n*.2,z,.9,.55,.8);}
+   }else{
+    box(scene,wallMat,0,1.8,-3.4,8,4,.2);
+-   for(const x of [-2.4,0,2.4]){mesh(scene,new T.CylinderGeometry(.16,.2,3.3,24),stone,x,1.4,-2.5);const arch=mesh(scene,new T.TorusGeometry(1.02,.13,12,48,Math.PI),stone,x,2.9,-2.5);arch.rotation.z=0;}
++   for(const x of [-2.7,0,2.7]){
++    const glass=new T.MeshStandardMaterial({color:'#d6e0d2',roughness:.3,emissive:'#c4ceae',emissiveIntensity:.24});
++    box(scene,wood,x,2,-3.23,1.7,2.3,.10);box(scene,glass,x,2,-3.15,1.48,2.1,.04);
++    for(const dx of [-.76,0,.76])box(scene,wood,x+dx,2,-3.10,.055,2.2,.05);
++    for(const y of [1,2,3])box(scene,wood,x,y,-3.09,1.6,.045,.05);
++    box(scene,stone,x,.86,-3.02,1.85,.12,.3);
++   }
++   for(let n=0;n<18;n++){const plank=box(scene,n%3?wood:mat('#71523c','wood'),0,-.05,-3+n*.36,6.8,.025,.345);plank.receiveShadow=true;}
++   const rug=mesh(scene,new T.CylinderGeometry(1.65,1.65,.012,80),mat('#765746','cloth'),0,-.025,0);rug.scale.z=.82;
++   for(const radius of [1.43,1.52,1.58]){const border=ring(scene,gold,0,-.012,0,radius,.007);border.rotation.x=Math.PI/2;border.scale.y=.82;}
++   for(let n=0;n<9;n++)box(scene,stone,0,.05+n*.035,-3.28+n*.01,7.8,.018,.045);
++
+    const desk=box(scene,wood,-1.9,.88,-1.5,1.6,.12,.65);desk.rotation.y=.15;
+    for(const x of [-2.5,-1.3])box(scene,wood,x,.37,-1.5,.1,1,.1);
+    for(let i=0;i<8;i++){const book=box(scene,i%2?cloth:cream,-2.4+i*.13,1.07,-1.5,.09,.26+i%3*.03,.24);book.rotation.z=(i%3-1)*.07;}
+    const mirror=ring(scene,gold,1.8,1.7,-1.9,.65,.045);mirror.scale.y=1.5;ell(scene,mat('#a6b2a2',undefined,.7),1.8,1.7,-1.94,.63,.96,.035);box(scene,wood,1.8,.35,-1.9,.1,.7,.1);
+   }
+-  for(let i=0;i<6;i++){const x=i<3?-1.7:2.2,z=-.8-(i%3)*.55;mesh(scene,new T.CylinderGeometry(.12,.09,.22,20),mat('#8c6547'),x,.05,z);for(let n=0;n<5;n++){const leaf=ell(scene,mat('#405c36'),x+Math.sin(n*2)*.14,.23+n*.05,z+Math.cos(n*2)*.1,.06,.19,.03);leaf.rotation.z=n*.6;}}
++  for(let i=0;i<6;i++){const x=i<3?-1.7:2.2,z=-.8-(i%3)*.55;mesh(scene,new T.CylinderGeometry(.12,.09,.22,20),mat('#8c6547'),x,.05,z);for(let n=0;n<5;n++){const shape=new T.Shape();shape.moveTo(0,0);shape.quadraticCurveTo(.14,.15,0,.36);shape.quadraticCurveTo(-.14,.15,0,0);const leaf=mesh(scene,new T.ExtrudeGeometry(shape,{depth:.004,bevelEnabled:false}),mat(n%2?'#4b6b45':'#6d8651'),x,.15,z);leaf.rotation.set(.3,n*1.3,Math.sin(n*2)*.8);tube(scene,mat('#8a9a68'),[[x,.15,z],[x+Math.sin(n*2)*.1,.4,z]],.004);}}
+  }
+- scene.add(new T.HemisphereLight('#fff2d6','#304b3b',1.7));
+- const sun=new T.DirectionalLight('#ffe2b5',4);sun.position.set(-3,6,5);sun.castShadow=!portrait;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-5;sun.shadow.camera.right=5;sun.shadow.camera.top=6;sun.shadow.camera.bottom=-3;sun.shadow.bias=-.0004;scene.add(sun);
+- const rim=new T.DirectionalLight('#acc8bd',2);rim.position.set(3,4,-3);scene.add(rim);
++ scene.add(new T.HemisphereLight('#fff4df','#46574d',2.2));
++ const sun=new T.DirectionalLight('#fff0d5',3);sun.position.set(-3,6,5);sun.castShadow=!portrait;sun.shadow.mapSize.set(2048,2048);sun.shadow.normalBias=.025;sun.shadow.radius=4;sun.shadow.camera.left=-5;sun.shadow.camera.right=5;sun.shadow.camera.top=6;sun.shadow.camera.bottom=-3;sun.shadow.bias=-.0004;scene.add(sun);
++ const rim=new T.DirectionalLight('#c4d9e2',2.5);rim.position.set(3,4,-3);scene.add(rim);
+  const headHeight=2.78*character.scale.y;
+- const camera=new T.PerspectiveCamera(portrait?32:36,1,.1,50);camera.position.set(portrait?.12:3,portrait?headHeight+.08:2.5,portrait?2.1:6.5);camera.lookAt(0,portrait?headHeight:1.6,0);
++ const camera=new T.PerspectiveCamera(portrait?32:33,1,.1,50);camera.position.set(portrait?.12:1.8,portrait?headHeight+.08:2.5,portrait?2.1:6.5);camera.lookAt(0,portrait?headHeight:1.6,0);
+  const dispose=()=>{scene.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>m.dispose());}});};
+  return {scene,camera,character,dispose};
+ }
+diff --git a/src/styles/atelier.css b/src/styles/atelier.css
+index 0eed957..a1d11d9 100644
+--- a/src/styles/atelier.css
++++ b/src/styles/atelier.css
+@@ -1,5 +1,7 @@
+ .avatar-art .avatar-3d{width:100%;height:100%;min-height:inherit;position:relative;overflow:hidden;border-radius:inherit}.avatar-3d-canvas{width:100%;height:100%;min-height:inherit}.avatar-3d-canvas canvas,.avatar-3d-canvas img{display:block;width:100%;height:100%;object-fit:cover}.avatar-3d-loading,.avatar-3d-unavailable{display:grid;place-items:center;width:100%;height:100%;min-height:80px;background:var(--atlas-mid);color:var(--atlas-paper);padding:8px;text-align:center;font-size:var(--type-label)}.avatar-3d-loading{font-size:32px}.atelier-camera{position:absolute;bottom:16px;left:16px;right:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--atlas-paper)}.atelier-camera button{min-width:44px;min-height:44px;border:1px solid var(--atlas-light);background:var(--atlas-deep);border-radius:8px;color:var(--atlas-paper);padding:8px 12px}.atelier-camera span{font-size:12px;background:var(--atlas-deep);border-radius:8px;padding:8px}.atelier-camera button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+-.zynth-dialog.avatar-editor.atelier-world{width:calc(100vw - 32px);max-width:1600px;height:calc(100dvh - 32px);max-height:none;padding:0;overflow:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border)}.atelier-world>h2{padding:20px 32px;font-size:var(--type-h2);background:var(--atlas-deep);color:var(--atlas-paper);margin:0}.atelier-world .avatar-editor-close{position:absolute;right:16px;top:12px;color:var(--atlas-paper);background:var(--atlas-mid);min-width:44px;min-height:44px;border-radius:8px;z-index:2}.atelier-world .avatar-customize-sections{padding:12px 24px;display:flex;gap:12px;border-bottom:1px solid var(--border);margin:0}.atelier-world .avatar-customize-sections button{min-height:44px;padding:8px 20px;border-radius:8px;border:1px solid var(--border)}.atelier-world .avatar-customize-sections button[aria-pressed=true]{background:var(--primary-tint);color:var(--text)}.atelier-world .avatar-editor-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);gap:0;margin:0;align-items:stretch}.atelier-world .avatar-preview{height:calc(100dvh - 226px);min-height:460px;position:sticky;top:0;background:var(--atlas-deep);padding:0;overflow:hidden}.atelier-world .avatar-preview>.avatar-art{height:100%;width:100%;max-width:none;min-height:460px}.atelier-world .avatar-preview>p{display:none}.atelier-world .avatar-options{padding:24px;max-height:calc(100dvh - 226px);overflow:auto}.atelier-world .avatar-choice-group{margin-bottom:24px}.atelier-world .avatar-choice-group legend{font-size:14px;font-weight:600;margin-bottom:12px}.atelier-world .avatar-choice-group>div{display:flex;gap:8px;flex-wrap:wrap}.atelier-world .avatar-choice-group label span{min-height:44px;display:grid;place-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.atelier-world .avatar-choice-group input:checked+span{background:var(--primary-tint);border-color:var(--primary)}.atelier-world .avatar-choice-group input:focus-visible+span{outline:2px solid var(--primary);outline-offset:2px}.atelier-world .avatar-swatches label span{height:44px;width:44px;border:2px solid var(--border)}.atelier-world .avatar-editor-actions{position:sticky;bottom:0;padding:16px 24px;background:var(--surface);border-top:1px solid var(--border);z-index:2;display:flex;justify-content:space-between;gap:16px}.atelier-world .avatar-editor-actions>div{display:flex;gap:12px}.atelier-world .avatar-editor-actions button{min-height:44px;border-radius:8px;padding:8px 16px}.atelier-world .cosmetic-inventory{padding:24px}.atelier-world .inventory-preview .avatar-art{height:440px;max-width:none}.atelier-world .inventory-filters button{min-height:44px}.atelier-world .inventory-card{min-height:88px}
++.zynth-dialog.avatar-editor.atelier-world{width:calc(100vw - 32px);max-width:1600px;height:calc(100dvh - 32px);max-height:none;padding:0;overflow:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border)}.atelier-world>h2{padding:20px 32px;font-size:var(--type-h2);background:var(--atlas-deep);color:var(--atlas-paper);margin:0}.atelier-world .avatar-editor-close{position:absolute;right:16px;top:12px;color:var(--atlas-paper);background:var(--atlas-mid);min-width:44px;min-height:44px;border-radius:8px;z-index:2}.atelier-world .avatar-customize-sections{padding:12px 24px;display:flex;gap:12px;border-bottom:1px solid var(--border);margin:0}.atelier-world .avatar-customize-sections button{min-height:44px;padding:8px 20px;border-radius:8px;border:1px solid var(--border)}.atelier-world .avatar-customize-sections button[aria-pressed=true]{background:var(--primary-tint);color:var(--text)}.atelier-world .avatar-editor-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);gap:0;margin:0;align-items:stretch}.atelier-world .avatar-preview{height:calc(100dvh - 256px);min-height:460px;position:sticky;top:0;background:var(--atlas-deep);padding:0;overflow:hidden}.atelier-world .avatar-preview>.avatar-art{height:100%;width:100%;max-width:none;min-height:460px}.atelier-world .avatar-preview>p{display:none}.atelier-world .avatar-options{padding:24px;max-height:calc(100dvh - 256px);overflow:auto}.atelier-world .avatar-choice-group{margin-bottom:24px}.atelier-world .avatar-choice-group legend{font-size:14px;font-weight:600;margin-bottom:12px}.atelier-world .avatar-choice-group>div{display:flex;gap:8px;flex-wrap:wrap}.atelier-world .avatar-choice-group label span{min-height:44px;display:grid;place-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:8px}.atelier-world .avatar-choice-group input:checked+span{background:var(--primary-tint);border-color:var(--primary)}.atelier-world .avatar-choice-group input:focus-visible+span{outline:2px solid var(--primary);outline-offset:2px}.atelier-world .avatar-swatches label span{height:44px;width:44px;border:2px solid var(--border)}.atelier-world .avatar-editor-actions{position:sticky;bottom:0;padding:16px 24px;background:var(--surface);border-top:1px solid var(--border);z-index:2;display:flex;justify-content:space-between;gap:16px}.atelier-world .avatar-editor-actions>div{display:flex;gap:12px}.atelier-world .avatar-editor-actions button{min-height:44px;border-radius:8px;padding:8px 16px}.atelier-world .cosmetic-inventory{padding:24px}.atelier-world .inventory-preview .avatar-art{height:440px;max-width:none}.atelier-world .inventory-filters button{min-height:44px}.atelier-world .inventory-card{min-height:88px}
+ @media(max-width:700px){.zynth-dialog.avatar-editor.atelier-world{width:100vw;height:100dvh;border-radius:0;border:0}.atelier-world>h2{padding:16px;font-size:20px;padding-right:64px}.atelier-world .avatar-editor-grid{display:flex;flex-direction:column}.atelier-world .avatar-preview{position:relative;height:48dvh;min-height:320px}.atelier-world .avatar-preview>.avatar-art{min-height:320px}.atelier-world .avatar-options{max-height:none;padding:16px}.atelier-world .avatar-editor-actions{padding:12px;gap:8px;flex-wrap:wrap}.atelier-world .inventory-preview .avatar-art{height:360px}.atelier-world .cosmetic-inventory{padding:16px}.atelier-camera span{display:none}.atelier-world .inventory-layout{display:flex;flex-direction:column}}
+ 
+ .atelier-world .avatar-options{background:var(--surface)}.atelier-world .inventory-preview{overflow:hidden}.atelier-world .inventory-preview .avatar-art{aspect-ratio:auto}.atelier-world .avatar-preview .avatar-art{aspect-ratio:auto}.atelier-world .avatar-preview .avatar-3d{min-height:0}.atelier-world .avatar-editor-actions{margin-top:0}.atelier-world .inventory-card em{color:var(--text-muted)}
++
++.atelier-option-tabs{display:flex;gap:4px;padding:4px;background:var(--bg);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;position:sticky;top:-24px;z-index:1}.atelier-option-tabs button{flex:1;min-height:44px;border-radius:8px;padding:8px;font-size:12px;font-weight:600;color:var(--text-muted)}.atelier-option-tabs button[aria-pressed=true]{background:var(--surface);color:var(--text);box-shadow:var(--shadow-card)}.atelier-option-tabs button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}.atelier-world .avatar-choice-group label span{text-transform:capitalize;background:var(--surface);font-size:14px;transition:background 180ms ease-out,border-color 180ms ease-out}.atelier-world .avatar-choice-group input:checked+span{background:var(--primary-tint);box-shadow:inset 0 0 0 1px var(--primary)}.atelier-world .avatar-options{background:var(--surface);padding:24px 28px}.atelier-world .avatar-customize-sections{background:var(--atlas-deep);color:var(--atlas-paper);border-color:var(--atlas-light)}.atelier-world .avatar-customize-sections button{border-color:var(--atlas-light)}.atelier-world .avatar-customize-sections button[aria-pressed=true]{background:var(--atlas-mid);color:var(--atlas-paper)}.atelier-camera{justify-content:center}.atelier-camera button{background:color-mix(in srgb,var(--atlas-deep) 88%,transparent);border-radius:999px}.atelier-camera span{border-radius:999px;background:color-mix(in srgb,var(--atlas-deep) 88%,transparent)}.atelier-world .avatar-editor-actions .settings-save{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}.atelier-world .avatar-editor-actions .settings-save:hover{background:var(--primary-hover)}@media(max-width:700px){.atelier-option-tabs{top:-16px}.atelier-world .avatar-options{padding:16px}.atelier-world .avatar-preview{height:46dvh}.atelier-option-tabs button{font-size:12px;padding:8px 4px}}
